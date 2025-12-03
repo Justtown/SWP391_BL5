@@ -1,8 +1,4 @@
-<%-- 
-    Document   : login
-    Created on : Sep 17, 2024, 10:44:57 PM
-    Author     : manhpthe172481
---%>
+
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
