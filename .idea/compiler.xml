@@ -1,19 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-<<<<<<< Updated upstream
     <annotationProcessing>
-      <profile name="Maven default annotation processors profile" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <module name="ArgoMachineManagement" />
-      </profile>
+      <profile default="true" name="Default" enabled="true" />
     </annotationProcessing>
-=======
-    <bytecodeTargetLevel>
-      <module name="ArgoMachineManagement" target="11" />
-    </bytecodeTargetLevel>
->>>>>>> Stashed changes
   </component>
 </project>
