@@ -12,20 +12,37 @@ public class DBContext {
     protected Connection connection;
     protected ResultSet resultSet;
     protected PreparedStatement statement;
+    
+    // Database configuration
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/argo_managerment_system";
+    private static final String DB_USERNAME = "root";
+    private static final String DB_PASSWORD = "123456";
+    private static final String DB_DRIVER = "com.mysql.cj.jdbc.Driver";
 
     public DBContext() {
-        try {
-            //Change the username password and url to connect your own database
-            String username = "root";
-            String password = "123456";
-            String url = "jdbc:mysql://localhost:3306/argo_managerment_system";
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            connection = DriverManager.getConnection(url, username, password);
-        } catch (ClassNotFoundException | SQLException ex) {
-            Logger.getLogger(DBContext.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        // Constructor không tự động tạo connection
+        // Connection sẽ được tạo khi cần thiết qua getConnection()
     }
     
+    /**
+     * Get database connection
+     * Creates a new connection if not exists or if connection is closed
+     */
+    public Connection getConnection() {
+        try {
+            if (connection == null || connection.isClosed()) {
+                Class.forName(DB_DRIVER);
+                connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD);
+            }
+        } catch (ClassNotFoundException | SQLException ex) {
+            Logger.getLogger(DBContext.class.getName()).log(Level.SEVERE, "Error getting connection", ex);
+        }
+        return connection;
+    }
+    
+    /**
+     * Close all resources (ResultSet, PreparedStatement, Connection)
+     */
     public void closeResources() {
         try {
             if (resultSet != null && !resultSet.isClosed()) {
@@ -38,15 +55,30 @@ public class DBContext {
                 connection.close();
             }
         } catch (SQLException ex) {
-            Logger.getLogger(DBContext.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DBContext.class.getName()).log(Level.SEVERE, "Error closing resources", ex);
+        } finally {
+            resultSet = null;
+            statement = null;
+            connection = null;
         }
     }
-
-    public Connection getConnection() {
-        return new DBContext().connection;
-    }
     
+    /**
+     * Test database connection
+     */
     public static void main(String[] args) {
-        System.out.println(new DBContext().connection);
+        DBContext db = new DBContext();
+        Connection conn = db.getConnection();
+        if (conn != null) {
+            System.out.println("Database connection successful!");
+            try {
+                conn.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(DBContext.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            System.out.println("Database connection failed!");
+        }
     }
 }
+
