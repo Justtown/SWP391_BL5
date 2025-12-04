@@ -1,8 +1,0 @@
-com\mycompany\argomachinemanagement\src\dal\AccountDAO.class
-com\mycompany\argomachinemanagement\src\dal\DBContext.class
-com\mycompany\argomachinemanagement\JakartaRestConfiguration.class
-com\mycompany\argomachinemanagement\src\entity\Account.class
-com\mycompany\argomachinemanagement\resources\JakartaEE10Resource.class
-com\mycompany\argomachinemanagement\src\entity\Account$AccountBuilder.class
-com\mycompany\argomachinemanagement\src\dal\I_DAO.class
-com\mycompany\argomachinemanagement\src\controller\dashboard\admin\ManageAccountController.class
