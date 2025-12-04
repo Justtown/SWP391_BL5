@@ -14,7 +14,20 @@
         <!-- Font Awesome -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-      
+        <style>
+            body {
+
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .login-card {
+                border-radius: 10px;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            }
+        </style>
     </head>
     <body>
         <div class="container">
