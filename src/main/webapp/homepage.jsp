@@ -76,7 +76,7 @@
     <a href="product.jsp">Product</a>
     <a href="introduce.jsp">Introduce</a>
     <a href="profile.jsp">Profile</a>
-    <a href="login.jsp">Login/Logout</a>
+    <a href="login.jsp">Login</a>
 </div>
 
 <div class="container">
