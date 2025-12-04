@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.time.LocalDate;
+
 @ToString
 @Builder
 @Data
@@ -31,4 +33,8 @@ public class Account {
     private String avatar;
     private Boolean isActive;
     private Integer roleId;
+    private String address;
+    private LocalDate birthdate;
+    private String roleName;
+    
 }
