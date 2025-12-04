@@ -26,19 +26,38 @@ public class ListUserController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Get filter parameters
         String keyword = request.getParameter("keyword");
-        List<UserDTO> users;
-
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            // Search users by keyword
-            users = accountDAO.searchUsers(keyword.trim());
-            request.setAttribute("keyword", keyword);
-        } else {
-            // Get all users
-            users = accountDAO.findAllUsersWithRole();
+        String roleFilter = request.getParameter("role");
+        String statusFilter = request.getParameter("status");
+        
+        // Convert status filter to Integer (null if "all" or empty)
+        Integer status = null;
+        if (statusFilter != null && !statusFilter.trim().isEmpty() && !statusFilter.equals("all")) {
+            try {
+                status = Integer.parseInt(statusFilter);
+            } catch (NumberFormatException e) {
+                status = null;
+            }
         }
-
+        
+        // Get users with filters
+        List<UserDTO> users = accountDAO.findUsersWithFilters(
+            keyword != null && !keyword.trim().isEmpty() ? keyword.trim() : null,
+            roleFilter,
+            status
+        );
+        
+        // Get all roles for dropdown
+        List<String> roles = accountDAO.getAllRoleNames();
+        
+        // Set attributes for JSP
         request.setAttribute("users", users);
+        request.setAttribute("roles", roles);
+        request.setAttribute("keyword", keyword != null ? keyword : "");
+        request.setAttribute("selectedRole", roleFilter != null ? roleFilter : "all");
+        request.setAttribute("selectedStatus", statusFilter != null ? statusFilter : "all");
+        
         request.getRequestDispatcher("/view/user/list-user.jsp").forward(request, response);
     }
 

@@ -10,16 +10,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="90ff1430-9a87-4b39-87e7-666c014fdd71" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mycompany/argomachinemanagement/src/controller/user/ListUserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mycompany/argomachinemanagement/src/controller/user/ListUserController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mycompany/argomachinemanagement/src/dal/AccountDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mycompany/argomachinemanagement/src/dal/AccountDAO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/view/user/list-user.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/view/user/list-user.jsp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/ArgoMachineManagement-1.0-SNAPSHOT.war" beforeDir="false" afterPath="$PROJECT_DIR$/target/ArgoMachineManagement-1.0-SNAPSHOT.war" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/ArgoMachineManagement-1.0-SNAPSHOT/META-INF/MANIFEST.MF" beforeDir="false" afterPath="$PROJECT_DIR$/target/ArgoMachineManagement-1.0-SNAPSHOT/META-INF/MANIFEST.MF" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/ArgoMachineManagement-1.0-SNAPSHOT/WEB-INF/classes/com/mycompany/argomachinemanagement/src/dal/AccountDAO.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/ArgoMachineManagement-1.0-SNAPSHOT/WEB-INF/classes/com/mycompany/argomachinemanagement/src/dal/AccountDAO.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/ArgoMachineManagement-1.0-SNAPSHOT/WEB-INF/classes/com/mycompany/argomachinemanagement/src/dal/DBContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/ArgoMachineManagement-1.0-SNAPSHOT/WEB-INF/classes/com/mycompany/argomachinemanagement/src/dal/DBContext.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/ArgoMachineManagement-1.0-SNAPSHOT/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/target/ArgoMachineManagement-1.0-SNAPSHOT/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/mycompany/argomachinemanagement/src/dal/AccountDAO.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/mycompany/argomachinemanagement/src/dal/AccountDAO.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/mycompany/argomachinemanagement/src/dal/DBContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/mycompany/argomachinemanagement/src/dal/DBContext.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,28 +41,28 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Maven.ArgoMachineManagement [clean].executor": "Run",
-    "Maven.ArgoMachineManagement [package].executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "Tomcat Server.Unnamed.executor": "Run",
-    "git-widget-placeholder": "nam",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Fall2025/Fall2025/SWP391/SWP391_BL5/SWP391_BL5",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Artifacts",
-    "project.structure.proportion": "0.16308594",
-    "project.structure.side.proportion": "0.2",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Maven.ArgoMachineManagement [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.ArgoMachineManagement [package].executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;Tomcat Server.Unnamed.executor&quot;: &quot;Run&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;nam&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Fall2025/Fall2025/SWP391/SWP391_BL5/SWP391_BL5&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Artifacts&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.16308594&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunDashboard">
     <option name="configurationStatuses">
       <map>

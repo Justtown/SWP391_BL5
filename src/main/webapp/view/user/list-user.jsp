@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>List User - Argo Machine Management</title>
+    <title>User Management - Argo Machine Management</title>
     <style>
         * {
             margin: 0;
@@ -33,32 +33,88 @@
             color: #333;
         }
         
-        .search-container {
+        .filter-container {
             margin-bottom: 20px;
             display: flex;
             gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
         }
         
-        .search-container input {
-            flex: 1;
-            padding: 10px;
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .filter-dropdown {
+            padding: 8px 35px 8px 12px;
             border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 14px;
+            background-color: white;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 12px;
         }
         
-        .search-container button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
+        .search-container {
+            flex: 1;
+            position: relative;
+            min-width: 200px;
+        }
+        
+        .search-container input {
+            width: 100%;
+            padding: 8px 35px 8px 35px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
             font-size: 14px;
         }
         
-        .search-container button:hover {
-            background-color: #0056b3;
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            pointer-events: none;
+        }
+        
+        .search-clear {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .search-clear:hover {
+            color: #333;
+        }
+        
+        .add-user-link {
+            color: #007bff;
+            text-decoration: underline;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .add-user-link:hover {
+            color: #0056b3;
         }
         
         table {
@@ -116,16 +172,46 @@
 </head>
 <body>
     <div class="container">
-        <h1>List role</h1>
+        <h1>User Management</h1>
         
-        <!-- Search Form -->
-        <form method="GET" action="${pageContext.request.contextPath}/list-user" class="search-container">
-            <input 
-                type="text" 
-                name="keyword" 
-                placeholder="Enter keyword to search"
-                value="${keyword != null ? keyword : ''}">
-            <button type="submit">Search</button>
+        <!-- Filter and Search Form -->
+        <form method="GET" action="${pageContext.request.contextPath}/list-user" class="filter-container" id="filterForm">
+            <!-- Role Filter -->
+            <div class="filter-group">
+                <select name="role" class="filter-dropdown" onchange="document.getElementById('filterForm').submit();">
+                    <option value="all" ${selectedRole == 'all' ? 'selected' : ''}>All Role</option>
+                    <c:forEach var="role" items="${roles}">
+                        <option value="${role}" ${selectedRole == role ? 'selected' : ''}>${role}</option>
+                    </c:forEach>
+                </select>
+            </div>
+            
+            <!-- Status Filter -->
+            <div class="filter-group">
+                <select name="status" class="filter-dropdown" onchange="document.getElementById('filterForm').submit();">
+                    <option value="all" ${selectedStatus == 'all' ? 'selected' : ''}>All Status</option>
+                    <option value="1" ${selectedStatus == '1' ? 'selected' : ''}>Active</option>
+                    <option value="0" ${selectedStatus == '0' ? 'selected' : ''}>Deactive</option>
+                </select>
+            </div>
+            
+            <!-- Search Bar -->
+            <div class="search-container">
+                <span class="search-icon">🔍</span>
+                <input 
+                    type="text" 
+                    name="keyword" 
+                    id="searchInput"
+                    placeholder="search"
+                    value="${keyword}"
+                    onkeypress="if(event.key === 'Enter') document.getElementById('filterForm').submit();">
+                <c:if test="${keyword != null && !keyword.isEmpty()}">
+                    <button type="button" class="search-clear" onclick="clearSearch()" title="Clear search">×</button>
+                </c:if>
+            </div>
+            
+            <!-- Add New User Link -->
+            <a href="#" class="add-user-link" onclick="addNewUser(); return false;">Add new user</a>
         </form>
         
         <!-- User Table -->
@@ -174,6 +260,20 @@
         function updateUser(userId) {
             // TODO: Implement update user functionality
             alert('Update user ID: ' + userId);
+        }
+        
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            // Remove keyword from URL and submit
+            const form = document.getElementById('filterForm');
+            const url = new URL(window.location.href);
+            url.searchParams.delete('keyword');
+            window.location.href = url.toString();
+        }
+        
+        function addNewUser() {
+            // TODO: Implement add new user functionality
+            alert('Add new user - Coming soon!');
         }
     </script>
 </body>
