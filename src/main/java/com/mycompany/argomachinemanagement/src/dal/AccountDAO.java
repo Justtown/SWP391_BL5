@@ -5,7 +5,6 @@
  */
 package com.mycompany.argomachinemanagement.src.dal;
 
-
 import com.mycompany.argomachinemanagement.src.entity.Account;
 import com.mycompany.argomachinemanagement.src.dto.UserDTO;
 import java.sql.*;
@@ -16,7 +15,7 @@ import java.util.ArrayList;
  *
  * @author ADMIN
  */
-public class AccountDAO extends DBContext implements I_DAO<Account> {
+public class AccountDAO extends DBContext implements IDao<Account> {
 
     //Sample
     @Override
