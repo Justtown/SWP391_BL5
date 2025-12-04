@@ -5,7 +5,9 @@
 *.log
 
 # Maven
+# Bỏ qua tất cả thư mục target để khi build / chuyển nhánh không bị hiện changes
 target/
+**/target/
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
