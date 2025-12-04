@@ -1,30 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="ArtifactsWorkspaceSettings">
+    <artifacts-to-build>
+      <artifact name="ArgoMachineManagement:war" />
+    </artifacts-to-build>
+  </component>
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-<<<<<<< Updated upstream
-    <list default="true" id="90ff1430-9a87-4b39-87e7-666c014fdd71" name="Changes" comment="" />
-=======
     <list default="true" id="90ff1430-9a87-4b39-87e7-666c014fdd71" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/ArgoMachineManagement-1.0-SNAPSHOT.war" beforeDir="false" afterPath="$PROJECT_DIR$/target/ArgoMachineManagement-1.0-SNAPSHOT.war" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/ArgoMachineManagement-1.0-SNAPSHOT/META-INF/MANIFEST.MF" beforeDir="false" afterPath="$PROJECT_DIR$/target/ArgoMachineManagement-1.0-SNAPSHOT/META-INF/MANIFEST.MF" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/ArgoMachineManagement-1.0-SNAPSHOT/WEB-INF/classes/com/mycompany/argomachinemanagement/src/dal/AccountDAO.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/ArgoMachineManagement-1.0-SNAPSHOT/WEB-INF/classes/com/mycompany/argomachinemanagement/src/dal/AccountDAO.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/ArgoMachineManagement-1.0-SNAPSHOT/WEB-INF/classes/com/mycompany/argomachinemanagement/src/dal/DBContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/ArgoMachineManagement-1.0-SNAPSHOT/WEB-INF/classes/com/mycompany/argomachinemanagement/src/dal/DBContext.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/ArgoMachineManagement-1.0-SNAPSHOT/view/authen/login.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/target/ArgoMachineManagement-1.0-SNAPSHOT/view/authen/login.jsp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/.netbeans_automatic_build" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/mycompany/argomachinemanagement/src/controller/dashboard/admin/ManageAccountController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/mycompany/argomachinemanagement/src/controller/dashboard/admin/ManageAccountController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/ArgoMachineManagement-1.0-SNAPSHOT/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/target/ArgoMachineManagement-1.0-SNAPSHOT/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/mycompany/argomachinemanagement/src/dal/AccountDAO.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/mycompany/argomachinemanagement/src/dal/AccountDAO.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/mycompany/argomachinemanagement/src/dal/DBContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/mycompany/argomachinemanagement/src/dal/DBContext.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/mycompany/argomachinemanagement/src/dal/I_DAO.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/mycompany/argomachinemanagement/src/dal/I_DAO.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/mycompany/argomachinemanagement/src/entity/Account$AccountBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/mycompany/argomachinemanagement/src/entity/Account$AccountBuilder.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/mycompany/argomachinemanagement/src/entity/Account.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/mycompany/argomachinemanagement/src/entity/Account.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/createdFiles.lst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/inputFiles.lst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/.netbeans_automatic_build" beforeDir="false" />
     </list>
->>>>>>> Stashed changes
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -33,11 +29,6 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-<<<<<<< Updated upstream
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 7
-}]]></component>
-=======
   <component name="LogFilters">
     <option name="FILTER_ERRORS" value="false" />
     <option name="FILTER_WARNINGS" value="false" />
@@ -48,7 +39,6 @@
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 7
 }</component>
->>>>>>> Stashed changes
   <component name="ProjectId" id="36L6T1JJgRmO7XWCixwrv0Q1bXK" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -56,24 +46,13 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-<<<<<<< Updated upstream
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "nam",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Fall2025/Fall2025/SWP391/SWP391_BL5/SWP391_BL5",
-    "vue.rearranger.settings.migration": "true"
-  }
-}]]></component>
-=======
     "Maven.ArgoMachineManagement [clean].executor": "Run",
     "Maven.ArgoMachineManagement [package].executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "Tomcat Server.Unnamed.executor": "Run",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "nam",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Fall2025/Fall2025/SWP391/SWP391_BL5/SWP391_BL5",
     "node.js.detected.package.eslint": "true",
@@ -100,7 +79,6 @@
       </map>
     </option>
   </component>
->>>>>>> Stashed changes
   <component name="RunManager">
     <configuration default="true" type="JetRunConfigurationType">
       <module name="SWP391_BL5" />
@@ -113,19 +91,17 @@
       <option name="filePath" />
       <method v="2" />
     </configuration>
-<<<<<<< Updated upstream
-=======
-    <configuration name="Unnamed" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" APPLICATION_SERVER_NAME="Tomcat 10.1.49" ALTERNATIVE_JRE_ENABLED="true" ALTERNATIVE_JRE_PATH="18">
+    <configuration name="Unnamed" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" APPLICATION_SERVER_NAME="Tomcat 10.1.49" ALTERNATIVE_JRE_ENABLED="true" ALTERNATIVE_JRE_PATH="11">
       <option name="UPDATING_POLICY" value="restart-server" />
       <deployment>
         <artifact name="ArgoMachineManagement:war">
           <settings>
-            <option name="CONTEXT_PATH" value="/" />
+            <option name="CONTEXT_PATH" value="/ArgoMachineManagement" />
           </settings>
         </artifact>
       </deployment>
       <server-settings>
-        <option name="BASE_DIRECTORY_NAME" value="31d0ac3d-2b38-4a2a-b76d-f164a823c0ab" />
+        <option name="BASE_DIRECTORY_NAME" value="a2a939d3-9eff-4c5b-943c-2adc3ac819d2" />
       </server-settings>
       <predefined_log_file enabled="true" id="Tomcat" />
       <predefined_log_file enabled="true" id="Tomcat Catalina" />
@@ -202,7 +178,6 @@
         </option>
       </method>
     </configuration>
->>>>>>> Stashed changes
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -220,11 +195,8 @@
       <option name="presentableId" value="Default" />
       <updated>1764773509100</updated>
       <workItem from="1764773510268" duration="111000" />
-<<<<<<< Updated upstream
-=======
       <workItem from="1764773654235" duration="5037000" />
       <workItem from="1764779094183" duration="510000" />
->>>>>>> Stashed changes
     </task>
     <servers />
   </component>
