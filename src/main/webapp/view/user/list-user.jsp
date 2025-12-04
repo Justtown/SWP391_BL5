@@ -211,7 +211,7 @@
             </div>
             
             <!-- Add New User Link -->
-            <a href="#" class="add-user-link" onclick="addNewUser(); return false;">Add new user</a>
+            <a href="${pageContext.request.contextPath}/add-user" class="add-user-link">Add new user</a>
         </form>
         
         <!-- User Table -->
@@ -271,10 +271,6 @@
             window.location.href = url.toString();
         }
         
-        function addNewUser() {
-            // TODO: Implement add new user functionality
-            alert('Add new user - Coming soon!');
-        }
     </script>
 </body>
 </html>

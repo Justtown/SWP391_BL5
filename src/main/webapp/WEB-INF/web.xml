@@ -10,7 +10,7 @@
     <servlet>
         <servlet-name>ListUserController</servlet-name>
         <servlet-class>com.mycompany.argomachinemanagement.src.controller.user.ListUserController</servlet-class>
-        <load-on-startup>2</load-on-startup>
+        <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet-mapping>
         <servlet-name>ListUserController</servlet-name>
@@ -18,9 +18,19 @@
     </servlet-mapping>
     
     <servlet>
+        <servlet-name>AddUserController</servlet-name>
+        <servlet-class>com.mycompany.argomachinemanagement.src.controller.user.AddUserController</servlet-class>
+        <load-on-startup>2</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AddUserController</servlet-name>
+        <url-pattern>/add-user</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
         <servlet-name>ManageAccountController</servlet-name>
         <servlet-class>com.mycompany.argomachinemanagement.src.controller.dashboard.admin.ManageAccountController</servlet-class>
-        <load-on-startup>2</load-on-startup>
+        <load-on-startup>3</load-on-startup>
     </servlet>
     <servlet-mapping>
         <servlet-name>ManageAccountController</servlet-name>

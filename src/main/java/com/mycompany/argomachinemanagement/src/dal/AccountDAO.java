@@ -203,8 +203,126 @@ public class AccountDAO extends DBContext implements IDao<Account> {
     }
 
     @Override
-    public int insert(Account t) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public int insert(Account account) {
+        int result = 0;
+        PreparedStatement roleStatement = null;
+        String sql = "INSERT INTO users (username, password, full_name, email, status) VALUES (?, ?, ?, ?, ?)";
+        try {
+            connection = getConnection();
+            if (connection != null) {
+                // Disable auto-commit to use transaction
+                connection.setAutoCommit(false);
+                
+                statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                statement.setString(1, account.getUsername());
+                statement.setString(2, account.getPassword()); // In production, should hash password
+                statement.setString(3, account.getFullName());
+                statement.setString(4, account.getEmail());
+                statement.setInt(5, account.getIsActive() != null && account.getIsActive() ? 1 : 0);
+                
+                int rowsAffected = statement.executeUpdate();
+                
+                if (rowsAffected > 0) {
+                    // Get generated user ID
+                    ResultSet generatedKeys = statement.getGeneratedKeys();
+                    if (generatedKeys.next()) {
+                        int userId = generatedKeys.getInt(1);
+                        
+                        // Insert into user_role table if roleId is provided
+                        if (account.getRoleId() != null) {
+                            String roleSql = "INSERT INTO user_role (user_id, role_id) VALUES (?, ?)";
+                            roleStatement = connection.prepareStatement(roleSql);
+                            roleStatement.setInt(1, userId);
+                            roleStatement.setInt(2, account.getRoleId());
+                            roleStatement.executeUpdate();
+                        }
+                        
+                        // Commit transaction
+                        connection.commit();
+                        result = userId;
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            System.out.println("Error in insert: " + ex.getMessage());
+            ex.printStackTrace();
+            // Rollback transaction on error
+            try {
+                if (connection != null) {
+                    connection.rollback();
+                }
+            } catch (SQLException rollbackEx) {
+                System.out.println("Error in rollback: " + rollbackEx.getMessage());
+            }
+            result = 0;
+        } finally {
+            // Close role statement if exists
+            try {
+                if (roleStatement != null && !roleStatement.isClosed()) {
+                    roleStatement.close();
+                }
+            } catch (SQLException ex) {
+                System.out.println("Error closing role statement: " + ex.getMessage());
+            }
+            // Re-enable auto-commit
+            try {
+                if (connection != null) {
+                    connection.setAutoCommit(true);
+                }
+            } catch (SQLException ex) {
+                System.out.println("Error setting auto-commit: " + ex.getMessage());
+            }
+            closeResources();
+        }
+        return result;
+    }
+    
+    /**
+     * Find account by username
+     */
+    public Account findByUsername(String username) {
+        String sql = "SELECT * FROM users WHERE username = ?";
+        try {
+            connection = getConnection();
+            if (connection != null) {
+                statement = connection.prepareStatement(sql);
+                statement.setString(1, username);
+                resultSet = statement.executeQuery();
+                if (resultSet.next()) {
+                    return getFromResultSet(resultSet);
+                }
+            }
+        } catch (SQLException ex) {
+            System.out.println("Error in findByUsername: " + ex.getMessage());
+            ex.printStackTrace();
+        } finally {
+            closeResources();
+        }
+        return null;
+    }
+    
+    /**
+     * Get role ID by role name
+     */
+    public Integer getRoleIdByName(String roleName) {
+        String sql = "SELECT id FROM roles WHERE role_name = ?";
+        try {
+            connection = getConnection();
+            if (connection != null) {
+                statement = connection.prepareStatement(sql);
+                statement.setString(1, roleName);
+                resultSet = statement.executeQuery();
+                if (resultSet.next()) {
+                    return resultSet.getInt("id");
+                }
+            }
+        } catch (SQLException ex) {
+            System.out.println("Error in getRoleIdByName: " + ex.getMessage());
+            ex.printStackTrace();
+        } finally {
+            closeResources();
+        }
+        return null;
     }
 
     @Override
