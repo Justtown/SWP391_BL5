@@ -1,7 +1,7 @@
 package com.mycompany.argomachinemanagement.src.controller.user;
 
 import com.mycompany.argomachinemanagement.src.dal.AccountDAO;
-import com.mycompany.argomachinemanagement.src.dto.UserDTO;
+import com.mycompany.argomachinemanagement.src.entity.Account;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -41,8 +41,8 @@ public class ListUserController extends HttpServlet {
             }
         }
         
-        // Get users with filters
-        List<UserDTO> users = accountDAO.findUsersWithFilters(
+        // Get accounts with filters
+        List<Account> accounts = accountDAO.findUsersWithFilters(
             keyword != null && !keyword.trim().isEmpty() ? keyword.trim() : null,
             roleFilter,
             status
@@ -52,7 +52,7 @@ public class ListUserController extends HttpServlet {
         List<String> roles = accountDAO.getAllRoleNames();
         
         // Set attributes for JSP
-        request.setAttribute("users", users);
+        request.setAttribute("users", accounts);
         request.setAttribute("roles", roles);
         request.setAttribute("keyword", keyword != null ? keyword : "");
         request.setAttribute("selectedRole", roleFilter != null ? roleFilter : "all");

@@ -232,12 +232,12 @@
                         <c:forEach var="user" items="${users}" varStatus="loop">
                             <tr>
                                 <td>${loop.index + 1}</td>
-                                <td>${user.fullName != null ? user.fullName : user.username}</td>
-                                <td>${user.roleName}</td>
+                                <td>${user.fullName != null && !user.fullName.isEmpty() ? user.fullName : user.username}</td>
+                                <td>${user.roleName != null ? user.roleName : 'No Role'}</td>
                                 <td>${user.email}</td>
                                 <td>
-                                    <span class="${user.status == 1 ? 'status-active' : 'status-deactive'}">
-                                        ${user.status == 1 ? 'Active' : 'Deactive'}
+                                    <span class="${user.isActive ? 'status-active' : 'status-deactive'}">
+                                        ${user.isActive ? 'Active' : 'Deactive'}
                                     </span>
                                 </td>
                                 <td>

@@ -6,7 +6,6 @@
 package com.mycompany.argomachinemanagement.src.dal;
 
 import com.mycompany.argomachinemanagement.src.entity.Account;
-import com.mycompany.argomachinemanagement.src.dto.UserDTO;
 import java.sql.*;
 import java.util.List;
 import java.util.ArrayList;
@@ -43,9 +42,9 @@ public class AccountDAO extends DBContext implements IDao<Account> {
     /**
      * Get all users with their role names
      */
-    public List<UserDTO> findAllUsersWithRole() {
-        List<UserDTO> users = new ArrayList<>();
-        String sql = "SELECT u.id, u.username, u.full_name, u.email, u.status, r.role_name "
+    public List<Account> findAllUsersWithRole() {
+        List<Account> accounts = new ArrayList<>();
+        String sql = "SELECT u.id, u.username, u.password, u.full_name, u.email, u.status, r.role_name "
                    + "FROM users u "
                    + "LEFT JOIN user_role ur ON u.id = ur.user_id "
                    + "LEFT JOIN roles r ON ur.role_id = r.id "
@@ -56,15 +55,8 @@ public class AccountDAO extends DBContext implements IDao<Account> {
                 statement = connection.prepareStatement(sql);
                 resultSet = statement.executeQuery();
                 while (resultSet.next()) {
-                    UserDTO user = UserDTO.builder()
-                        .id(resultSet.getInt("id"))
-                        .username(resultSet.getString("username"))
-                        .fullName(resultSet.getString("full_name"))
-                        .email(resultSet.getString("email"))
-                        .roleName(resultSet.getString("role_name") != null ? resultSet.getString("role_name") : "No Role")
-                        .status(resultSet.getInt("status"))
-                        .build();
-                    users.add(user);
+                    Account account = getFromResultSetWithRole(resultSet);
+                    accounts.add(account);
                 }
             }
         } catch (SQLException ex) {
@@ -73,15 +65,15 @@ public class AccountDAO extends DBContext implements IDao<Account> {
         } finally {
             closeResources();
         }
-        return users;
+        return accounts;
     }
     
     /**
      * Search users by keyword (search in username, full_name, email)
      */
-    public List<UserDTO> searchUsers(String keyword) {
-        List<UserDTO> users = new ArrayList<>();
-        String sql = "SELECT u.id, u.username, u.full_name, u.email, u.status, r.role_name "
+    public List<Account> searchUsers(String keyword) {
+        List<Account> accounts = new ArrayList<>();
+        String sql = "SELECT u.id, u.username, u.password, u.full_name, u.email, u.status, r.role_name "
                    + "FROM users u "
                    + "LEFT JOIN user_role ur ON u.id = ur.user_id "
                    + "LEFT JOIN roles r ON ur.role_id = r.id "
@@ -97,15 +89,8 @@ public class AccountDAO extends DBContext implements IDao<Account> {
                 statement.setString(3, searchPattern);
                 resultSet = statement.executeQuery();
                 while (resultSet.next()) {
-                    UserDTO user = UserDTO.builder()
-                        .id(resultSet.getInt("id"))
-                        .username(resultSet.getString("username"))
-                        .fullName(resultSet.getString("full_name"))
-                        .email(resultSet.getString("email"))
-                        .roleName(resultSet.getString("role_name") != null ? resultSet.getString("role_name") : "No Role")
-                        .status(resultSet.getInt("status"))
-                        .build();
-                    users.add(user);
+                    Account account = getFromResultSetWithRole(resultSet);
+                    accounts.add(account);
                 }
             }
         } catch (SQLException ex) {
@@ -114,16 +99,16 @@ public class AccountDAO extends DBContext implements IDao<Account> {
         } finally {
             closeResources();
         }
-        return users;
+        return accounts;
     }
     
     /**
      * Get all users with filters (role, status, keyword)
      */
-    public List<UserDTO> findUsersWithFilters(String keyword, String roleName, Integer status) {
-        List<UserDTO> users = new ArrayList<>();
+    public List<Account> findUsersWithFilters(String keyword, String roleName, Integer status) {
+        List<Account> accounts = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT u.id, u.username, u.full_name, u.email, u.status, r.role_name "
+            "SELECT u.id, u.username, u.password, u.full_name, u.email, u.status, r.role_name "
             + "FROM users u "
             + "LEFT JOIN user_role ur ON u.id = ur.user_id "
             + "LEFT JOIN roles r ON ur.role_id = r.id "
@@ -169,15 +154,8 @@ public class AccountDAO extends DBContext implements IDao<Account> {
                 
                 resultSet = statement.executeQuery();
                 while (resultSet.next()) {
-                    UserDTO user = UserDTO.builder()
-                        .id(resultSet.getInt("id"))
-                        .username(resultSet.getString("username"))
-                        .fullName(resultSet.getString("full_name"))
-                        .email(resultSet.getString("email"))
-                        .roleName(resultSet.getString("role_name") != null ? resultSet.getString("role_name") : "No Role")
-                        .status(resultSet.getInt("status"))
-                        .build();
-                    users.add(user);
+                    Account account = getFromResultSetWithRole(resultSet);
+                    accounts.add(account);
                 }
             }
         } catch (SQLException ex) {
@@ -186,7 +164,7 @@ public class AccountDAO extends DBContext implements IDao<Account> {
         } finally {
             closeResources();
         }
-        return users;
+        return accounts;
     }
     
     /**
@@ -239,6 +217,24 @@ public class AccountDAO extends DBContext implements IDao<Account> {
             .email(resultSet.getString("email"))
             .isActive(resultSet.getInt("status") == 1)
             .build();
+    }
+    
+    /**
+     * Get Account from ResultSet with role name (for JOIN queries)
+     */
+    private Account getFromResultSetWithRole(ResultSet resultSet) throws SQLException {
+        Account account = Account.builder()
+            .id(resultSet.getInt("id"))
+            .username(resultSet.getString("username"))
+            .password(resultSet.getString("password"))
+            .fullName(resultSet.getString("full_name"))
+            .email(resultSet.getString("email"))
+            .isActive(resultSet.getInt("status") == 1)
+            .build();
+        // Set role name from JOIN query
+        String roleName = resultSet.getString("role_name");
+        account.setRoleName(roleName != null ? roleName : "No Role");
+        return account;
     }
 
     

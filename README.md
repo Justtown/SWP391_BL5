@@ -106,9 +106,46 @@ SWP391_BL5/
 
 ### Lỗi 404 khi truy cập servlet
 
-1. Rebuild project: **Build → Rebuild Project**
-2. Restart Tomcat: Stop → Run lại
-3. Kiểm tra log Tomcat xem có deploy thành công không
+**Nguyên nhân chính:** Ứng dụng chưa được deploy vào Tomcat
+
+**Các bước khắc phục:**
+
+1. **Kiểm tra Artifact đã được tạo chưa:**
+   - **File → Project Structure** (hoặc `Ctrl+Alt+Shift+S`)
+   - Tab **Artifacts**
+   - Kiểm tra xem có `ArgoMachineManagement:war exploded` không
+   - Nếu chưa có:
+     - Bấm `+` → **Web Application: Exploded** → **From Modules...**
+     - Chọn module `ArgoMachineManagement`
+     - **OK**
+
+2. **Kiểm tra Run Configuration:**
+   - **Run → Edit Configurations...**
+   - Chọn cấu hình Tomcat của bạn
+   - Tab **Deployment**
+   - Kiểm tra xem có `ArgoMachineManagement:war exploded` trong danh sách **Deploy at the server startup** không
+   - Nếu chưa có:
+     - Bấm `+` → **Artifact...**
+     - Chọn `ArgoMachineManagement:war exploded`
+     - **Application context**: `/ArgoMachineManagement` (không có dấu `/` ở cuối)
+     - **Apply → OK**
+
+3. **Rebuild và Redeploy:**
+   - **Build → Rebuild Project** (hoặc `Ctrl+Shift+F9`)
+   - **Build → Build Artifacts → ArgoMachineManagement:war exploded → Rebuild**
+   - Stop Tomcat nếu đang chạy
+   - Start lại Tomcat
+
+4. **Kiểm tra log Tomcat:**
+   - Sau khi start, kiểm tra log có dòng tương tự:
+     ```
+     Deploying web application directory [...ArgoMachineManagement...]
+     ```
+   - Nếu không thấy dòng này → ứng dụng chưa được deploy
+
+5. **Kiểm tra thư mục deployment:**
+   - Thư mục deployment thường ở: `C:\Users\LOQ\AppData\Local\JetBrains\IntelliJIdea2025.2\tomcat\<id>\webapps\ArgoMachineManagement`
+   - Kiểm tra xem có file `WEB-INF/web.xml` và các servlet classes không
 
 ### Lỗi kết nối Database
 

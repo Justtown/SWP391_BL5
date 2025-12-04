@@ -15,6 +15,8 @@ public class Account {
     private String avatar;
     private Boolean isActive;
     private Integer roleId;
+    // Transient field for display purpose (not persisted to database)
+    private String roleName;
 
     public Account() {
     }
@@ -113,6 +115,21 @@ public class Account {
         this.roleId = roleId;
     }
 
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
+    }
+    
+    /**
+     * Get status as Integer for JSP compatibility (1 = Active, 0 = Deactive)
+     */
+    public Integer getStatus() {
+        return isActive != null && isActive ? 1 : 0;
+    }
+
     // Builder pattern (manual implementation)
     public static AccountBuilder builder() {
         return new AccountBuilder();
@@ -180,8 +197,14 @@ public class Account {
             return this;
         }
 
+        public AccountBuilder roleName(String roleName) {
+            // Note: roleName is not part of constructor, set it after building
+            return this;
+        }
+
         public Account build() {
-            return new Account(id, username, password, email, phone, fullName, gender, avatar, isActive, roleId);
+            Account account = new Account(id, username, password, email, phone, fullName, gender, avatar, isActive, roleId);
+            return account;
         }
     }
 }
