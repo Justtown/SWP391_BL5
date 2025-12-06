@@ -12,7 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet("/role")
+@WebServlet("/admin/role")
 public class RoleController extends HttpServlet {
 
     @Override
@@ -22,7 +22,7 @@ public class RoleController extends HttpServlet {
         String action = request.getParameter("action");
 
         if (action == null) {
-            action = "list";   // mặc định
+            action = "list"; // mặc định
         }
 
         switch (action) {
@@ -30,8 +30,8 @@ public class RoleController extends HttpServlet {
                 showDetail(request, response);
                 break;
 
-            case "list":
             default:
+            case "list":
                 showList(request, response);
                 break;
         }
@@ -47,7 +47,9 @@ public class RoleController extends HttpServlet {
         List<Role> list = dao.findAll(key);
 
         request.setAttribute("list", list);
-        request.getRequestDispatcher("role-list.jsp").forward(request, response);
+
+        request.getRequestDispatcher("/view/admin/role-list.jsp")
+                .forward(request, response);
     }
 
     private void showDetail(HttpServletRequest request, HttpServletResponse response)
@@ -58,14 +60,21 @@ public class RoleController extends HttpServlet {
         RoleDAO dao = new RoleDAO();
         Role role = dao.findById(id);
 
+        if (role == null) {
+            response.sendRedirect("role?action=list");
+            return;
+        }
+
         request.setAttribute("role", role);
-        request.getRequestDispatcher("role-detail.jsp").forward(request, response);
+
+        request.getRequestDispatcher("/view/admin/role-detail.jsp")
+                .forward(request, response);
     }
+
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
-
         String action = request.getParameter("action");
 
         if ("update".equals(action)) {
