@@ -30,7 +30,8 @@ public class LoginServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/home");
             return;
         }
-                request.getRequestDispatcher("/view/authen/login.jsp").forward(request, response);
+        
+        request.getRequestDispatcher("/view/authen/login.jsp").forward(request, response);
     }
 
  
@@ -49,7 +50,7 @@ public class LoginServlet extends HttpServlet {
             return;
         }
         
-    
+        // Lấy user trong db
         User user = userDAO.login(username.trim(), password);
         
         if (user != null) {
@@ -66,14 +67,8 @@ public class LoginServlet extends HttpServlet {
             } else {
                 session.setMaxInactiveInterval(30 * 60); // 30 minutes
             }
-            
-            
-            String returnUrl = request.getParameter("returnUrl");
-            if (returnUrl != null && !returnUrl.isEmpty()) {
-                response.sendRedirect(returnUrl);
-            } else {
-                response.sendRedirect(request.getContextPath() + "/home");
-            }
+
+            response.sendRedirect(request.getContextPath() + "/home");
         } else {
            
             request.setAttribute("error", "Tên đăng nhập hoặc mật khẩu không đúng!");

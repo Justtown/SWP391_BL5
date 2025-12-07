@@ -32,7 +32,7 @@ public class UserDAO extends DBContext implements I_DAO<User> {
         } finally {
             closeResources();
         }
-        
+       
         return user;
     }
 
