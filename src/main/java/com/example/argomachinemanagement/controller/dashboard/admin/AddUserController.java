@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.sql.Date;
 import java.util.List;
 
 /**
@@ -86,6 +87,18 @@ public class AddUserController extends HttpServlet {
             status = 0;
         }
         
+        // Parse DOB
+        Date birthdate = null;
+        if (dob != null && !dob.trim().isEmpty()) {
+            try {
+                birthdate = Date.valueOf(dob);
+            } catch (IllegalArgumentException e) {
+                request.setAttribute("errorMessage", "Invalid date format!");
+                showAddFormWithData(request, response, fullName, email, phone, dob, roleName, statusStr);
+                return;
+            }
+        }
+        
         // Tạo User object
         User user = new User();
         user.setFullName(fullName.trim());
@@ -93,6 +106,8 @@ public class AddUserController extends HttpServlet {
         user.setPassword(password);
         user.setStatus(status);
         user.setRoleName(roleName);
+        user.setPhoneNumber(phone != null ? phone.trim() : null);
+        user.setBirthdate(birthdate);
         
         // Insert vào database
         int userId = userDAO.insert(user);

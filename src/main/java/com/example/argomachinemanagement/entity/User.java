@@ -32,5 +32,8 @@ public class User {
     private String phoneNumber;
     private String address;
     private Date birthdate;
+    
+    // Thông tin từ bảng roles (để hiển thị)
+    private String roleName;
 }
 
