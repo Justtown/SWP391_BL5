@@ -144,7 +144,7 @@
                     <i class="fas fa-times clear-search" id="clearSearch"></i>
                 </div>
                 
-                <a href="#" class="add-user-link">
+                <a href="${pageContext.request.contextPath}/add-user" class="add-user-link">
                     <i class="fas fa-plus"></i> Add new user
                 </a>
             </div>

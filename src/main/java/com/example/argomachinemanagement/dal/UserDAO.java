@@ -199,6 +199,7 @@ public class UserDAO extends DBContext implements I_DAO<User> {
                 ResultSet generatedKeys = statement.getGeneratedKeys();
                 if (generatedKeys.next()) {
                     userId = generatedKeys.getInt(1);
+                    generatedKeys.close();
                     
                     // Gán role cho user nếu có roleName
                     if (user.getRoleName() != null && !user.getRoleName().isEmpty()) {

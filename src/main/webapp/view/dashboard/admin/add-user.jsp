@@ -57,7 +57,7 @@
             color: white;
             border-color: #28a745;
         }
-        .status-btn.inactive {
+        .status-btn:not(.active) {
             background-color: white;
             color: #495057;
             border-color: #dee2e6;
@@ -99,8 +99,7 @@
         <div class="add-user-container">
             <h2 class="page-title">Add new user</h2>
             
-            <form action="${pageContext.request.contextPath}/manage-account" method="POST" id="addUserForm">
-                <input type="hidden" name="action" value="add">
+            <form action="${pageContext.request.contextPath}/add-user" method="POST" id="addUserForm">
                 
                 <!-- Full name -->
                 <div class="mb-3">
@@ -157,11 +156,11 @@
                     <div class="status-buttons">
                         <input type="hidden" id="status" name="status" value="${status != null ? status : '1'}">
                         <button type="button" class="status-btn ${status == '1' || status == null ? 'active' : 'inactive'}" 
-                                onclick="setStatus('1')">
+                                onclick="setStatus('1', this)">
                             active
                         </button>
                         <button type="button" class="status-btn ${status == '0' ? 'active' : 'inactive'}" 
-                                onclick="setStatus('0')">
+                                onclick="setStatus('0', this)">
                             inactive
                         </button>
                     </div>
@@ -182,15 +181,13 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function setStatus(value) {
+        function setStatus(value, clickedBtn) {
             document.getElementById('status').value = value;
             const buttons = document.querySelectorAll('.status-btn');
             buttons.forEach(btn => {
-                btn.classList.remove('active', 'inactive');
-                if (btn.textContent.trim().toLowerCase() === (value === '1' ? 'active' : 'inactive')) {
+                btn.classList.remove('active');
+                if (btn === clickedBtn) {
                     btn.classList.add('active');
-                } else {
-                    btn.classList.add('inactive');
                 }
             });
         }
