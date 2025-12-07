@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import java.sql.Date;
 import java.sql.Timestamp;
 
 /**
@@ -28,8 +29,8 @@ public class User {
     private String email;
     private Integer status; // 1: active, 0: inactive
     private Timestamp createdAt;
-    
-    // Thông tin từ bảng roles (để hiển thị)
-    private String roleName;
+    private String phoneNumber;
+    private String address;
+    private Date birthdate;
 }
 
