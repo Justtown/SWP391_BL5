@@ -28,5 +28,8 @@ public class User {
     private String email;
     private Integer status; // 1: active, 0: inactive
     private Timestamp createdAt;
+    
+    // Thông tin từ bảng roles (để hiển thị)
+    private String roleName;
 }
 
