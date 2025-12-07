@@ -17,7 +17,7 @@ public class ProfileDAO extends DBContext {
                      "JOIN users u ON p.user_id = u.id " +
                      "LEFT JOIN user_role ur ON u.id = ur.user_id " +
                      "LEFT JOIN roles r ON ur.role_id = r.id " +
-                     "WHERE p.user_id = ? AND u.status = 1";
+                     "WHERE p.user_id = ?";
         
         try {
             if (connection == null || connection.isClosed()) {

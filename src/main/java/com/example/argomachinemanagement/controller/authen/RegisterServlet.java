@@ -1,7 +1,9 @@
 package com.example.argomachinemanagement.controller.authen;
 
 import com.example.argomachinemanagement.dal.UserDAO;
+import com.example.argomachinemanagement.dal.ProfileDAO;
 import com.example.argomachinemanagement.entity.User;
+import com.example.argomachinemanagement.entity.Profile;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -18,12 +20,14 @@ import java.util.regex.Pattern;
 public class RegisterServlet extends HttpServlet {
     
     private UserDAO userDAO;
+    private ProfileDAO profileDAO;
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
     private static final Pattern PHONE_PATTERN = Pattern.compile("^[0-9]{9,15}$");
     
     @Override
     public void init() throws ServletException {
         userDAO = new UserDAO();
+        profileDAO = new ProfileDAO();
     }
     
     @Override
@@ -158,6 +162,24 @@ public class RegisterServlet extends HttpServlet {
         int userId = userDAO.insert(newUser);
         
         if (userId > 0) {
+            // Tạo profile cho user mới
+            Profile newProfile = new Profile();
+            newProfile.setUserId(userId);
+            newProfile.setName(fullName.trim());
+            newProfile.setEmail(email.trim());
+            newProfile.setPhone(fullPhoneNumber);
+            newProfile.setAddress(address != null ? address.trim() : null);
+            newProfile.setBirthdate(birthdate);
+            newProfile.setAvatar(null);
+            
+            // Tạo profile trong database
+            boolean profileCreated = profileDAO.createProfile(newProfile);
+            
+            if (!profileCreated) {
+                // Log warning nhưng vẫn cho phép đăng ký thành công
+                System.out.println("Warning: Failed to create profile for user ID: " + userId);
+            }
+            
             // Success - redirect to login with success message
             HttpSession session = request.getSession(true);
             session.setAttribute("registerSuccess", "Đăng ký thành công! Vui lòng đăng nhập.");

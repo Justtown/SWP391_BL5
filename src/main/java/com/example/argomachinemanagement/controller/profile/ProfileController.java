@@ -35,16 +35,37 @@ public class ProfileController extends HttpServlet {
         // Lấy thông tin profile
         Profile profile = profileDAO.getProfileByUserId(userId);
         
-        // Nếu không có profile, tạo profile mặc định
+        // Nếu không có profile, lấy thông tin từ User và tạo profile
         if (profile == null) {
-            profile = new Profile();
-            profile.setUserId(userId);
-            profile.setName("Guest User");
-            profile.setEmail("guest@example.com");
-            profile.setPhone("");
-            profile.setAddress("");
-            profile.setAvatar("");
-            profile.setRoleName("Customer");
+            // Lấy thông tin user từ database
+            com.example.argomachinemanagement.dal.UserDAO userDAO = new com.example.argomachinemanagement.dal.UserDAO();
+            com.example.argomachinemanagement.entity.User user = userDAO.findById(userId);
+            
+            if (user != null) {
+                // Tạo profile từ thông tin user
+                profile = new Profile();
+                profile.setUserId(userId);
+                profile.setName(user.getFullName() != null ? user.getFullName() : user.getUsername());
+                profile.setEmail(user.getEmail() != null ? user.getEmail() : "");
+                profile.setPhone(user.getPhoneNumber() != null ? user.getPhoneNumber() : "");
+                profile.setAddress(user.getAddress() != null ? user.getAddress() : "");
+                profile.setAvatar("");
+                profile.setBirthdate(user.getBirthdate());
+                profile.setRoleName(user.getRoleName() != null ? user.getRoleName() : "Customer");
+                
+                // Tự động tạo profile trong database
+                profileDAO.createProfile(profile);
+            } else {
+                // Fallback nếu không tìm thấy user
+                profile = new Profile();
+                profile.setUserId(userId);
+                profile.setName("Guest User");
+                profile.setEmail("guest@example.com");
+                profile.setPhone("");
+                profile.setAddress("");
+                profile.setAvatar("");
+                profile.setRoleName("Customer");
+            }
         }
         
         // Set default values nếu null
