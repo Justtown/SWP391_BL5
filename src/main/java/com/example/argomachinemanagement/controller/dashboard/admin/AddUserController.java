@@ -42,7 +42,9 @@ public class AddUserController extends HttpServlet {
         // Lấy dữ liệu từ form
         String fullName = request.getParameter("fullName");
         String email = request.getParameter("email");
+        String username = request.getParameter("username");
         String phone = request.getParameter("phone");
+        String address = request.getParameter("address");
         String dob = request.getParameter("dob");
         String password = request.getParameter("password");
         String roleName = request.getParameter("role");
@@ -51,13 +53,13 @@ public class AddUserController extends HttpServlet {
         // Validate
         if (fullName == null || fullName.trim().isEmpty()) {
             request.setAttribute("errorMessage", "Full name is required!");
-            showAddFormWithData(request, response, fullName, email, phone, dob, roleName, statusStr);
+            showAddFormWithData(request, response, fullName, email, username, phone, address, dob, roleName, statusStr);
             return;
         }
         
         if (email == null || email.trim().isEmpty()) {
             request.setAttribute("errorMessage", "Email is required!");
-            showAddFormWithData(request, response, fullName, email, phone, dob, roleName, statusStr);
+            showAddFormWithData(request, response, fullName, email, username, phone, address, dob, roleName, statusStr);
             return;
         }
         
@@ -65,19 +67,42 @@ public class AddUserController extends HttpServlet {
         String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
         if (!email.matches(emailRegex)) {
             request.setAttribute("errorMessage", "Invalid email format!");
-            showAddFormWithData(request, response, fullName, email, phone, dob, roleName, statusStr);
+            showAddFormWithData(request, response, fullName, email, username, phone, address, dob, roleName, statusStr);
+            return;
+        }
+        
+        // Validate username if provided
+        if (username != null && !username.trim().isEmpty()) {
+            username = username.trim();
+            if (username.length() > 100) {
+                request.setAttribute("errorMessage", "Username must not exceed 100 characters!");
+                showAddFormWithData(request, response, fullName, email, username, phone, address, dob, roleName, statusStr);
+                return;
+            }
+            // Check if username already exists
+            if (userDAO.findByUsername(username) != null) {
+                request.setAttribute("errorMessage", "Username already exists! Please choose another one.");
+                showAddFormWithData(request, response, fullName, email, username, phone, address, dob, roleName, statusStr);
+                return;
+            }
+        }
+        
+        // Validate address length
+        if (address != null && address.length() > 500) {
+            request.setAttribute("errorMessage", "Address must not exceed 500 characters!");
+            showAddFormWithData(request, response, fullName, email, username, phone, address, dob, roleName, statusStr);
             return;
         }
         
         if (password == null || password.trim().isEmpty() || password.length() < 6) {
             request.setAttribute("errorMessage", "Password must be at least 6 characters!");
-            showAddFormWithData(request, response, fullName, email, phone, dob, roleName, statusStr);
+            showAddFormWithData(request, response, fullName, email, username, phone, address, dob, roleName, statusStr);
             return;
         }
         
         if (roleName == null || roleName.trim().isEmpty()) {
             request.setAttribute("errorMessage", "Please select a role!");
-            showAddFormWithData(request, response, fullName, email, phone, dob, roleName, statusStr);
+            showAddFormWithData(request, response, fullName, email, username, phone, address, dob, roleName, statusStr);
             return;
         }
         
@@ -94,7 +119,7 @@ public class AddUserController extends HttpServlet {
                 birthdate = Date.valueOf(dob);
             } catch (IllegalArgumentException e) {
                 request.setAttribute("errorMessage", "Invalid date format!");
-                showAddFormWithData(request, response, fullName, email, phone, dob, roleName, statusStr);
+                showAddFormWithData(request, response, fullName, email, username, phone, address, dob, roleName, statusStr);
                 return;
             }
         }
@@ -103,10 +128,12 @@ public class AddUserController extends HttpServlet {
         User user = new User();
         user.setFullName(fullName.trim());
         user.setEmail(email.trim());
+        user.setUsername(username != null && !username.trim().isEmpty() ? username.trim() : null);
         user.setPassword(password);
         user.setStatus(status);
         user.setRoleName(roleName);
-        user.setPhoneNumber(phone != null ? phone.trim() : null);
+        user.setPhoneNumber(phone != null && !phone.trim().isEmpty() ? phone.trim() : null);
+        user.setAddress(address != null && !address.trim().isEmpty() ? address.trim() : null);
         user.setBirthdate(birthdate);
         
         // Insert vào database
@@ -118,18 +145,21 @@ public class AddUserController extends HttpServlet {
         } else {
             // Error
             request.setAttribute("errorMessage", "Failed to add user. Please try again!");
-            showAddFormWithData(request, response, fullName, email, phone, dob, roleName, statusStr);
+            showAddFormWithData(request, response, fullName, email, username, phone, address, dob, roleName, statusStr);
         }
     }
     
     private void showAddFormWithData(HttpServletRequest request, HttpServletResponse response,
-                                    String fullName, String email, String phone, String dob,
-                                    String roleName, String status) throws ServletException, IOException {
+                                    String fullName, String email, String username, String phone, 
+                                    String address, String dob, String roleName, String status) 
+            throws ServletException, IOException {
         List<String> roles = userDAO.getAllRoles();
         request.setAttribute("roles", roles);
         request.setAttribute("fullName", fullName);
         request.setAttribute("email", email);
+        request.setAttribute("username", username);
         request.setAttribute("phone", phone);
+        request.setAttribute("address", address);
         request.setAttribute("dob", dob);
         request.setAttribute("selectedRole", roleName);
         request.setAttribute("status", status);

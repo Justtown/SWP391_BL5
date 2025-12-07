@@ -115,11 +115,27 @@
                            value="${email != null ? email : ''}" required>
                 </div>
                 
+                <!-- Username (Optional) -->
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username </label>
+                    <input type="text" class="form-control" id="username" name="username" 
+                           value="${username != null ? username : ''}" 
+                           maxlength="100">
+                </div>
+                
                 <!-- Phone -->
                 <div class="mb-3">
                     <label for="phone" class="form-label">Phone</label>
                     <input type="tel" class="form-control" id="phone" name="phone" 
                            value="${phone != null ? phone : ''}">
+                </div>
+                
+                <!-- Address -->
+                <div class="mb-3">
+                    <label for="address" class="form-label">Address</label>
+                    <textarea class="form-control" id="address" name="address" rows="3" 
+                              maxlength="500">${address != null ? address : ''}</textarea>
+                    <small class="text-muted">Maximum 500 characters</small>
                 </div>
                 
                 <!-- DOB -->
