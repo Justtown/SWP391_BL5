@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
-package com.mycompany.argomachinemanagement.src.controller.dashboard.admin;
+package com.example.argomachinemanagement.controller.admindashboard;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
