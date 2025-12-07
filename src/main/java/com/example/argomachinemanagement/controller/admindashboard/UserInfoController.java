@@ -1,4 +1,4 @@
-package com.example.argomachinemanagement.controller.dashboard.admin;
+package com.example.argomachinemanagement.controller.admindashboard;
 
 import com.example.argomachinemanagement.dal.UserDAO;
 import com.example.argomachinemanagement.entity.User;
