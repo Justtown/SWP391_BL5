@@ -1,6 +1,5 @@
 package com.example.argomachinemanagement.dal;
 
-import com.example.argomachinemanagement.entity.User;
 import com.example.argomachinemanagement.entity.Role;
 import java.sql.*;
 import java.util.ArrayList;
@@ -28,23 +27,14 @@ public class RoleDAO extends DBContext {
 
     public List<Role> findByPage(String keyword, int offset, int limit) {
         List<Role> list = new ArrayList<>();
-
         try {
-            String sql = "SELECT r.id, r.role_name, r.description, r.status, u.username "
-                    + "FROM roles r "
-                    + "LEFT JOIN user_role ur ON r.id = ur.role_id "
-                    + "LEFT JOIN users u ON u.id = ur.user_id "
-                    + "WHERE r.role_name LIKE ? "
-                    + "ORDER BY r.id LIMIT ?, ?";
-
+            String sql = "SELECT r.id, r.role_name, r.description, r.status, u.username " + "FROM roles r " + "LEFT JOIN user_role ur ON r.id = ur.role_id " + "LEFT JOIN users u ON u.id = ur.user_id " + "WHERE r.role_name LIKE ? " + "ORDER BY r.id LIMIT ?, ?";
             Connection conn = getConnection();
             statement = conn.prepareStatement(sql);
             statement.setString(1, "%" + keyword + "%");
             statement.setInt(2, offset);
             statement.setInt(3, limit);
-
             resultSet = statement.executeQuery();
-
             while (resultSet.next()) {
                 Role r = new Role();
                 r.setRoleId(resultSet.getInt("id"));
@@ -54,31 +44,22 @@ public class RoleDAO extends DBContext {
                 r.setUsername(resultSet.getString("username"));
                 list.add(r);
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             closeStmt();
         }
-
         return list;
     }
 
     public Role findById(int id) {
         Role r = null;
-
         try {
-            String sql = "SELECT r.id, r.role_name, r.description, r.status, u.username "
-                    + "FROM roles r "
-                    + "LEFT JOIN user_role ur ON r.id = ur.role_id "
-                    + "LEFT JOIN users u ON u.id = ur.user_id "
-                    + "WHERE r.id = ?";
-
+            String sql = "SELECT r.id, r.role_name, r.description, r.status, u.username " + "FROM roles r " + "LEFT JOIN user_role ur ON r.id = ur.role_id " + "LEFT JOIN users u ON u.id = ur.user_id " + "WHERE r.id = ?";
             Connection conn = getConnection();
             statement = conn.prepareStatement(sql);
             statement.setInt(1, id);
             resultSet = statement.executeQuery();
-
             if (resultSet.next()) {
                 r = new Role();
                 r.setRoleId(resultSet.getInt("id"));
@@ -87,16 +68,13 @@ public class RoleDAO extends DBContext {
                 r.setStatus(resultSet.getBoolean("status"));
                 r.setUsername(resultSet.getString("username")); // ★ now works
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             closeStmt();
         }
-
         return r;
     }
-
 
     public void update(Role role) {
         Connection conn = null;

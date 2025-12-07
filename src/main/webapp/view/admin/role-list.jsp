@@ -12,22 +12,16 @@
 <head>
     <title>Role List</title>
 </head>
-
 <body>
-
 <h2>Role Management</h2>
 
 <form method="get" action="role">
     <input type="hidden" name="action" value="list">
-
     <input type="text" name="key" placeholder="Search role or username"
            value="${key}" />
-
     <button type="submit">Search</button>
 </form>
-
 <br>
-
 <table border="1" cellpadding="8">
     <tr>
         <th>ID</th>
@@ -36,7 +30,6 @@
         <th>Status</th>
         <th>Action</th>
     </tr>
-
     <c:forEach var="r" items="${roleList}">
         <tr>
             <td>${r.roleId}</td>
@@ -53,12 +46,8 @@
             </td>
         </tr>
     </c:forEach>
-
 </table>
-
 <br>
-
-<!-- Pagination -->
 <div>
     <c:forEach begin="1" end="${totalPages}" var="p">
         <c:choose>
@@ -71,7 +60,6 @@
         </c:choose>
     </c:forEach>
 </div>
-
 </body>
 </html>
 
