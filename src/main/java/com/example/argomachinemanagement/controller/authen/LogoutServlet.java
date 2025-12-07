@@ -1,4 +1,4 @@
-package com.example.argomachinemanagement.controller.authen;
+package com.mycompany.argomachinemanagement.src.controller.authen;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
