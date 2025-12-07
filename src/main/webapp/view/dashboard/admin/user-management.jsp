@@ -265,8 +265,7 @@
         
         // Update user function
         function updateUser(userId) {
-            // TODO: Implement update user functionality
-            alert('Update user with ID: ' + userId);
+            window.location.href = '${pageContext.request.contextPath}/user-info?id=' + userId;
         }
     </script>
 </body>

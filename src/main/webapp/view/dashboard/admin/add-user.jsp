@@ -92,6 +92,27 @@
             color: #6c757d;
             pointer-events: none;
         }
+        .btn-back {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: white;
+            padding: 10px 20px;
+            font-weight: 500;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-back:hover {
+            background-color: #5c636a;
+            border-color: #565e64;
+            color: white;
+        }
+        .btn-group-custom {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -189,8 +210,13 @@
                     </div>
                 </c:if>
                 
-                <!-- Add Button -->
-                <button type="submit" class="btn btn-add">Add</button>
+                <!-- Buttons -->
+                <div class="btn-group-custom">
+                    <a href="${pageContext.request.contextPath}/manage-account" class="btn-back">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </a>
+                    <button type="submit" class="btn btn-add">Add</button>
+                </div>
             </form>
         </div>
     </div>

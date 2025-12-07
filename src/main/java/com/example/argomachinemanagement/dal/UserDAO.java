@@ -74,9 +74,73 @@ public class UserDAO extends DBContext implements I_DAO<User> {
         return Map.of();
     }
 
+    /**
+     * Xóa role cũ của user
+     */
+    private void removeUserRole(int userId) {
+        String sql = "DELETE FROM user_role WHERE user_id = ?";
+        
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, userId);
+            statement.executeUpdate();
+        } catch (SQLException ex) {
+            System.out.println("Error in removeUserRole: " + ex.getMessage());
+        } finally {
+            closeResources();
+        }
+    }
+    
     @Override
     public boolean update(User user) {
-        return false;
+        boolean success = false;
+        
+        if (user.getId() == null) {
+            return false;
+        }
+        
+        String sql = "UPDATE users SET full_name = ?, email = ?, status = ?, " +
+                     "phone_number = ?, address = ?, birthdate = ? WHERE id = ?";
+        
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, user.getFullName());
+            statement.setString(2, user.getEmail());
+            statement.setInt(3, user.getStatus() != null ? user.getStatus() : 1);
+            statement.setString(4, user.getPhoneNumber());
+            statement.setString(5, user.getAddress());
+            if (user.getBirthdate() != null) {
+                statement.setDate(6, user.getBirthdate());
+            } else {
+                statement.setDate(6, null);
+            }
+            statement.setInt(7, user.getId());
+            
+            int rowsAffected = statement.executeUpdate();
+            
+            if (rowsAffected > 0) {
+                // Cập nhật role nếu có
+                if (user.getRoleName() != null && !user.getRoleName().isEmpty()) {
+                    // Xóa role cũ
+                    removeUserRole(user.getId());
+                    
+                    // Thêm role mới
+                    Integer roleId = getRoleIdByRoleName(user.getRoleName());
+                    if (roleId != null) {
+                        assignRoleToUser(user.getId(), roleId);
+                    }
+                }
+                success = true;
+            }
+        } catch (SQLException ex) {
+            System.out.println("Error in update: " + ex.getMessage());
+        } finally {
+            closeResources();
+        }
+        
+        return success;
     }
 
     @Override
@@ -325,7 +389,29 @@ public class UserDAO extends DBContext implements I_DAO<User> {
 
     @Override
     public User findById(Integer id) {
-        return null;
+        User user = null;
+        String sql = "SELECT u.*, r.role_name " +
+                     "FROM users u " +
+                     "LEFT JOIN user_role ur ON u.id = ur.user_id " +
+                     "LEFT JOIN roles r ON ur.role_id = r.id " +
+                     "WHERE u.id = ?";
+        
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, id);
+            resultSet = statement.executeQuery();
+            
+            if (resultSet.next()) {
+                user = getFromResultSet(resultSet);
+            }
+        } catch (SQLException ex) {
+            System.out.println("Error in findById: " + ex.getMessage());
+        } finally {
+            closeResources();
+        }
+        
+        return user;
     }
 
 }
