@@ -31,6 +31,7 @@ public class User {
     private Timestamp createdAt;
     private String phoneNumber;
     private String address;
+    private String avatar;
     private Date birthdate;
     
     // Thông tin từ bảng roles (để hiển thị)

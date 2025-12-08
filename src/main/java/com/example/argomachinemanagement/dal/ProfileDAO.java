@@ -8,16 +8,19 @@ import java.util.logging.Logger;
 public class ProfileDAO extends DBContext {
     
     /**
-     * Lấy profile theo user_id kèm thông tin role
+     * Lấy profile theo user_id từ bảng users kèm thông tin role
      */
     public Profile getProfileByUserId(Integer userId) {
         Profile profile = null;
-        String sql = "SELECT p.*, u.username, r.role_name " +
-                     "FROM profiles p " +
-                     "JOIN users u ON p.user_id = u.id " +
+        // Query từ bảng users thay vì profiles
+        String sql = "SELECT u.id, u.id as user_id, u.full_name as name, u.email, " +
+                     "u.phone_number as phone, u.address, u.avatar, u.birthdate, " +
+                     "u.created_at, u.created_at as updated_at, " +
+                     "u.username, r.role_name " +
+                     "FROM users u " +
                      "LEFT JOIN user_role ur ON u.id = ur.user_id " +
                      "LEFT JOIN roles r ON ur.role_id = r.id " +
-                     "WHERE p.user_id = ?";
+                     "WHERE u.id = ?";
         
         try {
             if (connection == null || connection.isClosed()) {
@@ -29,9 +32,15 @@ public class ProfileDAO extends DBContext {
             
             if (resultSet.next()) {
                 profile = getFromResultSet(resultSet);
+                System.out.println("Profile found for userId: " + userId);
+            } else {
+                System.out.println("No profile found for userId: " + userId);
             }
         } catch (SQLException ex) {
-            Logger.getLogger(ProfileDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ProfileDAO.class.getName()).log(Level.SEVERE, "Error getting profile by userId: " + userId, ex);
+            System.err.println("SQL Error in getProfileByUserId: " + ex.getMessage());
+            System.err.println("SQL State: " + ex.getSQLState());
+            ex.printStackTrace();
         } finally {
             closeResources();
         }
@@ -40,77 +49,86 @@ public class ProfileDAO extends DBContext {
     }
     
     /**
-     * Tạo profile mới
+     * Tạo profile mới (giờ chỉ update vào users vì user đã tồn tại)
      */
     public boolean createProfile(Profile profile) {
-        boolean success = false;
-        String sql = "INSERT INTO profiles (user_id, name, email, phone, address, avatar, birthdate) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
-        
-        try {
-            if (connection == null || connection.isClosed()) {
-                connection = getConnection();
-            }
-            statement = connection.prepareStatement(sql);
-            statement.setInt(1, profile.getUserId());
-            statement.setString(2, profile.getName());
-            statement.setString(3, profile.getEmail());
-            statement.setString(4, profile.getPhone());
-            statement.setString(5, profile.getAddress());
-            statement.setString(6, profile.getAvatar());
-            if (profile.getBirthdate() != null) {
-                statement.setDate(7, profile.getBirthdate());
-            } else {
-                statement.setDate(7, null);
-            }
-            
-            int rowsAffected = statement.executeUpdate();
-            success = rowsAffected > 0;
-        } catch (SQLException ex) {
-            Logger.getLogger(ProfileDAO.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            closeResources();
-        }
-        
-        return success;
+        // User đã tồn tại, chỉ cần update
+        return saveProfile(profile);
     }
     
     /**
-     * Cập nhật profile
+     * Cập nhật profile (giờ update vào users)
      */
     public boolean updateProfile(Profile profile) {
+        // Giống saveProfile
+        return saveProfile(profile);
+    }
+    
+    /**
+     * Cập nhật profile vào bảng users
+     */
+    public boolean saveProfile(Profile profile) {
         boolean success = false;
-        String sql = "UPDATE profiles SET " +
-                     "name = ?, " +
+        // Update trực tiếp vào bảng users
+        String sql = "UPDATE users SET " +
+                     "full_name = ?, " +
                      "email = ?, " +
-                     "phone = ?, " +
+                     "phone_number = ?, " +
                      "address = ?, " +
                      "avatar = ?, " +
-                     "birthdate = ?, " +
-                     "updated_at = CURRENT_TIMESTAMP " +
-                     "WHERE user_id = ?";
+                     "birthdate = ? " +
+                     "WHERE id = ?";
         
         try {
+            System.out.println("saveProfile called for userId: " + profile.getUserId());
+            
             if (connection == null || connection.isClosed()) {
                 connection = getConnection();
             }
             statement = connection.prepareStatement(sql);
+            
             statement.setString(1, profile.getName());
             statement.setString(2, profile.getEmail());
-            statement.setString(3, profile.getPhone());
-            statement.setString(4, profile.getAddress());
-            statement.setString(5, profile.getAvatar());
+            
+            // Xử lý phone: nếu null hoặc empty thì set null trong DB
+            if (profile.getPhone() != null && !profile.getPhone().trim().isEmpty()) {
+                statement.setString(3, profile.getPhone());
+            } else {
+                statement.setString(3, null);
+            }
+            
+            // Xử lý address: nếu null hoặc empty thì set null trong DB
+            if (profile.getAddress() != null && !profile.getAddress().trim().isEmpty()) {
+                statement.setString(4, profile.getAddress());
+            } else {
+                statement.setString(4, null);
+            }
+            
+            // Xử lý avatar: nếu null hoặc empty thì set null trong DB
+            if (profile.getAvatar() != null && !profile.getAvatar().trim().isEmpty()) {
+                statement.setString(5, profile.getAvatar());
+            } else {
+                statement.setString(5, null);
+            }
+            
             if (profile.getBirthdate() != null) {
                 statement.setDate(6, profile.getBirthdate());
             } else {
                 statement.setDate(6, null);
             }
+            
             statement.setInt(7, profile.getUserId());
             
+            System.out.println("Executing UPDATE users for userId: " + profile.getUserId());
             int rowsAffected = statement.executeUpdate();
+            System.out.println("Rows affected: " + rowsAffected);
             success = rowsAffected > 0;
+            
         } catch (SQLException ex) {
-            Logger.getLogger(ProfileDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ProfileDAO.class.getName()).log(Level.SEVERE, "Error saving profile for userId: " + profile.getUserId(), ex);
+            System.err.println("SQL Error in saveProfile: " + ex.getMessage());
+            System.err.println("SQL State: " + ex.getSQLState());
+            ex.printStackTrace();
         } finally {
             closeResources();
         }
@@ -119,23 +137,7 @@ public class ProfileDAO extends DBContext {
     }
     
     /**
-     * Tạo hoặc cập nhật profile (upsert)
-     */
-    public boolean saveProfile(Profile profile) {
-        // Kiểm tra xem profile đã tồn tại chưa
-        Profile existing = getProfileByUserId(profile.getUserId());
-        
-        if (existing != null) {
-            // Cập nhật
-            return updateProfile(profile);
-        } else {
-            // Tạo mới
-            return createProfile(profile);
-        }
-    }
-    
-    /**
-     * Chuyển đổi ResultSet thành Profile object
+     * Chuyển đổi ResultSet thành Profile object (từ bảng users)
      */
     private Profile getFromResultSet(ResultSet rs) throws SQLException {
         return Profile.builder()
