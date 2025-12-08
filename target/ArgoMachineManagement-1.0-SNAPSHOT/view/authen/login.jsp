@@ -37,7 +37,7 @@
                         <div class="card-body p-5">
                             <!-- Header -->
                             <h2 class="text-center mb-4">Login</h2>
-                            //JSTL
+
                             <!-- Error Message -->
                             <% if (request.getAttribute("error") != null) { %>
                             <div class="alert alert-danger" role="alert">
