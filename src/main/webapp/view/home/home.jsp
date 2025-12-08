@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <title>Argo Machine Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
             margin: 0;
@@ -69,31 +71,35 @@
     <a href="${pageContext.request.contextPath}/home">Home</a>
     <a href="${pageContext.request.contextPath}/product">Product</a>
     <a href="${pageContext.request.contextPath}/introduce">Introduce</a>
-    
+
     <% if (isLoggedIn) { %>
-        <a href="${pageContext.request.contextPath}/my-profile">Profile</a>
-        <a href="${pageContext.request.contextPath}/change-password">Change Password</a>
-        <a href="${pageContext.request.contextPath}/logout">Logout (<%= fullName != null ? fullName : username %>)</a>
+    <a href="${pageContext.request.contextPath}/my-profile">Profile</a>
+    <a href="${pageContext.request.contextPath}/change-password">Change Password</a>
+    <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout (<%= fullName != null ? fullName : username %>)</a>
     <% } else { %>
-        <a href="${pageContext.request.contextPath}/login">Login</a>
+    <a href="${pageContext.request.contextPath}/login">Login</a>
     <% } %>
 </div>
 
 <div class="container-main">
     <% if (isLoggedIn) { %>
-        <div class="user-info">
-            <h4>Xin chào, <%= fullName != null ? fullName : username %>!</h4>
-            <p>Bạn đã đăng nhập thành công.</p>
-            <div style="margin-top: 15px;">
-                <a href="${pageContext.request.contextPath}/my-profile" class="btn btn-primary" style="margin-right: 10px;">Xem Profile</a>
-                <a href="${pageContext.request.contextPath}/logout" class="btn btn-secondary">Đăng xuất</a>
-            </div>
+    <div class="user-info">
+        <h4>Xin chào, <%= fullName != null ? fullName : username %>!</h4>
+        <p>Bạn đã đăng nhập thành công.</p>
+        <div style="margin-top: 15px;">
+            <a href="${pageContext.request.contextPath}/my-profile" class="btn btn-primary" style="margin-right: 10px;">Xem Profile</a>
+            <a href="#" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#logoutModal">Đăng xuất</a>
         </div>
+    </div>
     <% } else { %>
-        <h2>Welcome</h2>
-        <p>Vui lòng <a href="${pageContext.request.contextPath}/login">đăng nhập</a> để sử dụng hệ thống.</p>
+    <h2>Welcome</h2>
+    <p>Vui lòng <a href="${pageContext.request.contextPath}/login">đăng nhập</a> để sử dụng hệ thống.</p>
     <% } %>
 </div>
+
+<% if (isLoggedIn) { %>
+<%@ include file="/view/authen/logout.jsp" %>
+<% } %>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
