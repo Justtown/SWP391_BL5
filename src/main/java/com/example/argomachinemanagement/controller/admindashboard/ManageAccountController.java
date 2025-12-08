@@ -20,6 +20,9 @@ import java.util.List;
 @WebServlet(name = "ManageAccountController", urlPatterns = { "/manage-account" })
 public class ManageAccountController extends HttpServlet {
     
+
+    private static final int PAGE_SIZE = 5;
+    
     private UserDAO userDAO;
     
     @Override
@@ -79,6 +82,20 @@ public class ManageAccountController extends HttpServlet {
         String statusFilter = request.getParameter("status");
         String keyword = request.getParameter("keyword");
         
+        // Get pagination parameter
+        String pageStr = request.getParameter("page");
+        int currentPage = 1;
+        if (pageStr != null && !pageStr.trim().isEmpty()) {
+            try {
+                currentPage = Integer.parseInt(pageStr);
+                if (currentPage < 1) {
+                    currentPage = 1;
+                }
+            } catch (NumberFormatException e) {
+                currentPage = 1;
+            }
+        }
+        
         // Get all users from database
         List<User> allUsers = userDAO.findAll();
         
@@ -128,11 +145,35 @@ public class ManageAccountController extends HttpServlet {
             }
         }
         
+        // Pagination logic
+        int totalUsers = filteredUsers.size();
+        int totalPages = (int) Math.ceil((double) totalUsers / PAGE_SIZE);
+        
+        // Ensure currentPage is within valid range
+        if (currentPage > totalPages && totalPages > 0) {
+            currentPage = totalPages;
+        }
+        
+        // Calculate start and end index for current page
+        int startIndex = (currentPage - 1) * PAGE_SIZE;
+        int endIndex = Math.min(startIndex + PAGE_SIZE, totalUsers);
+        
+        // Get users for current page
+        List<User> paginatedUsers = new ArrayList<>();
+        if (startIndex < totalUsers) {
+            paginatedUsers = filteredUsers.subList(startIndex, endIndex);
+        }
+        
         // Set attributes for JSP
-        request.setAttribute("users", filteredUsers);
+        request.setAttribute("users", paginatedUsers);
         request.setAttribute("roleFilter", roleFilter != null ? roleFilter : "All Role");
         request.setAttribute("statusFilter", statusFilter != null ? statusFilter : "All Status");
         request.setAttribute("keyword", keyword != null ? keyword : "");
+        request.setAttribute("currentPage", currentPage);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalUsers", totalUsers);
+        request.setAttribute("pageSize", PAGE_SIZE);
+        request.setAttribute("startIndex", startIndex); // Để tính STT từ đầu danh sách
         
         // Forward to JSP
         request.getRequestDispatcher("/view/dashboard/admin/user-management.jsp").forward(request, response);
