@@ -113,6 +113,45 @@
             padding: 40px;
             color: #6c757d;
         }
+        .pagination-info {
+            margin-bottom: 15px;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            gap: 10px;
+        }
+        .pagination-btn {
+            padding: 8px 16px;
+            border: 1px solid #dee2e6;
+            background: white;
+            color: #495057;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .pagination-btn:hover:not(.disabled) {
+            background-color: #e9ecef;
+            border-color: #adb5bd;
+        }
+        .pagination-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .pagination-btn.active {
+            background-color: #0d6efd;
+            color: white;
+            border-color: #0d6efd;
+        }
+        .pagination-btn.active:hover {
+            background-color: #0b5ed7;
+            border-color: #0a58ca;
+        }
     </style>
 </head>
 <body>
@@ -149,6 +188,13 @@
                 </a>
             </div>
             
+            <!-- Pagination Info -->
+            <c:if test="${not empty totalUsers}">
+                <div class="pagination-info">
+                    Showing ${startIndex + 1} to ${startIndex + users.size()} of ${totalUsers} users
+                </div>
+            </c:if>
+            
             <!-- User Table -->
             <div class="table-container">
                 <table class="table table-hover">
@@ -167,7 +213,7 @@
                             <c:when test="${not empty users && users.size() > 0}">
                                 <c:forEach var="user" items="${users}" varStatus="loop">
                                     <tr>
-                                        <td>${loop.index + 1}</td>
+                                        <td>${startIndex + loop.index + 1}</td>
                                         <td>${user.fullName != null ? user.fullName : user.username}</td>
                                         <td>${user.roleName != null ? user.roleName : 'N/A'}</td>
                                         <td>${user.email != null ? user.email : 'N/A'}</td>
@@ -178,7 +224,7 @@
                                         </td>
                                         <td>
                                             <button type="button" class="btn btn-update btn-sm" 
-                                                    onclick="updateUser(${user.id})">
+                                                    data-user-id="${user.id}">
                                                 Update
                                             </button>
                                         </td>
@@ -196,6 +242,54 @@
                     </tbody>
                 </table>
             </div>
+            
+            <!-- Pagination -->
+            <c:if test="${not empty totalPages && totalPages > 1}">
+                <div class="pagination-container">
+                    <!-- Previous Button -->
+                    <c:choose>
+                        <c:when test="${currentPage > 1}">
+                            <a href="#" class="pagination-btn" data-page="${currentPage - 1}">
+                                <i class="fas fa-chevron-left"></i> Previous
+                            </a>
+                        </c:when>
+                        <c:otherwise>
+                            <span class="pagination-btn disabled">
+                                <i class="fas fa-chevron-left"></i> Previous
+                            </span>
+                        </c:otherwise>
+                    </c:choose>
+                    
+                    <!-- Page Numbers -->
+                    <c:forEach var="i" begin="1" end="${totalPages}">
+                        <c:choose>
+                            <c:when test="${i == currentPage}">
+                                <span class="pagination-btn active">${i}</span>
+                            </c:when>
+                            <c:when test="${i == 1 || i == totalPages || (i >= currentPage - 1 && i <= currentPage + 1)}">
+                                <a href="#" class="pagination-btn" data-page="${i}">${i}</a>
+                            </c:when>
+                            <c:when test="${i == currentPage - 2 || i == currentPage + 2}">
+                                <span class="pagination-btn disabled">...</span>
+                            </c:when>
+                        </c:choose>
+                    </c:forEach>
+                    
+                    <!-- Next Button -->
+                    <c:choose>
+                        <c:when test="${currentPage < totalPages}">
+                            <a href="#" class="pagination-btn" data-page="${currentPage + 1}">
+                                Next <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </c:when>
+                        <c:otherwise>
+                            <span class="pagination-btn disabled">
+                                Next <i class="fas fa-chevron-right"></i>
+                            </span>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+            </c:if>
         </div>
     </div>
 
@@ -240,6 +334,15 @@
                 }
             });
             
+            // Pagination button click handlers
+            document.querySelectorAll('.pagination-btn[data-page]').forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = this.getAttribute('data-page');
+                    goToPage(parseInt(page));
+                });
+            });
+            
             function applyFilters() {
                 const role = roleFilter.value;
                 const status = statusFilter.value;
@@ -255,6 +358,32 @@
                 if (keyword) {
                     params.append('keyword', keyword);
                 }
+                // Reset to page 1 when filtering
+                params.append('page', '1');
+                
+                const queryString = params.toString();
+                const url = '${pageContext.request.contextPath}/manage-account' + 
+                           (queryString ? '?' + queryString : '');
+                window.location.href = url;
+            }
+            
+            // Go to specific page
+            function goToPage(page) {
+                const role = roleFilter.value;
+                const status = statusFilter.value;
+                const keyword = keywordInput.value.trim();
+                
+                const params = new URLSearchParams();
+                if (role && role !== 'All Role') {
+                    params.append('role', role);
+                }
+                if (status && status !== 'All Status') {
+                    params.append('status', status);
+                }
+                if (keyword) {
+                    params.append('keyword', keyword);
+                }
+                params.append('page', page);
                 
                 const queryString = params.toString();
                 const url = '${pageContext.request.contextPath}/manage-account' + 
@@ -263,10 +392,13 @@
             }
         });
         
-        // Update user function
-        function updateUser(userId) {
-            window.location.href = '${pageContext.request.contextPath}/user-info?id=' + userId;
-        }
+        // Update user button click handlers
+        document.querySelectorAll('.btn-update[data-user-id]').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const userId = this.getAttribute('data-user-id');
+                window.location.href = '${pageContext.request.contextPath}/user-info?id=' + userId;
+            });
+        });
     </script>
 </body>
 </html>
