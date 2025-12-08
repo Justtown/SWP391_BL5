@@ -24,69 +24,73 @@ public class ProfileController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession(true);
+        HttpSession session = request.getSession(false);
         
-        // Lấy user ID từ session (nếu không có sẽ dùng user ID = 1 mặc định)
-        Integer userId = (Integer) session.getAttribute("userId");
+        // Kiểm tra đăng nhập - nếu chưa đăng nhập thì redirect về trang login
+        Integer userId = (Integer) (session != null ? session.getAttribute("userId") : null);
         if (userId == null) {
-            userId = 1; // User mặc định
+            response.sendRedirect(request.getContextPath() + "/login?message=Vui lòng đăng nhập để xem profile!");
+            return;
         }
         
-        // Lấy thông tin profile
-        Profile profile = profileDAO.getProfileByUserId(userId);
-        
-        // Nếu không có profile, lấy thông tin từ User và tạo profile
-        if (profile == null) {
-            // Lấy thông tin user từ database
-            com.example.argomachinemanagement.dal.UserDAO userDAO = new com.example.argomachinemanagement.dal.UserDAO();
-            com.example.argomachinemanagement.entity.User user = userDAO.findById(userId);
+        try {
+            // Lấy thông tin profile từ bảng users
+            Profile profile = profileDAO.getProfileByUserId(userId);
             
-            if (user != null) {
-                // Tạo profile từ thông tin user
-                profile = new Profile();
-                profile.setUserId(userId);
-                profile.setName(user.getFullName() != null ? user.getFullName() : user.getUsername());
-                profile.setEmail(user.getEmail() != null ? user.getEmail() : "");
-                profile.setPhone(user.getPhoneNumber() != null ? user.getPhoneNumber() : "");
-                profile.setAddress(user.getAddress() != null ? user.getAddress() : "");
-                profile.setAvatar("");
-                profile.setBirthdate(user.getBirthdate());
-                profile.setRoleName(user.getRoleName() != null ? user.getRoleName() : "Customer");
-                
-                // Tự động tạo profile trong database
-                profileDAO.createProfile(profile);
-            } else {
-                // Fallback nếu không tìm thấy user
-                profile = new Profile();
-                profile.setUserId(userId);
-                profile.setName("Guest User");
-                profile.setEmail("guest@example.com");
-                profile.setPhone("");
-                profile.setAddress("");
-                profile.setAvatar("");
-                profile.setRoleName("Customer");
+            // Nếu không tìm thấy user, redirect về login
+            if (profile == null) {
+                request.setAttribute("error", "Không tìm thấy thông tin người dùng!");
+                response.sendRedirect(request.getContextPath() + "/login");
+                return;
             }
+            
+            // Set default values nếu null
+            if (profile != null) {
+                if (profile.getPhone() == null) profile.setPhone("");
+                if (profile.getAddress() == null) profile.setAddress("");
+                if (profile.getAvatar() == null) profile.setAvatar("");
+                if (profile.getRoleName() == null) profile.setRoleName("Customer");
+                
+                request.setAttribute("profile", profile);
+            }
+            
+            // Kiểm tra chế độ edit (mặc định là view - chỉ edit khi có ?mode=edit)
+            String mode = request.getParameter("mode");
+            boolean isEditMode = mode != null && "edit".equals(mode.trim());
+            // Đảm bảo mặc định là false (view mode)
+            request.setAttribute("isEditMode", isEditMode);
+            
+            // Lấy thông báo từ session (nếu có) và xóa sau khi lấy
+            if (session != null) {
+                String successMessage = (String) session.getAttribute("successMessage");
+                String errorMessage = (String) session.getAttribute("errorMessage");
+                if (successMessage != null) {
+                    request.setAttribute("success", successMessage);
+                    session.removeAttribute("successMessage");
+                }
+                if (errorMessage != null) {
+                    request.setAttribute("error", errorMessage);
+                    session.removeAttribute("errorMessage");
+                }
+            }
+            
+            request.getRequestDispatcher("/view/profile/my-profile.jsp").forward(request, response);
+        } catch (Exception e) {
+            request.setAttribute("error", "Đã xảy ra lỗi khi tải thông tin profile: " + e.getMessage());
+            request.getRequestDispatcher("/view/profile/my-profile.jsp").forward(request, response);
         }
-        
-        // Set default values nếu null
-        if (profile.getPhone() == null) profile.setPhone("");
-        if (profile.getAddress() == null) profile.setAddress("");
-        if (profile.getAvatar() == null) profile.setAvatar("");
-        if (profile.getRoleName() == null) profile.setRoleName("Customer");
-        
-        request.setAttribute("profile", profile);
-        request.getRequestDispatcher("/view/profile/my-profile.jsp").forward(request, response);
     }
     
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession(true);
+        HttpSession session = request.getSession(false);
         
-        // Lấy user ID từ session (nếu không có sẽ dùng user ID = 1 mặc định)
-        Integer userId = (Integer) session.getAttribute("userId");
+        // Kiểm tra đăng nhập - nếu chưa đăng nhập thì redirect về trang login
+        Integer userId = (Integer) (session != null ? session.getAttribute("userId") : null);
         if (userId == null) {
-            userId = 1; // User mặc định
+            response.sendRedirect(request.getContextPath() + "/login?message=Vui lòng đăng nhập để cập nhật profile!");
+            return;
         }
         
         String action = request.getParameter("action");
@@ -135,15 +139,51 @@ public class ProfileController extends HttpServlet {
                 return;
             }
             
-            // Validate Phone
+            // Validate Phone - Số điện thoại Việt Nam: 10 số (bắt đầu bằng 0) hoặc 11 số hoặc 12 số (+84)
             if (phone != null && !phone.trim().isEmpty()) {
                 phone = phone.trim();
+                // Loại bỏ các ký tự không phải số
                 String phoneDigits = phone.replaceAll("[^0-9]", "");
-                if (phoneDigits.length() < 10 || phoneDigits.length() > 11) {
-                    request.setAttribute("error", "Số điện thoại phải có từ 10-11 chữ số!");
+                
+                // Kiểm tra số điện thoại Việt Nam hợp lệ
+                // - 10 số: bắt đầu bằng 0 (ví dụ: 0123456789)
+                // - 11 số: có thể là số quốc tế hoặc số di động dài (bắt đầu bằng 0 hoặc 84)
+                // - 12 số: số quốc tế +84 (ví dụ: +84945646654 -> 84945646654)
+                if (phoneDigits.length() == 10) {
+                    // Phải bắt đầu bằng 0
+                    if (!phoneDigits.startsWith("0")) {
+                        request.setAttribute("error", "Số điện thoại 10 số phải bắt đầu bằng 0!");
+                        doGet(request, response);
+                        return;
+                    }
+                    phone = phoneDigits;
+                } else if (phoneDigits.length() == 11) {
+                    // Có thể bắt đầu bằng 0 hoặc 84
+                    if (!phoneDigits.startsWith("0") && !phoneDigits.startsWith("84")) {
+                        request.setAttribute("error", "Số điện thoại 11 số phải bắt đầu bằng 0 hoặc 84!");
+                        doGet(request, response);
+                        return;
+                    }
+                    // Chuẩn hóa: nếu bắt đầu bằng 84 thì chuyển thành 0
+                    if (phoneDigits.startsWith("84")) {
+                        phone = "0" + phoneDigits.substring(2);
+                    } else {
+                        phone = phoneDigits;
+                    }
+                } else if (phoneDigits.length() == 12 && phoneDigits.startsWith("84")) {
+                    // Số quốc tế +84 (12 số): chuyển thành 10 số bắt đầu bằng 0
+                    phone = "0" + phoneDigits.substring(2);
+                } else if (phoneDigits.length() < 10 || phoneDigits.length() > 12) {
+                    request.setAttribute("error", "Số điện thoại không hợp lệ! Phải có từ 10-12 chữ số.");
+                    doGet(request, response);
+                    return;
+                } else {
+                    request.setAttribute("error", "Số điện thoại không hợp lệ!");
                     doGet(request, response);
                     return;
                 }
+            } else {
+                phone = null; // Set null nếu null hoặc empty
             }
             
             // Validate Address
@@ -187,28 +227,59 @@ public class ProfileController extends HttpServlet {
                 }
             }
             
-            // Tạo Profile object để update
-            Profile profile = new Profile();
-            profile.setUserId(userId);
-            profile.setName(name);
-            profile.setEmail(email);
-            profile.setPhone(phone != null ? phone.trim() : "");
-            profile.setAddress(address != null ? address.trim() : "");
-            profile.setAvatar(avatar != null ? avatar.trim() : "");
-            profile.setBirthdate(birthdate);
-            
-            // Lưu profile (tạo mới hoặc cập nhật)
-            boolean success = profileDAO.saveProfile(profile);
-            
-            if (success) {
-                request.setAttribute("success", "Cập nhật thông tin thành công!");
-            } else {
-                request.setAttribute("error", "Cập nhật thông tin thất bại!");
+            try {
+                // Tạo Profile object để update
+                Profile profile = new Profile();
+                profile.setUserId(userId);
+                profile.setName(name);
+                profile.setEmail(email);
+                // Phone đã được validate và chuẩn hóa ở trên, có thể là empty string hoặc null
+                profile.setPhone(phone != null && !phone.isEmpty() ? phone : null);
+                profile.setAddress(address != null && !address.trim().isEmpty() ? address.trim() : null);
+                profile.setAvatar(avatar != null && !avatar.trim().isEmpty() ? avatar.trim() : null);
+                profile.setBirthdate(birthdate);
+                
+                // Log để debug
+                System.out.println("Updating profile for userId: " + userId);
+                System.out.println("Profile data - Name: " + name + ", Email: " + email + ", Phone: " + phone);
+                System.out.println("Profile - Address: " + profile.getAddress() + ", Avatar: " + profile.getAvatar());
+                
+                // Lưu profile (tạo mới hoặc cập nhật)
+                boolean success = profileDAO.saveProfile(profile);
+                
+                if (success) {
+                    if (session != null) {
+                        session.setAttribute("successMessage", "Cập nhật thông tin thành công!");
+                    }
+                    // Sau khi cập nhật thành công, chuyển về chế độ view (mặc định)
+                    response.sendRedirect(request.getContextPath() + "/my-profile");
+                    return;
+                } else {
+                    // Log lỗi chi tiết
+                    System.err.println("Failed to save profile for userId: " + userId);
+                    if (session != null) {
+                        session.setAttribute("errorMessage", "Cập nhật thông tin thất bại! Vui lòng kiểm tra lại thông tin và thử lại.");
+                    }
+                    response.sendRedirect(request.getContextPath() + "/my-profile?mode=edit");
+                    return;
+                }
+            } catch (Exception e) {
+                // Log exception chi tiết
+                System.err.println("Exception when updating profile: " + e.getMessage());
+                e.printStackTrace();
+                if (session != null) {
+                    session.setAttribute("errorMessage", "Đã xảy ra lỗi khi cập nhật profile: " + e.getMessage());
+                }
+                response.sendRedirect(request.getContextPath() + "/my-profile?mode=edit");
+                return;
             }
+        } else {
+            if (session != null) {
+                session.setAttribute("errorMessage", "Hành động không hợp lệ!");
+            }
+            response.sendRedirect(request.getContextPath() + "/my-profile");
+            return;
         }
-        
-        // Load lại trang
-        doGet(request, response);
     }
 }
 
