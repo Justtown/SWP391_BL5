@@ -15,19 +15,24 @@ public class LogoutServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        
-        if (session != null) {
-            session.invalidate();
-        }
-        
-        response.sendRedirect(request.getContextPath() + "/login");
+// Redirect to home page - logout should be done via modal
+        response.sendRedirect(request.getContextPath() + "/home");
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        doGet(request, response);
+        String confirm = request.getParameter("confirm");
+
+        if ("yes".equals(confirm)) {
+            HttpSession session = request.getSession(false);
+
+            if (session != null) {
+                session.invalidate();
+            }
+        }
+
+        response.sendRedirect(request.getContextPath() + "/login");
     }
 
     @Override
