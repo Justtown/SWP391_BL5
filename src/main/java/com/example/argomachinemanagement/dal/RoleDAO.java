@@ -6,99 +6,89 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RoleDAO extends DBContext {
+
     public int count(String keyword) {
         int total = 0;
-        try {
-            String sql = "SELECT COUNT(*) " + "FROM roles r " + "LEFT JOIN user_role ur ON r.id = ur.role_id " + "LEFT JOIN users u ON u.id = ur.user_id " + "WHERE r.role_name LIKE ? OR u.username LIKE ?";
-            statement = connection.prepareStatement(sql);
-            statement.setString(1, "%" + keyword + "%");
-            statement.setString(2, "%" + keyword + "%");
-            resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                total = resultSet.getInt(1);
+        String sql = "SELECT COUNT(*) FROM roles WHERE role_name LIKE ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, "%" + (keyword == null ? "" : keyword) + "%");
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) total = rs.getInt(1);
             }
         } catch (Exception e) {
+            System.out.println("RoleDAO.count error:");
             e.printStackTrace();
-        } finally {
-            closeStmt();
         }
+        System.out.println("RoleDAO.count -> total = " + total);
         return total;
     }
 
     public List<Role> findByPage(String keyword, int offset, int limit) {
         List<Role> list = new ArrayList<>();
-        try {
-            String sql = "SELECT r.id, r.role_name, r.description, r.status, u.username " + "FROM roles r " + "LEFT JOIN user_role ur ON r.id = ur.role_id " + "LEFT JOIN users u ON u.id = ur.user_id " + "WHERE r.role_name LIKE ? " + "ORDER BY r.id LIMIT ?, ?";
-            Connection conn = getConnection();
-            statement = conn.prepareStatement(sql);
-            statement.setString(1, "%" + keyword + "%");
-            statement.setInt(2, offset);
-            statement.setInt(3, limit);
-            resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                Role r = new Role();
-                r.setRoleId(resultSet.getInt("id"));
-                r.setRoleName(resultSet.getString("role_name"));
-                r.setDescription(resultSet.getString("description"));
-                r.setStatus(resultSet.getBoolean("status"));
-                r.setUsername(resultSet.getString("username"));
-                list.add(r);
+        String sql = "SELECT id, role_name, description, status FROM roles WHERE role_name LIKE ? ORDER BY id LIMIT ?, ?";
+        System.out.println("RoleDAO.findByPage SQL: " + sql + " | params: [" + keyword + "," + offset + "," + limit + "]");
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, "%" + (keyword == null ? "" : keyword) + "%");
+            ps.setInt(2, offset);
+            ps.setInt(3, limit);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Role r = new Role();
+                    r.setRoleId(rs.getInt("id"));
+                    r.setRoleName(rs.getString("role_name"));
+                    r.setDescription(rs.getString("description"));
+                    r.setStatus(rs.getBoolean("status"));
+                    list.add(r);
+                }
             }
         } catch (Exception e) {
+            System.out.println("RoleDAO.findByPage error:");
             e.printStackTrace();
-        } finally {
-            closeStmt();
         }
+        System.out.println("RoleDAO.findByPage -> returned " + list.size() + " rows");
         return list;
     }
 
     public Role findById(int id) {
         Role r = null;
-        try {
-            String sql = "SELECT r.id, r.role_name, r.description, r.status, u.username " + "FROM roles r " + "LEFT JOIN user_role ur ON r.id = ur.role_id " + "LEFT JOIN users u ON u.id = ur.user_id " + "WHERE r.id = ?";
-            Connection conn = getConnection();
-            statement = conn.prepareStatement(sql);
-            statement.setInt(1, id);
-            resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                r = new Role();
-                r.setRoleId(resultSet.getInt("id"));
-                r.setRoleName(resultSet.getString("role_name"));
-                r.setDescription(resultSet.getString("description"));
-                r.setStatus(resultSet.getBoolean("status"));
-                r.setUsername(resultSet.getString("username")); // ★ now works
+        String sql = "SELECT id, role_name, description, status FROM roles WHERE id = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    r = new Role();
+                    r.setRoleId(rs.getInt("id"));
+                    r.setRoleName(rs.getString("role_name"));
+                    r.setDescription(rs.getString("description"));
+                    r.setStatus(rs.getBoolean("status"));
+                }
             }
         } catch (Exception e) {
+            System.out.println("RoleDAO.findById error:");
             e.printStackTrace();
-        } finally {
-            closeStmt();
         }
+        System.out.println("RoleDAO.findById(" + id + ") -> " + (r == null ? "null" : "found"));
         return r;
     }
 
     public void update(Role role) {
-        Connection conn = null;
-        try {
-            conn = getConnection();
-            String sql = "UPDATE roles SET role_name = ?, description = ?, status = ? WHERE id = ?";
-            statement = conn.prepareStatement(sql);
-            statement.setString(1, role.getRoleName());
-            statement.setString(2, role.getDescription());
-            statement.setBoolean(3, role.isStatus());
-            statement.setInt(4, role.getRoleId());
-            statement.executeUpdate();
+        String sql = "UPDATE roles SET role_name = ?, description = ?, status = ? WHERE id = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, role.getRoleName());
+            ps.setString(2, role.getDescription());
+            ps.setBoolean(3, role.isStatus());
+            ps.setInt(4, role.getRoleId());
+            int updated = ps.executeUpdate();
+            System.out.println("RoleDAO.update -> updated rows = " + updated);
         } catch (Exception e) {
+            System.out.println("RoleDAO.update error:");
             e.printStackTrace();
-        } finally {
-            closeStmt();
-            try { if (conn != null) conn.close(); } catch (Exception ignored) {}
         }
-    }
-
-    private void closeStmt() {
-        try {
-            if (resultSet != null) resultSet.close();
-            if (statement != null) statement.close();
-        } catch (Exception ignored) {}
     }
 }
