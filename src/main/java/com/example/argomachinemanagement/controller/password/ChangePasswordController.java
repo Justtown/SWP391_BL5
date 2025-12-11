@@ -15,7 +15,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-@WebServlet(name = "ChangePasswordController", urlPatterns = {"/change-password"})
+@WebServlet(name = "ChangePasswordControllerServlet", urlPatterns = {"/change-password"})
 public class ChangePasswordController extends HttpServlet {
 
     private PasswordResetRequestDAO passwordResetRequestDAO;

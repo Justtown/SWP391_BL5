@@ -20,7 +20,6 @@ import java.util.List;
 @WebServlet(name = "ManageAccountController", urlPatterns = { "/manage-account" })
 public class ManageAccountController extends HttpServlet {
     
-
     private static final int PAGE_SIZE = 5;
     
     private UserDAO userDAO;
