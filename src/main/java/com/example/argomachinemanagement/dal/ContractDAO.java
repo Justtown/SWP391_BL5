@@ -231,5 +231,40 @@ public class ContractDAO extends DBContext implements I_DAO<Contract> {
         
         return contracts;
     }
+    
+    /**
+     * Generate unique contract code
+     * Format: CT-YYYYMMDD-XXX (VD: CT-20250115-001)
+     */
+    public String generateContractCode() {
+        String code = null;
+        String sql = "SELECT CONCAT('CT-', DATE_FORMAT(NOW(), '%Y%m%d'), '-', " +
+                     "LPAD(COALESCE(MAX(CAST(SUBSTRING(contract_code, -3) AS UNSIGNED)), 0) + 1, 3, '0')) AS new_code " +
+                     "FROM contracts " +
+                     "WHERE contract_code LIKE CONCAT('CT-', DATE_FORMAT(NOW(), '%Y%m%d'), '-%')";
+        
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            resultSet = statement.executeQuery();
+            
+            if (resultSet.next()) {
+                code = resultSet.getString("new_code");
+            } else {
+                // First contract of the day
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyyMMdd");
+                code = "CT-" + sdf.format(new java.util.Date()) + "-001";
+            }
+        } catch (SQLException ex) {
+            System.out.println("Error in generateContractCode: " + ex.getMessage());
+            // Fallback
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyyMMdd");
+            code = "CT-" + sdf.format(new java.util.Date()) + "-001";
+        } finally {
+            closeResources();
+        }
+        
+        return code;
+    }
 }
 
