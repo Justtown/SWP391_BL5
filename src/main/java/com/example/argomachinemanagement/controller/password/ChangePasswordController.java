@@ -1,6 +1,7 @@
 package com.example.argomachinemanagement.controller.password;
 
 import com.example.argomachinemanagement.dal.DBContext;
+import com.example.argomachinemanagement.dal.PasswordResetRequestDAO;
 import com.example.argomachinemanagement.utils.MD5PasswordEncoderUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -14,8 +15,16 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-@WebServlet(name = "ChangePasswordServlet", urlPatterns = {"/change-password"})
-public class ChangePasswordServlet extends HttpServlet {
+@WebServlet(name = "ChangePasswordController", urlPatterns = {"/change-password"})
+public class ChangePasswordController extends HttpServlet {
+
+    private PasswordResetRequestDAO passwordResetRequestDAO;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        passwordResetRequestDAO = new PasswordResetRequestDAO();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -26,6 +35,17 @@ public class ChangePasswordServlet extends HttpServlet {
         if (session == null || session.getAttribute("userId") == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
+        }
+        
+        Integer userId = (Integer) session.getAttribute("userId");
+        
+        // Check if user needs to change password (login với password mới từ admin)
+        boolean mustChangePassword = session.getAttribute("mustChangePassword") != null 
+                && (Boolean) session.getAttribute("mustChangePassword");
+        request.setAttribute("mustChangePassword", mustChangePassword);
+        
+        if (mustChangePassword) {
+            request.setAttribute("warning", "Bạn đã đăng nhập bằng mật khẩu mới. Vui lòng đổi mật khẩu ngay để bảo mật tài khoản.");
         }
         
         request.getRequestDispatcher("/view/password/change_password.jsp").forward(request, response);
@@ -44,6 +64,9 @@ public class ChangePasswordServlet extends HttpServlet {
         }
 
         Integer userId = (Integer) session.getAttribute("userId");
+        boolean mustChangePassword = session.getAttribute("mustChangePassword") != null 
+                && (Boolean) session.getAttribute("mustChangePassword");
+        
         String oldPassword = request.getParameter("oldPassword");
         String newPassword = request.getParameter("newPassword");
         String confirmPassword = request.getParameter("confirmPassword");
@@ -51,18 +74,21 @@ public class ChangePasswordServlet extends HttpServlet {
         // Validate input
         if (oldPassword == null || oldPassword.trim().isEmpty()) {
             request.setAttribute("error", "Vui lòng nhập mật khẩu hiện tại.");
+            request.setAttribute("mustChangePassword", mustChangePassword);
             request.getRequestDispatcher("/view/password/change_password.jsp").forward(request, response);
             return;
         }
 
         if (newPassword == null || newPassword.trim().isEmpty()) {
             request.setAttribute("error", "Vui lòng nhập mật khẩu mới.");
+            request.setAttribute("mustChangePassword", mustChangePassword);
             request.getRequestDispatcher("/view/password/change_password.jsp").forward(request, response);
             return;
         }
 
         if (confirmPassword == null || confirmPassword.trim().isEmpty()) {
             request.setAttribute("error", "Vui lòng xác nhận mật khẩu mới.");
+            request.setAttribute("mustChangePassword", mustChangePassword);
             request.getRequestDispatcher("/view/password/change_password.jsp").forward(request, response);
             return;
         }
@@ -70,6 +96,7 @@ public class ChangePasswordServlet extends HttpServlet {
         // Check password match
         if (!newPassword.equals(confirmPassword)) {
             request.setAttribute("error", "Mật khẩu xác nhận không khớp.");
+            request.setAttribute("mustChangePassword", mustChangePassword);
             request.getRequestDispatcher("/view/password/change_password.jsp").forward(request, response);
             return;
         }
@@ -77,6 +104,7 @@ public class ChangePasswordServlet extends HttpServlet {
         // Validate password strength
         if (newPassword.length() < 6) {
             request.setAttribute("error", "Mật khẩu mới phải có ít nhất 6 ký tự.");
+            request.setAttribute("mustChangePassword", mustChangePassword);
             request.getRequestDispatcher("/view/password/change_password.jsp").forward(request, response);
             return;
         }
@@ -84,6 +112,7 @@ public class ChangePasswordServlet extends HttpServlet {
         // Check if new password is same as old password
         if (newPassword.equals(oldPassword)) {
             request.setAttribute("error", "Mật khẩu mới không được trùng với mật khẩu cũ.");
+            request.setAttribute("mustChangePassword", mustChangePassword);
             request.getRequestDispatcher("/view/password/change_password.jsp").forward(request, response);
             return;
         }
@@ -110,11 +139,13 @@ public class ChangePasswordServlet extends HttpServlet {
                 
                 if (!oldPasswordHash.equals(currentPasswordHash)) {
                     request.setAttribute("error", "Mật khẩu hiện tại không đúng.");
+                    request.setAttribute("mustChangePassword", mustChangePassword);
                     request.getRequestDispatcher("/view/password/change_password.jsp").forward(request, response);
                     return;
                 }
             } else {
                 request.setAttribute("error", "Không tìm thấy tài khoản.");
+                request.setAttribute("mustChangePassword", mustChangePassword);
                 request.getRequestDispatcher("/view/password/change_password.jsp").forward(request, response);
                 return;
             }
@@ -129,19 +160,30 @@ public class ChangePasswordServlet extends HttpServlet {
             int rowsUpdated = updatePs.executeUpdate();
             
             if (rowsUpdated > 0) {
+                // Nếu đổi mật khẩu thành công và user đang bị bắt đổi mật khẩu
+                if (mustChangePassword) {
+                    // Đánh dấu đã đổi mật khẩu trong password_reset_requests
+                    passwordResetRequestDAO.markPasswordAsChanged(userId);
+                    // Xóa flag mustChangePassword khỏi session
+                    session.removeAttribute("mustChangePassword");
+                }
+                
                 request.setAttribute("message", "Đổi mật khẩu thành công!");
+                
+                // Nếu bắt buộc đổi mật khẩu, redirect về home sau 2 giây
+                if (mustChangePassword) {
+                    response.sendRedirect(request.getContextPath() + "/home?passwordChanged=true");
+                    return;
+                }
             } else {
                 request.setAttribute("error", "Không thể cập nhật mật khẩu. Vui lòng thử lại.");
             }
             
         } catch (Exception e) {
             e.printStackTrace();
-            // Log chi tiết lỗi để debug
-            System.err.println("Error in ChangePasswordServlet: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Error in ChangePasswordController: " + e.getMessage());
             request.setAttribute("error", "Có lỗi xảy ra: " + e.getMessage() + ". Vui lòng thử lại sau.");
         } finally {
-            // Close resources manually
             try {
                 if (rs != null) rs.close();
                 if (checkPs != null) checkPs.close();
@@ -152,6 +194,7 @@ public class ChangePasswordServlet extends HttpServlet {
             }
         }
 
+        request.setAttribute("mustChangePassword", mustChangePassword);
         request.getRequestDispatcher("/view/password/change_password.jsp").forward(request, response);
     }
 }

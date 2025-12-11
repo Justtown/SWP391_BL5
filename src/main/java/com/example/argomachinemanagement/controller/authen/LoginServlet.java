@@ -1,6 +1,8 @@
 package com.example.argomachinemanagement.controller.authen;
 
+import com.example.argomachinemanagement.dal.PasswordResetRequestDAO;
 import com.example.argomachinemanagement.dal.UserDAO;
+import com.example.argomachinemanagement.entity.PasswordResetRequest;
 import com.example.argomachinemanagement.entity.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -15,10 +17,12 @@ import java.io.IOException;
 public class LoginServlet extends HttpServlet {
     
     private UserDAO userDAO;
+    private PasswordResetRequestDAO passwordResetRequestDAO;
     
     @Override
     public void init() throws ServletException {
         userDAO = new UserDAO();
+        passwordResetRequestDAO = new PasswordResetRequestDAO();
     }
     
     
@@ -61,6 +65,14 @@ public class LoginServlet extends HttpServlet {
             session.setAttribute("username", user.getUsername());
             session.setAttribute("fullName", user.getFullName());
             
+            // Kiểm tra xem user có login bằng password mới từ admin chưa (chưa đổi mật khẩu)
+            PasswordResetRequest pendingChange = passwordResetRequestDAO.findUnchangedApprovedRequest(user.getId());
+            if (pendingChange != null) {
+                // Bắt user phải đổi mật khẩu
+                session.setAttribute("mustChangePassword", true);
+                response.sendRedirect(request.getContextPath() + "/change-password");
+                return;
+            }
             
             if ("on".equals(rememberMe)) {
                 session.setMaxInactiveInterval(7 * 24 * 60 * 60); // 7 days
