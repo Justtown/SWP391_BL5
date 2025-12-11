@@ -17,9 +17,9 @@ public class EmailService {
     // Cấu hình SMTP
     private static final String SMTP_HOST = System.getProperty("smtp.host", "smtp.gmail.com");
     private static final String SMTP_PORT = System.getProperty("smtp.port", "587");
-    private static final String SMTP_USERNAME = System.getProperty("smtp.username", "dungdnhe186806@fpt.edu.vn");
-    private static final String SMTP_PASSWORD = System.getProperty("smtp.password", "eted ryow wank empb");
-    private static final String SMTP_FROM_EMAIL = System.getProperty("smtp.from.email", "dungdnhe186806@fpt.edu.vn");
+    private static final String SMTP_USERNAME = System.getProperty("smtp.username", "");
+    private static final String SMTP_PASSWORD = System.getProperty("smtp.password", "");
+    private static final String SMTP_FROM_EMAIL = System.getProperty("smtp.from.email", "d");
     private static final String SMTP_FROM_NAME = System.getProperty("smtp.from.name", "Argo Machine Management");
     
     /**
