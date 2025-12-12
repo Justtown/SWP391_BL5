@@ -63,6 +63,38 @@ public class ProfileDAO extends DBContext {
         // Giống saveProfile
         return saveProfile(profile);
     }
+
+    public boolean isEmailExist(String email, Integer userId) {
+        String sql = "SELECT COUNT(*) FROM users WHERE email = ? AND id != ?";
+
+        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email);
+            stmt.setInt(2, userId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;  // Nếu có bản ghi trùng thì trả về true
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean isPhoneExist(String phone, Integer userId) {
+        String sql = "SELECT COUNT(*) FROM users WHERE phone_number = ? AND id != ?";
+
+        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, phone);
+            stmt.setInt(2, userId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;  // Nếu có bản ghi trùng thì trả về true
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
     
     /**
      * Cập nhật profile vào bảng users
