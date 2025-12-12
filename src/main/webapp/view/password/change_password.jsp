@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html; charset=UTF-8" language="java" %>
+<%@ page contentType="text/html; charset=UTF-8" language="java" %>
 <%
     // Check if user is logged in
     Integer userId = (Integer) session.getAttribute("userId");
@@ -13,22 +13,72 @@
     <meta charset="UTF-8">
     <title>Đổi mật khẩu</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+        .change-password-card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            background-color: #495057;
+            color: white;
+            border: none;
+            font-weight: 500;
+        }
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+        .form-control:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+    </style>
 </head>
 <body class="bg-light">
 
 <div class="container d-flex align-items-center justify-content-center min-vh-100">
-    <div class="card shadow-sm" style="max-width: 400px; width: 100%;">
-        <div class="card-header bg-primary text-white text-center">
+    <div class="card change-password-card" style="max-width: 450px; width: 100%;">
+        <div class="card-header text-center py-3">
             <h5 class="mb-0">Đổi mật khẩu</h5>
         </div>
-        <div class="card-body">
+        <div class="card-body p-4">
 
             <% if (request.getAttribute("error") != null) { %>
-            <div class="alert alert-danger py-2"><%= request.getAttribute("error") %></div>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <%= request.getAttribute("error") %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <% } %>
+            
+            <% if (request.getAttribute("warning") != null) { %>
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <%= request.getAttribute("warning") %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
             <% } %>
             
             <% if (request.getAttribute("message") != null) { %>
-            <div class="alert alert-success py-2"><%= request.getAttribute("message") %></div>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <%= request.getAttribute("message") %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <% } %>
+            
+            <% 
+            boolean mustChangePassword = request.getAttribute("mustChangePassword") != null 
+                    && (Boolean) request.getAttribute("mustChangePassword");
+            %>
+            
+            <% if (mustChangePassword) { %>
+            <div class="alert alert-warning mb-3">
+                Bạn phải đổi mật khẩu để tiếp tục sử dụng hệ thống.
+            </div>
             <% } %>
 
             <form action="${pageContext.request.contextPath}/change-password" method="post">
@@ -53,9 +103,11 @@
                 </div>
             </form>
 
+            <% if (!mustChangePassword) { %>
             <div class="text-center mt-3">
                 <a href="${pageContext.request.contextPath}/home">Quay lại trang chủ</a>
             </div>
+            <% } %>
         </div>
     </div>
 </div>
