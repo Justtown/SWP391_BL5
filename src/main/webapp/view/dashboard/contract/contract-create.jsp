@@ -41,6 +41,16 @@
             font-size: 0.875rem;
             margin-top: 5px;
         }
+        .is-invalid {
+            border-color: #dc3545;
+        }
+        .invalid-feedback {
+            display: block;
+            width: 100%;
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+            color: #dc3545;
+        }
         .btn-group-custom {
             display: flex;
             justify-content: space-between;
@@ -103,7 +113,7 @@
                 <div class="alert alert-danger">${error}</div>
             </c:if>
             
-            <form action="${pageContext.request.contextPath}/contracts" method="POST" id="createContractForm">
+            <form action="${pageContext.request.contextPath}/contracts" method="POST" id="createContractForm" autocomplete="off">
                 <input type="hidden" name="action" value="create">
                 
                 <div class="mb-3">
@@ -123,6 +133,9 @@
                             </option>
                         </c:forEach>
                     </select>
+                    <div class="invalid-feedback" id="customerError" style="display: none;">
+                        Customer and Manager cannot be the same person!
+                    </div>
                     <c:if test="${empty customers}">
                         <small class="form-text text-danger">No active customers available. Please add customers first.</small>
                     </c:if>
@@ -138,6 +151,9 @@
                             </option>
                         </c:forEach>
                     </select>
+                    <div class="invalid-feedback" id="managerError" style="display: none;">
+                        Customer and Manager cannot be the same person!
+                    </div>
                     <c:if test="${empty managers}">
                         <small class="form-text text-danger">No active managers/sales available. Please add managers/sales first.</small>
                     </c:if>
@@ -147,20 +163,20 @@
                     <div class="col-md-6 mb-3">
                         <label for="startDate" class="form-label">Start Date <span class="text-danger">*</span></label>
                         <input type="date" class="form-control" id="startDate" name="startDate" 
-                               value="${startDate != null ? startDate : ''}" required>
+                               value="${startDate != null ? startDate : ''}" required autocomplete="off">
                     </div>
                     
                     <div class="col-md-6 mb-3">
                         <label for="endDate" class="form-label">End Date <span class="text-danger">*</span></label>
                         <input type="date" class="form-control" id="endDate" name="endDate" 
-                               value="${endDate != null ? endDate : ''}" required>
+                               value="${endDate != null ? endDate : ''}" required autocomplete="off">
                     </div>
                 </div>
                 
                 <div class="mb-3">
                     <label for="note" class="form-label">Note</label>
                     <textarea class="form-control" id="note" name="note" rows="3" 
-                              placeholder="Enter any additional notes...">${note != null ? note : ''}</textarea>
+                              placeholder="Enter any additional notes..." autocomplete="off">${note != null ? note : ''}</textarea>
                 </div>
                 
                 <div class="btn-group-custom">
@@ -177,6 +193,44 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        const customerSelect = document.getElementById('customerId');
+        const managerSelect = document.getElementById('managerId');
+        const customerError = document.getElementById('customerError');
+        const managerError = document.getElementById('managerError');
+        
+        // Function to validate customer and manager are different
+        function validateCustomerManager() {
+            const customerId = customerSelect.value;
+            const managerId = managerSelect.value;
+            const isSame = customerId && managerId && customerId === managerId;
+            
+            if (isSame) {
+                // Show error on both fields
+                customerSelect.classList.add('is-invalid');
+                managerSelect.classList.add('is-invalid');
+                customerError.style.display = 'block';
+                managerError.style.display = 'block';
+                return false;
+            } else {
+                // Remove error styling
+                customerSelect.classList.remove('is-invalid');
+                managerSelect.classList.remove('is-invalid');
+                customerError.style.display = 'none';
+                managerError.style.display = 'none';
+                return true;
+            }
+        }
+        
+        // Validate when customer changes
+        customerSelect.addEventListener('change', function() {
+            validateCustomerManager();
+        });
+        
+        // Validate when manager changes
+        managerSelect.addEventListener('change', function() {
+            validateCustomerManager();
+        });
+        
         // Validate date range
         document.getElementById('startDate').addEventListener('change', validateDates);
         document.getElementById('endDate').addEventListener('change', validateDates);
@@ -191,24 +245,38 @@
             }
         }
         
-        // Form validation
+        // Form validation on submit
         document.getElementById('createContractForm').addEventListener('submit', function(e) {
-            const customerId = document.getElementById('customerId').value;
-            const managerId = document.getElementById('managerId').value;
+            const customerId = customerSelect.value;
+            const managerId = managerSelect.value;
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
             
+            // Check required fields
             if (!customerId || !managerId || !startDate || !endDate) {
                 e.preventDefault();
                 alert('Please fill in all required fields!');
                 return false;
             }
             
+            // Check customer and manager are different
+            if (!validateCustomerManager()) {
+                e.preventDefault();
+                alert('Customer and Manager cannot be the same person! Please select different people.');
+                return false;
+            }
+            
+            // Check date range
             if (startDate > endDate) {
                 e.preventDefault();
                 alert('Start date must be before or equal to end date!');
                 return false;
             }
+        });
+        
+        // Initial validation on page load (in case of form re-display with errors)
+        document.addEventListener('DOMContentLoaded', function() {
+            validateCustomerManager();
         });
     </script>
 </body>

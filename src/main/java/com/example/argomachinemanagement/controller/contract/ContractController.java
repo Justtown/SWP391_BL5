@@ -183,6 +183,20 @@ public class ContractController extends HttpServlet {
             errors.add("Vui lòng chọn manager!");
         }
         
+        // Validate customer and manager are different
+        if (customerIdStr != null && !customerIdStr.trim().isEmpty() && 
+            managerIdStr != null && !managerIdStr.trim().isEmpty()) {
+            try {
+                int customerId = Integer.parseInt(customerIdStr);
+                int managerId = Integer.parseInt(managerIdStr);
+                if (customerId == managerId) {
+                    errors.add("Customer và Manager không được trùng nhau! Vui lòng chọn người khác.");
+                }
+            } catch (NumberFormatException e) {
+                // Will be caught by other validations
+            }
+        }
+        
         if (startDateStr == null || startDateStr.trim().isEmpty()) {
             errors.add("Ngày bắt đầu không được để trống!");
         }
@@ -232,8 +246,8 @@ public class ContractController extends HttpServlet {
         int contractId = contractDAO.insert(contract);
         
         if (contractId > 0) {
-            response.sendRedirect(request.getContextPath() + "/contracts?action=detail&id=" + contractId + 
-                                "&success=Contract created successfully");
+            // Redirect về trang danh sách contract với thông báo thành công
+            response.sendRedirect(request.getContextPath() + "/contracts?success=Contract created successfully");
         } else {
             request.setAttribute("error", "Failed to create contract. Please try again!");
             showCreateFormWithData(request, response, contractCode, customerIdStr, managerIdStr, 
