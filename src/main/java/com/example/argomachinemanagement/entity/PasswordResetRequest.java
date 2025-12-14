@@ -27,5 +27,6 @@ public class PasswordResetRequest {
     private String status;
     private String newPassword;
     private Boolean passwordChanged;
+    private Timestamp approvedTime; // Thời gian admin approve password reset
 }
 

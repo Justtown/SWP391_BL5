@@ -58,14 +58,23 @@ public class LoginServlet extends HttpServlet {
         User user = userDAO.login(username.trim(), password);
         
         if (user != null) {
-   
+            // Kiểm tra xem có request approved nhưng đã hết hạn (quá 5 phút) không
+            PasswordResetRequest expiredRequest = passwordResetRequestDAO.findExpiredApprovedRequest(user.getId());
+            if (expiredRequest != null) {
+                // Password đã hết hạn, yêu cầu user request lại
+                request.setAttribute("error", "Mật khẩu được reset đã hết hạn (5 phút). Vui lòng yêu cầu reset mật khẩu lại!");
+                request.setAttribute("username", username);
+                request.getRequestDispatcher("/view/authen/login.jsp").forward(request, response);
+                return;
+            }
+            
             HttpSession session = request.getSession(true);
             session.setAttribute("user", user);
             session.setAttribute("userId", user.getId());
             session.setAttribute("username", user.getUsername());
             session.setAttribute("fullName", user.getFullName());
             
-            // Kiểm tra xem user có login bằng password mới từ admin chưa (chưa đổi mật khẩu)
+            // Kiểm tra xem user có login bằng password mới từ admin chưa (chưa đổi mật khẩu, còn trong 5 phút)
             PasswordResetRequest pendingChange = passwordResetRequestDAO.findUnchangedApprovedRequest(user.getId());
             if (pendingChange != null) {
                 // Bắt user phải đổi mật khẩu
