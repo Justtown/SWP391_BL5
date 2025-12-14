@@ -193,15 +193,10 @@ public class PasswordResetRequestDAO extends DBContext {
     
     /**
      * Kiểm tra user có request approved nhưng chưa đổi mật khẩu chưa
-     * Chỉ trả về request nếu còn trong thời hạn 5 phút từ khi approve
      */
     public PasswordResetRequest findUnchangedApprovedRequest(Integer userId) {
         PasswordResetRequest request = null;
-        // Chỉ lấy request được approve trong vòng 5 phút gần nhất
-        String sql = "SELECT * FROM password_reset_requests WHERE user_id = ? AND status = 'approved' AND password_changed = FALSE " +
-                     "AND approved_time IS NOT NULL " +
-                     "AND approved_time >= DATE_SUB(NOW(), INTERVAL 5 MINUTE) " +
-                     "ORDER BY approved_time DESC LIMIT 1";
+        String sql = "SELECT * FROM password_reset_requests WHERE user_id = ? AND status = 'approved' AND password_changed = FALSE ORDER BY request_time DESC LIMIT 1";
         
         try {
             connection = getConnection();
@@ -223,49 +218,11 @@ public class PasswordResetRequestDAO extends DBContext {
     }
     
     /**
-     * Tìm request approved nhưng đã hết hạn (quá 5 phút) và chưa đổi mật khẩu
-     */
-    public PasswordResetRequest findExpiredApprovedRequest(Integer userId) {
-        PasswordResetRequest request = null;
-        // Lấy request đã hết hạn (quá 5 phút) và chưa đổi mật khẩu
-        String sql = "SELECT * FROM password_reset_requests WHERE user_id = ? AND status = 'approved' AND password_changed = FALSE " +
-                     "AND approved_time IS NOT NULL " +
-                     "AND approved_time < DATE_SUB(NOW(), INTERVAL 5 MINUTE) " +
-                     "ORDER BY approved_time DESC LIMIT 1";
-        
-        try {
-            connection = getConnection();
-            statement = connection.prepareStatement(sql);
-            statement.setInt(1, userId);
-            resultSet = statement.executeQuery();
-            
-            if (resultSet.next()) {
-                request = getFromResultSet(resultSet);
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(PasswordResetRequestDAO.class.getName()).log(Level.SEVERE, "Error finding expired approved request", ex);
-            System.err.println("Error in findExpiredApprovedRequest: " + ex.getMessage());
-        } finally {
-            closeResources();
-        }
-        
-        return request;
-    }
-    
-    /**
      * Cập nhật status và new_password của request
-     * Nếu status là "approved", sẽ tự động set approved_time = CURRENT_TIMESTAMP
      */
     public boolean updateRequestStatus(Integer requestId, String status, String newPassword) {
         boolean success = false;
-        String sql;
-        
-        // Nếu approve, set approved_time
-        if ("approved".equalsIgnoreCase(status)) {
-            sql = "UPDATE password_reset_requests SET status = ?, new_password = ?, approved_time = CURRENT_TIMESTAMP WHERE id = ?";
-        } else {
-            sql = "UPDATE password_reset_requests SET status = ?, new_password = ? WHERE id = ?";
-        }
+        String sql = "UPDATE password_reset_requests SET status = ?, new_password = ? WHERE id = ?";
         
         try {
             connection = getConnection();
@@ -339,25 +296,15 @@ public class PasswordResetRequestDAO extends DBContext {
      * Chuyển đổi ResultSet thành PasswordResetRequest
      */
     private PasswordResetRequest getFromResultSet(ResultSet rs) throws SQLException {
-        PasswordResetRequest.PasswordResetRequestBuilder builder = PasswordResetRequest.builder()
+        return PasswordResetRequest.builder()
                 .id(rs.getInt("id"))
                 .userId(rs.getInt("user_id"))
                 .email(rs.getString("email"))
                 .requestTime(rs.getTimestamp("request_time"))
                 .status(rs.getString("status"))
                 .newPassword(rs.getString("new_password"))
-                .passwordChanged(rs.getBoolean("password_changed"));
-        
-        // Đọc approved_time nếu có (có thể null)
-        try {
-            Timestamp approvedTime = rs.getTimestamp("approved_time");
-            builder.approvedTime(approvedTime);
-        } catch (SQLException e) {
-            // Column có thể chưa tồn tại, set null
-            builder.approvedTime(null);
-        }
-        
-        return builder.build();
+                .passwordChanged(rs.getBoolean("password_changed"))
+                .build();
     }
 }
 
