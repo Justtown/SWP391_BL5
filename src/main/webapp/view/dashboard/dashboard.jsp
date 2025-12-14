@@ -180,8 +180,13 @@
                                     </a>
                                 </div>
                                 <div class="col-md-6">
-                                    <a href="${pageContext.request.contextPath}/sale/orders" class="quick-action">
-                                        <i class="fas fa-shopping-cart"></i> Tạo đơn hàng mới
+                                    <a href="${pageContext.request.contextPath}/sale/orders?action=list" class="quick-action">
+                                        <i class="fas fa-shopping-cart"></i> Quản lý đơn hàng
+                                    </a>
+                                </div>
+                                <div class="col-md-6">
+                                    <a href="${pageContext.request.contextPath}/sale/orders?action=create" class="quick-action">
+                                        <i class="fas fa-plus-circle"></i> Tạo đơn hàng mới
                                     </a>
                                 </div>
                             </c:if>

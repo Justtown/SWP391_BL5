@@ -3,6 +3,7 @@ package com.example.argomachinemanagement.entity;
 import lombok.*;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 
 @ToString
 @Builder
@@ -25,4 +26,11 @@ public class Order {
     private String status;
     private Double totalCost;
     private Integer createdBy;
+    private Integer approvedBy;
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
+    
+    // Additional fields for display
+    private String createdByName;
+    private String approvedByName;
 }
