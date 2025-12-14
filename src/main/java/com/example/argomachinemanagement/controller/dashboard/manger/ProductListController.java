@@ -13,7 +13,8 @@ public class ProductListController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.getRequestDispatcher("/view/dashboard/manager/product/product-list.jsp").forward(request, response);
+        // Redirect to machines page (product-list is deprecated)
+        response.sendRedirect(request.getContextPath() + "/machines");
     }
 
     @Override

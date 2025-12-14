@@ -156,22 +156,6 @@
         <div class="contract-management-container">
             <h1 class="page-title">Contract Management</h1>
             
-            <!-- Success Message -->
-            <c:if test="${not empty param.success}">
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="fas fa-check-circle"></i> ${param.success}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            </c:if>
-            
-            <!-- Error Message -->
-            <c:if test="${not empty param.error}">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="fas fa-exclamation-circle"></i> ${param.error}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            </c:if>
-            
             <!-- Filter & Search Section -->
             <div class="filter-section">
                 <select class="form-select filter-dropdown" id="statusFilter">
