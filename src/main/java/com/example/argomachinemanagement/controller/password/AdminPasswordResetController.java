@@ -18,10 +18,7 @@ import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Controller cho admin để quản lý password reset requests
- * URL: /admin/password-reset-requests
- */
+
 @WebServlet(name = "AdminPasswordResetController", urlPatterns = {"/admin/password-reset-requests"})
 public class AdminPasswordResetController extends HttpServlet {
     
@@ -80,7 +77,6 @@ public class AdminPasswordResetController extends HttpServlet {
         // Lấy danh sách requests với search, filter và pagination
         List<PasswordResetRequest> requests = passwordResetRequestDAO.getAllRequests(keyword, statusFilter, offset, PAGE_SIZE);
         
-        // Lấy message/error từ session (nếu có) và xóa sau khi lấy
         HttpSession session = request.getSession();
         String message = (String) session.getAttribute("message");
         String error = (String) session.getAttribute("error");
@@ -94,7 +90,6 @@ public class AdminPasswordResetController extends HttpServlet {
             session.removeAttribute("error");
         }
         
-        // Set attributes
         request.setAttribute("requests", requests);
         request.setAttribute("keyword", keyword);
         request.setAttribute("statusFilter", statusFilter);
@@ -103,7 +98,6 @@ public class AdminPasswordResetController extends HttpServlet {
         request.setAttribute("totalRecords", totalRecords);
         request.setAttribute("pageSize", PAGE_SIZE);
         
-        // Forward to JSP
         request.getRequestDispatcher("/view/dashboard/admin/password_reset_requests.jsp").forward(request, response);
     }
     
@@ -161,9 +155,9 @@ public class AdminPasswordResetController extends HttpServlet {
         }
     }
     
-    /**
-     * Xử lý approve request: Generate password mới, hash và lưu vào DB, gửi email plain text
-     */
+
+     // Xử lý approve request: Generate password mới, hash và lưu vào DB, gửi email plain text
+
     private void handleApproveRequest(PasswordResetRequest resetRequest, 
                                      HttpServletRequest request, 
                                      HttpServletResponse response)
@@ -194,7 +188,7 @@ public class AdminPasswordResetController extends HttpServlet {
                 return;
             }
             
-            // Cập nhật status và lưu password mới (plain text) vào request để gửi email
+            // Cập nhật status và lưu password mới vào request để gửi email
             boolean statusUpdateSuccess = passwordResetRequestDAO.updateRequestStatus(
                 resetRequest.getId(), "approved", newPassword);
             
@@ -202,7 +196,7 @@ public class AdminPasswordResetController extends HttpServlet {
                 logger.warning("Failed to update request status to approved for requestId: " + resetRequest.getId());
             }
             
-            // Gửi email với mật khẩu mới (plain text) - user cần biết để đăng nhập
+            // Gửi email với mật khẩu mới
             boolean emailSent = EmailService.sendPasswordResetEmail(
                 resetRequest.getEmail(), newPassword);
             
@@ -226,19 +220,18 @@ public class AdminPasswordResetController extends HttpServlet {
             session.setAttribute("error", "Có lỗi xảy ra khi phê duyệt yêu cầu.");
         }
         
-        // Redirect về GET để tránh resubmit khi F5
         response.sendRedirect(request.getContextPath() + "/admin/password-reset-requests");
     }
     
-    /**
-     * Xử lý reject request
-     */
+
+     // Xử lý reject request
+
     private void handleRejectRequest(PasswordResetRequest resetRequest,
                                     HttpServletRequest request,
                                     HttpServletResponse response)
             throws ServletException, IOException {
         
-        // Kiểm tra xem request đã được xử lý chưa (chỉ xử lý nếu status là "pending")
+        // Kiểm tra xem request đã được xử lý chưa
         if (!"pending".equalsIgnoreCase(resetRequest.getStatus())) {
             HttpSession session = request.getSession();
             session.setAttribute("message", "Yêu cầu này đã được xử lý trước đó.");
@@ -264,13 +257,12 @@ public class AdminPasswordResetController extends HttpServlet {
             session.setAttribute("error", "Có lỗi xảy ra khi từ chối yêu cầu.");
         }
         
-        // Redirect về GET để tránh resubmit khi F5
         response.sendRedirect(request.getContextPath() + "/admin/password-reset-requests");
     }
     
-    /**
-     * Generate random password
-     */
+
+     // Generate random password
+
     private String generateRandomPassword(int length) {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         Random random = new Random();
@@ -283,9 +275,9 @@ public class AdminPasswordResetController extends HttpServlet {
         return password.toString();
     }
     
-    /**
-     * Kiểm tra user có phải admin không
-     */
+
+     // Kiểm tra user có phải admin không
+
     private boolean isAdmin(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session == null) {
