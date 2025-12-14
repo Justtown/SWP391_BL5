@@ -10,10 +10,8 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @WebServlet(name = "ContractController", urlPatterns = {"/contracts"})
 public class ContractController extends HttpServlet {
@@ -36,18 +34,6 @@ public class ContractController extends HttpServlet {
         
         if (action == null || action.equals("list")) {
             handleListWithFilters(request, response);
-        } else if ("create".equals(action)) {
-            showCreateForm(request, response);
-        }
-    }
-    
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        String action = request.getParameter("action");
-        
-        if (action == null || "create".equals(action)) {
-            handleCreate(request, response);
         }
     }
     
@@ -124,168 +110,6 @@ public class ContractController extends HttpServlet {
         
         // Forward to JSP
         request.getRequestDispatcher("/view/dashboard/contract/contract-list.jsp").forward(request, response);
-    }
-    
-    /**
-     * C2: Show Create Contract Form
-     */
-    private void showCreateForm(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        // Get all customers (users with role 'customer')
-        List<User> allUsers = userDAO.findAll();
-        List<User> customers = allUsers.stream()
-                .filter(u -> u.getRoleName() != null && "customer".equalsIgnoreCase(u.getRoleName()) && 
-                            u.getStatus() != null && u.getStatus() == 1)
-                .collect(Collectors.toList());
-        
-        // Get all managers (users with role 'manager' or 'sale')
-        List<User> managers = allUsers.stream()
-                .filter(u -> u.getRoleName() != null && 
-                            ("manager".equalsIgnoreCase(u.getRoleName()) || "sale".equalsIgnoreCase(u.getRoleName())) &&
-                            u.getStatus() != null && u.getStatus() == 1)
-                .collect(Collectors.toList());
-        
-        // Generate contract code
-        String contractCode = contractDAO.generateContractCode();
-        
-        request.setAttribute("customers", customers);
-        request.setAttribute("managers", managers);
-        request.setAttribute("contractCode", contractCode);
-        
-        request.getRequestDispatcher("/view/dashboard/contract/contract-create.jsp").forward(request, response);
-    }
-    
-    /**
-     * C2: Handle Create Contract
-     */
-    private void handleCreate(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        // Get parameters
-        String contractCode = request.getParameter("contractCode");
-        String customerIdStr = request.getParameter("customerId");
-        String managerIdStr = request.getParameter("managerId");
-        String startDateStr = request.getParameter("startDate");
-        String endDateStr = request.getParameter("endDate");
-        String note = request.getParameter("note");
-        
-        // Validation
-        List<String> errors = new ArrayList<>();
-        
-        if (contractCode == null || contractCode.trim().isEmpty()) {
-            errors.add("Contract code không được để trống!");
-        }
-        
-        if (customerIdStr == null || customerIdStr.trim().isEmpty()) {
-            errors.add("Vui lòng chọn khách hàng!");
-        }
-        
-        if (managerIdStr == null || managerIdStr.trim().isEmpty()) {
-            errors.add("Vui lòng chọn manager!");
-        }
-        
-        // Validate customer and manager are different
-        if (customerIdStr != null && !customerIdStr.trim().isEmpty() && 
-            managerIdStr != null && !managerIdStr.trim().isEmpty()) {
-            try {
-                int customerId = Integer.parseInt(customerIdStr);
-                int managerId = Integer.parseInt(managerIdStr);
-                if (customerId == managerId) {
-                    errors.add("Customer và Manager không được trùng nhau! Vui lòng chọn người khác.");
-                }
-            } catch (NumberFormatException e) {
-                // Will be caught by other validations
-            }
-        }
-        
-        if (startDateStr == null || startDateStr.trim().isEmpty()) {
-            errors.add("Ngày bắt đầu không được để trống!");
-        }
-        
-        if (endDateStr == null || endDateStr.trim().isEmpty()) {
-            errors.add("Ngày kết thúc không được để trống!");
-        }
-        
-        Date startDate = null;
-        Date endDate = null;
-        
-        try {
-            if (startDateStr != null && !startDateStr.trim().isEmpty()) {
-                startDate = Date.valueOf(startDateStr);
-            }
-            if (endDateStr != null && !endDateStr.trim().isEmpty()) {
-                endDate = Date.valueOf(endDateStr);
-            }
-            
-            // Validate date range
-            if (startDate != null && endDate != null && startDate.after(endDate)) {
-                errors.add("Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc!");
-            }
-        } catch (IllegalArgumentException e) {
-            errors.add("Định dạng ngày không hợp lệ!");
-        }
-        
-        if (!errors.isEmpty()) {
-            request.setAttribute("errors", errors);
-            // Re-show form with entered data
-            showCreateFormWithData(request, response, contractCode, customerIdStr, managerIdStr, 
-                                 startDateStr, endDateStr, note, errors);
-            return;
-        }
-        
-        // Create contract
-        Contract contract = Contract.builder()
-                .contractCode(contractCode.trim())
-                .customerId(Integer.parseInt(customerIdStr))
-                .managerId(Integer.parseInt(managerIdStr))
-                .startDate(startDate)
-                .endDate(endDate)
-                .status("DRAFT")
-                .note(note != null && !note.trim().isEmpty() ? note.trim() : null)
-                .build();
-        
-        int contractId = contractDAO.insert(contract);
-        
-        if (contractId > 0) {
-            // Redirect về trang danh sách contract với thông báo thành công
-            response.sendRedirect(request.getContextPath() + "/contracts?success=Contract created successfully");
-        } else {
-            request.setAttribute("error", "Failed to create contract. Please try again!");
-            showCreateFormWithData(request, response, contractCode, customerIdStr, managerIdStr, 
-                                 startDateStr, endDateStr, note, errors);
-        }
-    }
-    
-    /**
-     * Helper method to re-show form with entered data and errors
-     */
-    private void showCreateFormWithData(HttpServletRequest request, HttpServletResponse response,
-                                       String contractCode, String customerId, String managerId,
-                                       String startDate, String endDate, String note, List<String> errors)
-            throws ServletException, IOException {
-        // Get all customers and managers
-        List<User> allUsers = userDAO.findAll();
-        List<User> customers = allUsers.stream()
-                .filter(u -> u.getRoleName() != null && "customer".equalsIgnoreCase(u.getRoleName()) && 
-                            u.getStatus() != null && u.getStatus() == 1)
-                .collect(Collectors.toList());
-        
-        List<User> managers = allUsers.stream()
-                .filter(u -> u.getRoleName() != null && 
-                            ("manager".equalsIgnoreCase(u.getRoleName()) || "sale".equalsIgnoreCase(u.getRoleName())) &&
-                            u.getStatus() != null && u.getStatus() == 1)
-                .collect(Collectors.toList());
-        
-        request.setAttribute("customers", customers);
-        request.setAttribute("managers", managers);
-        request.setAttribute("contractCode", contractCode != null ? contractCode : contractDAO.generateContractCode());
-        request.setAttribute("selectedCustomerId", customerId);
-        request.setAttribute("selectedManagerId", managerId);
-        request.setAttribute("startDate", startDate);
-        request.setAttribute("endDate", endDate);
-        request.setAttribute("note", note);
-        request.setAttribute("errors", errors);
-        
-        request.getRequestDispatcher("/view/dashboard/contract/contract-create.jsp").forward(request, response);
     }
 }
 
