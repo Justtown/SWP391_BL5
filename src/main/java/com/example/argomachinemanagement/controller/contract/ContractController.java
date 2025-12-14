@@ -38,6 +38,8 @@ public class ContractController extends HttpServlet {
             handleListWithFilters(request, response);
         } else if ("create".equals(action)) {
             showCreateForm(request, response);
+        } else if ("detail".equals(action)) {
+            handleDetail(request, response);
         }
     }
     
@@ -246,8 +248,10 @@ public class ContractController extends HttpServlet {
         int contractId = contractDAO.insert(contract);
         
         if (contractId > 0) {
-            // Redirect về trang danh sách contract với thông báo thành công
-            response.sendRedirect(request.getContextPath() + "/contracts?success=Contract created successfully");
+            // TODO: Redirect sau khi create thành công
+            // Để redirect về trang contracts list, thay dòng dưới thành:
+            // response.sendRedirect(request.getContextPath() + "/contracts?success=Contract created successfully");
+            response.sendRedirect(request.getContextPath() + "/contracts?action=detail&id=" + contractId);
         } else {
             request.setAttribute("error", "Failed to create contract. Please try again!");
             showCreateFormWithData(request, response, contractCode, customerIdStr, managerIdStr, 
@@ -286,6 +290,35 @@ public class ContractController extends HttpServlet {
         request.setAttribute("errors", errors);
         
         request.getRequestDispatcher("/view/dashboard/contract/contract-create.jsp").forward(request, response);
+    }
+    
+    /**
+     * C3: Show Contract Detail
+     */
+    private void handleDetail(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String idStr = request.getParameter("id");
+        
+        if (idStr == null || idStr.trim().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/contracts?error=Contract ID is required");
+            return;
+        }
+        
+        try {
+            Integer contractId = Integer.parseInt(idStr);
+            Contract contract = contractDAO.findById(contractId);
+            
+            if (contract == null) {
+                response.sendRedirect(request.getContextPath() + "/contracts?error=Contract not found");
+                return;
+            }
+            
+            request.setAttribute("contract", contract);
+            request.getRequestDispatcher("/view/dashboard/contract/contract-detail.jsp").forward(request, response);
+            
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/contracts?error=Invalid contract ID");
+        }
     }
 }
 
