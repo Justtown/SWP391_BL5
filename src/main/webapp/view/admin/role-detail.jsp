@@ -15,7 +15,7 @@
 
     <p>
         <strong>Role Name:</strong><br/>
-        <input type="text" value="${role.roleName}" disabled/>
+        <input type="text" name="role_name" value="${role.roleName}" readonly/>
     </p>
 
     <p>
@@ -25,15 +25,18 @@
 
     <p>
         <strong>Status:</strong><br/>
+
         <label>
             <input type="radio" name="status" value="1"
-                   <c:if test="${role.status}">checked</c:if> /> Active
+            ${role.status ? "checked" : ""} /> Active
         </label>
+
         <label>
             <input type="radio" name="status" value="0"
-                   <c:if test="${!role.status}">checked</c:if> /> Deactive
+            ${!role.status ? "checked" : ""} /> Deactive
         </label>
     </p>
+
 
     <button type="submit">Save</button>
     <a href="${pageContext.request.contextPath}/admin/role?action=list">Back to list</a>
