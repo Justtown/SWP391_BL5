@@ -53,6 +53,11 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link text-white" href="${ctx}/admin/password-reset-requests">
+                        <i class="fas fa-key me-2"></i>Yêu cầu đặt lại MK
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link text-white" href="${ctx}/admin/roles">
                         <i class="fas fa-user-shield me-2"></i>Quản lý Permission
                     </a>
@@ -69,6 +74,16 @@
                 <li class="nav-item">
                     <a class="nav-link text-white" href="${ctx}/manager/machines">
                         <i class="fas fa-cogs me-2"></i>Quản lý Machine
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="${ctx}/manager/machine-types">
+                        <i class="fas fa-layer-group me-2"></i>Quản lý Loại Máy
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="${ctx}/manager/maintenances">
+                        <i class="fas fa-tools me-2"></i>Bảo Trì Máy Trong Kho
                     </a>
                 </li>
                 <li class="nav-item">

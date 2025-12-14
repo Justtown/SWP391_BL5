@@ -6,9 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * DAO for machines table
- */
+
 public class MachineDAO extends DBContext implements I_DAO<Machine> {
     
     @Override
@@ -203,6 +201,32 @@ public class MachineDAO extends DBContext implements I_DAO<Machine> {
             success = rowsAffected > 0;
         } catch (SQLException ex) {
             System.out.println("Error in MachineDAO.deactivate: " + ex.getMessage());
+        } finally {
+            closeResources();
+        }
+        
+        return success;
+    }
+    
+    /**
+     * Update machine status
+     */
+    public boolean updateStatus(Integer id, String status) {
+        boolean success = false;
+        String sql = "UPDATE machines SET status = ?, is_rentable = ? WHERE id = ?";
+        
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, status);
+            // If status is ACTIVE, set is_rentable to true, otherwise false
+            statement.setBoolean(2, "ACTIVE".equals(status));
+            statement.setInt(3, id);
+            
+            int rowsAffected = statement.executeUpdate();
+            success = rowsAffected > 0;
+        } catch (SQLException ex) {
+            System.out.println("Error in MachineDAO.updateStatus: " + ex.getMessage());
         } finally {
             closeResources();
         }
