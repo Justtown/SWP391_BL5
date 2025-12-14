@@ -123,17 +123,10 @@ public class ProfileController extends HttpServlet {
                 doGet(request, response);
                 return;
             }
-
             
             email = email.trim();
             if (email.length() > 255) {
                 request.setAttribute("error", "Email không được vượt quá 255 ký tự!");
-                doGet(request, response);
-                return;
-            }
-
-            if (profileDAO.isEmailExist(email, userId)) {
-                request.setAttribute("error", "Email đã được sử dụng bởi tài khoản khác!");
                 doGet(request, response);
                 return;
             }
@@ -151,12 +144,6 @@ public class ProfileController extends HttpServlet {
                 phone = phone.trim();
                 // Loại bỏ các ký tự không phải số
                 String phoneDigits = phone.replaceAll("[^0-9]", "");
-
-                if (profileDAO.isPhoneExist(phone, userId)) {
-                    request.setAttribute("error", "Số điện thoại đã được sử dụng bởi tài khoản khác!");
-                    doGet(request, response);
-                    return;
-                }
                 
                 // Kiểm tra số điện thoại Việt Nam hợp lệ
                 // - 10 số: bắt đầu bằng 0 (ví dụ: 0123456789)

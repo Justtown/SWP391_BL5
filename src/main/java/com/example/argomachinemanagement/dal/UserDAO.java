@@ -13,7 +13,11 @@ public class UserDAO extends DBContext implements I_DAO<User> {
    
     public User login(String username, String password) {
         User user = null;
-        String sql = "SELECT * FROM users WHERE username = ? AND password = ? AND status = 1";
+        String sql = "SELECT u.*, r.role_name " +
+                     "FROM users u " +
+                     "LEFT JOIN user_role ur ON u.id = ur.user_id " +
+                     "LEFT JOIN roles r ON ur.role_id = r.id " +
+                     "WHERE u.username = ? AND u.password = ? AND u.status = 1";
         
         try {
             connection = getConnection();
@@ -412,6 +416,39 @@ public class UserDAO extends DBContext implements I_DAO<User> {
         }
         
         return user;
+    }
+
+    /**
+     * Lấy default_url của role dựa vào user_id
+     * @param userId ID của user
+     * @return default_url của role, mặc định là "/dashboard" nếu không tìm thấy
+     */
+    public String getDefaultUrlByUserId(int userId) {
+        String defaultUrl = "/dashboard";
+        String sql = "SELECT r.default_url " +
+                     "FROM roles r " +
+                     "INNER JOIN user_role ur ON r.id = ur.role_id " +
+                     "WHERE ur.user_id = ?";
+        
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, userId);
+            resultSet = statement.executeQuery();
+            
+            if (resultSet.next()) {
+                String url = resultSet.getString("default_url");
+                if (url != null && !url.isEmpty()) {
+                    defaultUrl = url;
+                }
+            }
+        } catch (SQLException ex) {
+            System.out.println("Error in getDefaultUrlByUserId: " + ex.getMessage());
+        } finally {
+            closeResources();
+        }
+        
+        return defaultUrl;
     }
 
 }

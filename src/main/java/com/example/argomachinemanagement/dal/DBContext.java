@@ -24,7 +24,7 @@ public class DBContext {
             //Change the username password and url to connect your own database
             String username = "root";
             String password = "123456";
-            String url = "jdbc:mysql://localhost:3306/argo_managerment_system";
+            String url = "jdbc:mysql://localhost:3306/argo_management_system";
             Class.forName("com.mysql.cj.jdbc.Driver");
             connection = DriverManager.getConnection(url, username, password);
         } catch (ClassNotFoundException | SQLException ex) {

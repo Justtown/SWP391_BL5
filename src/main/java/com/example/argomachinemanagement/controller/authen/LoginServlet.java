@@ -1,6 +1,7 @@
 package com.example.argomachinemanagement.controller.authen;
 
 import com.example.argomachinemanagement.dal.PasswordResetRequestDAO;
+import com.example.argomachinemanagement.dal.PermissionDAO;
 import com.example.argomachinemanagement.dal.UserDAO;
 import com.example.argomachinemanagement.entity.PasswordResetRequest;
 import com.example.argomachinemanagement.entity.User;
@@ -11,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.Set;
 
 
 @WebServlet(name = "LoginServlet", urlPatterns = {"/login"})
@@ -18,11 +20,13 @@ public class LoginServlet extends HttpServlet {
     
     private UserDAO userDAO;
     private PasswordResetRequestDAO passwordResetRequestDAO;
+    private PermissionDAO permissionDAO;
     
     @Override
     public void init() throws ServletException {
         userDAO = new UserDAO();
         passwordResetRequestDAO = new PasswordResetRequestDAO();
+        permissionDAO = new PermissionDAO();
     }
     
     
@@ -31,7 +35,10 @@ public class LoginServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("user") != null) {
-            response.sendRedirect(request.getContextPath() + "/home");
+            // Đã đăng nhập, redirect đến dashboard theo role
+            Integer userId = (Integer) session.getAttribute("userId");
+            String redirectUrl = userDAO.getDefaultUrlByUserId(userId);
+            response.sendRedirect(request.getContextPath() + redirectUrl);
             return;
         }
         
@@ -64,15 +71,20 @@ public class LoginServlet extends HttpServlet {
             session.setAttribute("userId", user.getId());
             session.setAttribute("username", user.getUsername());
             session.setAttribute("fullName", user.getFullName());
+            session.setAttribute("roleName", user.getRoleName());
+            
+            // Load danh sách URL patterns được phép từ database và lưu vào session
+            Set<String> allowedUrls = permissionDAO.getAllowedUrlPatternsByUserId(user.getId());
+            session.setAttribute("allowedUrls", allowedUrls);
             
             // Kiểm tra xem user có login bằng password mới từ admin chưa (chưa đổi mật khẩu)
-            PasswordResetRequest pendingChange = passwordResetRequestDAO.findUnchangedApprovedRequest(user.getId());
-            if (pendingChange != null) {
-                // Bắt user phải đổi mật khẩu
-                session.setAttribute("mustChangePassword", true);
-                response.sendRedirect(request.getContextPath() + "/change-password");
-                return;
-            }
+//            PasswordResetRequest pendingChange = passwordResetRequestDAO.findUnchangedApprovedRequest(user.getId());
+//            if (pendingChange != null) {
+//                // Bắt user phải đổi mật khẩu
+//                session.setAttribute("mustChangePassword", true);
+//                response.sendRedirect(request.getContextPath() + "/change-password");
+//                return;
+//            }
             
             if ("on".equals(rememberMe)) {
                 session.setMaxInactiveInterval(7 * 24 * 60 * 60); // 7 days
@@ -80,7 +92,9 @@ public class LoginServlet extends HttpServlet {
                 session.setMaxInactiveInterval(30 * 60); // 30 minutes
             }
 
-            response.sendRedirect(request.getContextPath() + "/home");
+            // Redirect theo role's default URL
+            String redirectUrl = userDAO.getDefaultUrlByUserId(user.getId());
+            response.sendRedirect(request.getContextPath() + redirectUrl);
         } else {
            
             request.setAttribute("error", "Tên đăng nhập hoặc mật khẩu không đúng!");
