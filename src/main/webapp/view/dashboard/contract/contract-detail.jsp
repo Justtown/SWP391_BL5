@@ -193,9 +193,12 @@
                     <a href="${pageContext.request.contextPath}/contracts" class="btn-back">
                         <i class="fas fa-arrow-left"></i> Back to Contracts
                     </a>
-                    <button type="button" class="btn-add-machine" onclick="alert('Coming soon')">
-                        <i class="fas fa-plus"></i> Add Machine
-                    </button>
+                    <!-- Add Machine chỉ dành cho vai trò không phải customer -->
+                    <c:if test="${sessionScope.roleName != 'customer'}">
+                        <button type="button" class="btn-add-machine" onclick="alert('Coming soon')">
+                            <i class="fas fa-plus"></i> Add Machine
+                        </button>
+                    </c:if>
                 </div>
             </c:if>
         </div>

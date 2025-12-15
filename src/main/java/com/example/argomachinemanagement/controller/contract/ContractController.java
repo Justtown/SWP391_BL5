@@ -76,11 +76,13 @@ public class ContractController extends HttpServlet {
         if (currentUser != null && currentUser.getRoleName() != null) {
             String roleName = currentUser.getRoleName().toLowerCase();
             if ("customer".equals(roleName)) {
-                customerId = userId; // Customer chỉ xem contracts của mình
-            } else if ("manager".equals(roleName) || "sale".equals(roleName)) {
-                managerId = userId; // Manager/Sale chỉ xem contracts mình quản lý
+                // Customer chỉ xem contracts của mình
+                customerId = userId;
+            } else if ("sale".equals(roleName)) {
+                // Sale chỉ xem các contract mình phụ trách
+                managerId = userId;
             }
-            // Admin xem tất cả (không set filter)
+            // Manager & Admin xem tất cả contracts (không set filter)
         }
         
         // Get filtered contracts
@@ -113,9 +115,16 @@ public class ContractController extends HttpServlet {
         request.setAttribute("totalContracts", totalContracts);
         request.setAttribute("pageSize", PAGE_SIZE);
         request.setAttribute("startIndex", startIndex);
-        
+
+        // Chọn view theo role: Customer dùng trang My Contracts riêng
+        String viewPath = "/view/dashboard/contract/contract-list.jsp";
+        if (currentUser != null && currentUser.getRoleName() != null
+                && "customer".equalsIgnoreCase(currentUser.getRoleName())) {
+            viewPath = "/view/dashboard/contract/customer-contract-list.jsp";
+        }
+
         // Forward to JSP
-        request.getRequestDispatcher("/view/dashboard/contract/contract-list.jsp").forward(request, response);
+        request.getRequestDispatcher(viewPath).forward(request, response);
     }
     
     @Override

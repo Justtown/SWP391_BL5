@@ -194,7 +194,7 @@
                                     </a>
                                 </div>
                                 <div class="col-md-6">
-                                    <a href="${pageContext.request.contextPath}/customer/my-contracts" class="quick-action">
+                                    <a href="${pageContext.request.contextPath}/contracts" class="quick-action">
                                         <i class="fas fa-file-contract"></i> Hợp đồng của tôi
                                     </a>
                                 </div>
