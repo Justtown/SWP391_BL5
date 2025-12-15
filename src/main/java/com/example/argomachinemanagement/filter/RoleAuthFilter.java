@@ -39,10 +39,17 @@ public class RoleAuthFilter implements Filter {
             return;
         }
         
-        // Lấy userId từ session
+        // Lấy userId và roleName từ session
         Integer userId = (Integer) session.getAttribute("userId");
+        String roleName = (String) session.getAttribute("roleName");
         if (userId == null) {
             httpResponse.sendRedirect(httpRequest.getContextPath() + "/login");
+            return;
+        }
+        
+        // Nếu là admin thì cho phép truy cập tất cả các URL /admin/* (bỏ qua kiểm tra permission chi tiết)
+        if (roleName != null && roleName.equalsIgnoreCase("admin")) {
+            chain.doFilter(request, response);
             return;
         }
         

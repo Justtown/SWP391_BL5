@@ -72,7 +72,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/manager/contracts">
+                    <a class="nav-link text-white" href="${ctx}/contracts">
                         <i class="fas fa-file-contract me-2"></i>Quản lý Contract
                     </a>
                 </li>
@@ -91,7 +91,7 @@
                     </div>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/sale/contracts">
+                    <a class="nav-link text-white" href="${ctx}/contracts">
                         <i class="fas fa-file-contract me-2"></i>Xem Contract
                     </a>
                 </li>

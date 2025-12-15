@@ -118,9 +118,14 @@
     </style>
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="contract-detail-container">
-            <h1 class="page-title">Contract Detail</h1>
+    <!-- Sidebar -->
+    <jsp:include page="/view/common/dashboard/sideBar.jsp" />
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container-fluid">
+            <div class="contract-detail-container">
+                <h1 class="page-title">Contract Detail</h1>
             
             <c:if test="${empty contract}">
                 <div class="alert alert-danger">Contract not found!</div>
@@ -195,6 +200,8 @@
             </c:if>
         </div>
     </div>
+
+    </div> <!-- end main-content -->
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

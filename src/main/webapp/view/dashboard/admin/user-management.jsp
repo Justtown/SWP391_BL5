@@ -155,9 +155,14 @@
     </style>
 </head>
 <body>
-    <div class="container-fluid" style="max-width: 100%; overflow-x: hidden;">
-        <div class="user-management-container">
-            <h1 class="page-title">User Management</h1>
+    <!-- Sidebar -->
+    <jsp:include page="/view/common/dashboard/sideBar.jsp" />
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container-fluid" style="max-width: 100%; overflow-x: hidden;">
+            <div class="user-management-container">
+                <h1 class="page-title">User Management</h1>
             
             <!-- Success Message -->
             <c:if test="${not empty param.success}">
@@ -308,6 +313,8 @@
             </c:if>
         </div>
     </div>
+
+    </div> <!-- end main-content -->
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>

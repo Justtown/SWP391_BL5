@@ -15,7 +15,7 @@ import java.io.IOException;
  * Controller cho admin dashboard
  * URL: /admin/dashboard
  */
-@WebServlet(name = "AdminDashboardController", urlPatterns = {"/admin/t"})
+@WebServlet(name = "AdminDashboardController", urlPatterns = {"/admin/dashboard"})
 public class AdminDashboardController extends HttpServlet {
     
     private UserDAO userDAO;
