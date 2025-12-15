@@ -1,13 +1,10 @@
--- Create service_orders table for managing orders from sale role
--- Orders need to be approved by admin before processing
-
-USE argo_managerment_system;
+USE argo_management_system;
 
 DROP TABLE IF EXISTS service_orders;
 
 CREATE TABLE service_orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    contract_code VARCHAR(100) NOT NULL UNIQUE,
+    contract_code VARCHAR(100) NOT NULL,
     customer_name VARCHAR(255) NOT NULL,
     customer_phone VARCHAR(20),
     customer_address TEXT,
@@ -20,25 +17,9 @@ CREATE TABLE service_orders (
     created_by INT NOT NULL,
     approved_by INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_status (status),
-    INDEX idx_created_by (created_by)
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Status values:
--- PENDING: Waiting for admin approval (created by sale)
--- APPROVED: Approved by admin
--- REJECTED: Rejected by admin
--- IN_PROGRESS: Order is being processed
--- COMPLETED: Order completed
--- CANCELLED: Order cancelled
-
--- Insert sample data
-INSERT INTO service_orders 
-(contract_code, customer_name, customer_phone, customer_address, service_description, 
- start_date, end_date, status, total_cost, created_by) 
-VALUES
-('HD001', 'Công ty ABC', '0901234567', '123 Đường ABC, Q1, HCM', 
- 'Gia công chi tiết máy móc', '2025-01-01', '2025-01-31', 'PENDING', 50000000, 3),
-('HD002', 'Công ty XYZ', '0902345678', '456 Đường XYZ, Q2, HCM', 
- 'Sửa chữa và bảo trì máy', '2025-02-01', '2025-02-15', 'APPROVED', 30000000, 3);
+CREATE INDEX idx_status ON service_orders(status);
+CREATE INDEX idx_created_by ON service_orders(created_by);
+CREATE INDEX idx_contract_code ON service_orders(contract_code);

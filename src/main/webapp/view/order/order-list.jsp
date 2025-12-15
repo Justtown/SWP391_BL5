@@ -58,6 +58,14 @@
     </div>
   </c:if>
 
+  <!-- Debug Info -->
+  <div class="alert alert-info">
+    <strong>Debug:</strong> 
+    Orders count: ${orders != null ? orders.size() : 'null'} | 
+    User Role: ${userRole} | 
+    Session Role: ${sessionScope.userRole} / ${sessionScope.roleName}
+  </div>
+
   <div class="table-responsive">
     <table class="table table-striped table-bordered table-hover">
       <thead class="table-dark">

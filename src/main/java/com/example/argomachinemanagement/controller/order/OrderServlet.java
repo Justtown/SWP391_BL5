@@ -57,12 +57,22 @@ public class OrderServlet extends HttpServlet {
             throws ServletException, IOException {
         List<Order> orders;
         
+        System.out.println("=== handleListOrders ===");
+        System.out.println("User Role: " + userRole);
+        System.out.println("User ID: " + userId);
+        
+        // TEMPORARY: Show all orders for debugging
+        orders = orderDAO.findAll();
+        System.out.println("Found total orders: " + orders.size());
+        
         // Sale user can only see their own orders
-        if ("sale".equals(userRole)) {
-            orders = orderDAO.findBySaleUser(userId);
-        } else {
-            orders = orderDAO.findAll();
-        }
+        // if ("sale".equals(userRole)) {
+        //     orders = orderDAO.findBySaleUser(userId);
+        //     System.out.println("Sale user - Found orders: " + orders.size());
+        // } else {
+        //     orders = orderDAO.findAll();
+        //     System.out.println("Admin/Other - Found orders: " + orders.size());
+        // }
         
         request.setAttribute("orders", orders);
         request.setAttribute("userRole", userRole);
