@@ -1,7 +1,9 @@
 package com.example.argomachinemanagement.controller.order;
 
 import com.example.argomachinemanagement.dal.OrderDAO;
+import com.example.argomachinemanagement.dal.MachineTypeDAO;
 import com.example.argomachinemanagement.entity.Order;
+import com.example.argomachinemanagement.entity.MachineType;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -17,6 +19,7 @@ import java.util.List;
 public class OrderServlet extends HttpServlet {
 
     private OrderDAO orderDAO = new OrderDAO();
+    private MachineTypeDAO machineTypeDAO = new MachineTypeDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -39,6 +42,8 @@ public class OrderServlet extends HttpServlet {
             handleListOrders(request, response, userRole, userId);
         } else if (action.equals("create")) {
             if ("sale".equals(userRole) || "admin".equals(userRole)) {
+                List<MachineType> machineTypes = machineTypeDAO.findAll();
+                request.setAttribute("machineTypes", machineTypes);
                 request.getRequestDispatcher("/view/order/order-create.jsp").forward(request, response);
             } else {
                 response.sendRedirect(request.getContextPath() + "/sale/orders?action=list&error=permission");
@@ -47,6 +52,8 @@ public class OrderServlet extends HttpServlet {
             handleEditOrder(request, response, userRole, userId);
         } else if (action.equals("detail")) {
             handleDetailOrder(request, response);
+        } else if (action.equals("delete")) {
+            handleDeleteOrder(request, response, userRole, userId);
         } else {
             response.sendRedirect(request.getContextPath() + "/sale/orders?action=list");
         }
@@ -55,24 +62,22 @@ public class OrderServlet extends HttpServlet {
     private void handleListOrders(HttpServletRequest request, HttpServletResponse response, 
                                    String userRole, Integer userId) 
             throws ServletException, IOException {
+        // Lấy các tham số tìm kiếm
+        String searchContract = request.getParameter("searchContract");
+        String searchCustomer = request.getParameter("searchCustomer");
+        String searchStatus = request.getParameter("searchStatus");
+        
         List<Order> orders;
         
-        System.out.println("=== handleListOrders ===");
-        System.out.println("User Role: " + userRole);
-        System.out.println("User ID: " + userId);
-        
-        // TEMPORARY: Show all orders for debugging
-        orders = orderDAO.findAll();
-        System.out.println("Found total orders: " + orders.size());
-        
-        // Sale user can only see their own orders
-        // if ("sale".equals(userRole)) {
-        //     orders = orderDAO.findBySaleUser(userId);
-        //     System.out.println("Sale user - Found orders: " + orders.size());
-        // } else {
-        //     orders = orderDAO.findAll();
-        //     System.out.println("Admin/Other - Found orders: " + orders.size());
-        // }
+        // Nếu có tìm kiếm, gọi method search
+        if ((searchContract != null && !searchContract.trim().isEmpty()) ||
+            (searchCustomer != null && !searchCustomer.trim().isEmpty()) ||
+            (searchStatus != null && !searchStatus.trim().isEmpty())) {
+            orders = orderDAO.searchOrders(searchContract, searchCustomer, searchStatus, userRole, userId);
+        } else {
+            // Hiển thị tất cả orders
+            orders = orderDAO.findAll();
+        }
         
         request.setAttribute("orders", orders);
         request.setAttribute("userRole", userRole);
@@ -108,6 +113,8 @@ public class OrderServlet extends HttpServlet {
             }
         }
 
+        List<MachineType> machineTypes = machineTypeDAO.findAll();
+        request.setAttribute("machineTypes", machineTypes);
         request.setAttribute("order", order);
         request.getRequestDispatcher("/view/order/order-edit.jsp").forward(request, response);
     }
@@ -174,11 +181,35 @@ public class OrderServlet extends HttpServlet {
             String customerName = request.getParameter("customerName");
             String customerPhone = request.getParameter("customerPhone");
             String customerAddress = request.getParameter("customerAddress");
-            String machineIdRaw = request.getParameter("machineId");
+            String machineTypeIdRaw = request.getParameter("machineTypeId");
+            String quantityRaw = request.getParameter("quantity");
             String serviceDescription = request.getParameter("serviceDescription");
             String startDateRaw = request.getParameter("startDate");
             String endDateRaw = request.getParameter("endDate");
             String totalCostRaw = request.getParameter("totalCost");
+            
+            // Kiểm tra mã hợp đồng đã tồn tại chưa
+            if (orderDAO.isContractCodeExists(contractCode, null)) {
+                // Giữ lại các giá trị đã nhập
+                request.setAttribute("error", "duplicate_contract");
+                request.setAttribute("contractCode", contractCode);
+                request.setAttribute("customerName", customerName);
+                request.setAttribute("customerPhone", customerPhone);
+                request.setAttribute("customerAddress", customerAddress);
+                request.setAttribute("machineTypeId", machineTypeIdRaw);
+                request.setAttribute("quantity", quantityRaw);
+                request.setAttribute("serviceDescription", serviceDescription);
+                request.setAttribute("startDate", startDateRaw);
+                request.setAttribute("endDate", endDateRaw);
+                request.setAttribute("totalCost", totalCostRaw);
+                
+                // Load lại machine types
+                List<MachineType> machineTypes = machineTypeDAO.findAll();
+                request.setAttribute("machineTypes", machineTypes);
+                
+                request.getRequestDispatcher("/view/order/order-create.jsp").forward(request, response);
+                return;
+            }
 
             Order o = new Order();
             o.setContractCode(contractCode);
@@ -186,8 +217,13 @@ public class OrderServlet extends HttpServlet {
             o.setCustomerPhone(customerPhone);
             o.setCustomerAddress(customerAddress);
 
-            if (machineIdRaw != null && !machineIdRaw.isBlank()) {
-                o.setMachineId(Integer.parseInt(machineIdRaw));
+            if (machineTypeIdRaw != null && !machineTypeIdRaw.isBlank()) {
+                o.setMachineId(Integer.parseInt(machineTypeIdRaw));  // Lưu machine_type_id
+            }
+            if (quantityRaw != null && !quantityRaw.isBlank()) {
+                o.setQuantity(Integer.parseInt(quantityRaw));
+            } else {
+                o.setQuantity(1);
             }
             o.setServiceDescription(serviceDescription);
 
@@ -243,8 +279,31 @@ public class OrderServlet extends HttpServlet {
             String customerName = request.getParameter("customerName");
             String customerPhone = request.getParameter("customerPhone");
             String customerAddress = request.getParameter("customerAddress");
-            String machineIdRaw = request.getParameter("machineId");
+            String machineTypeIdRaw = request.getParameter("machineTypeId");
+            String quantityRaw = request.getParameter("quantity");
             String serviceDescription = request.getParameter("serviceDescription");
+            
+            // Kiểm tra mã hợp đồng trùng (trừ order hiện tại)
+            if (orderDAO.isContractCodeExists(contractCode, orderId)) {
+                // Giữ lại các giá trị đã nhập
+                existingOrder.setContractCode(contractCode);
+                existingOrder.setCustomerName(customerName);
+                existingOrder.setCustomerPhone(customerPhone);
+                existingOrder.setCustomerAddress(customerAddress);
+                existingOrder.setServiceDescription(serviceDescription);
+                
+                request.setAttribute("error", "duplicate_contract");
+                request.setAttribute("order", existingOrder);
+                request.setAttribute("machineTypeId", machineTypeIdRaw);
+                request.setAttribute("quantity", quantityRaw);
+                
+                // Load lại machine types
+                List<MachineType> machineTypes = machineTypeDAO.findAll();
+                request.setAttribute("machineTypes", machineTypes);
+                
+                request.getRequestDispatcher("/view/order/order-edit.jsp").forward(request, response);
+                return;
+            }
             String startDateRaw = request.getParameter("startDate");
             String endDateRaw = request.getParameter("endDate");
             String totalCostRaw = request.getParameter("totalCost");
@@ -256,8 +315,13 @@ public class OrderServlet extends HttpServlet {
             o.setCustomerPhone(customerPhone);
             o.setCustomerAddress(customerAddress);
 
-            if (machineIdRaw != null && !machineIdRaw.isBlank()) {
-                o.setMachineId(Integer.parseInt(machineIdRaw));
+            if (machineTypeIdRaw != null && !machineTypeIdRaw.isBlank()) {
+                o.setMachineId(Integer.parseInt(machineTypeIdRaw));  // Lưu machine_type_id
+            }
+            if (quantityRaw != null && !quantityRaw.isBlank()) {
+                o.setQuantity(Integer.parseInt(quantityRaw));
+            } else {
+                o.setQuantity(1);
             }
             o.setServiceDescription(serviceDescription);
 

@@ -1,4 +1,3 @@
-
 <%@ page contentType="text/html; charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
@@ -27,6 +26,23 @@
             </c:if>
 
             <c:if test="${order.status == 'PENDING'}">
+                <%
+                    String error = (String) request.getAttribute("error");
+                    if (error == null) error = request.getParameter("error");
+                    if ("duplicate_contract".equals(error)) {
+                %>
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <strong>Lỗi!</strong> Mã hợp đồng này đã tồn tại. Vui lòng sử dụng mã khác.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                <%
+                    }
+                    // Lấy machineTypeId và quantity từ request nếu có
+                    String editMachineTypeId = (String) request.getAttribute("machineTypeId");
+                    String editQuantity = (String) request.getAttribute("quantity");
+                %>
+                
                 <form action="${pageContext.request.contextPath}/sale/orders" method="post" id="orderForm">
                     <input type="hidden" name="action" value="update"/>
                     <input type="hidden" name="id" value="${order.id}"/>
@@ -64,11 +80,34 @@
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Machine ID (nếu có)</label>
-                        <input type="number" name="machineId" class="form-control" 
-                               value="${order.machineId}">
-                        <div class="form-text">Chỉ điền nếu đơn hàng liên quan đến máy móc cụ thể</div>
+                    <%
+                        // Lấy giá trị từ request nếu có lỗi
+                        String editMachineTypeId = (String) request.getAttribute("machineTypeId");
+                        String editQuantity = (String) request.getAttribute("quantity");
+                    %>
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label fw-bold">Tên loại máy <span class="text-danger">*</span></label>
+                            <select name="machineTypeId" class="form-control" required>
+                                <option value="">-- Chọn loại máy --</option>
+                                <c:forEach var="type" items="${machineTypes}">
+                                    <%
+                                        String selectedCheck = "";
+                                        if (editMachineTypeId != null) {
+                                            selectedCheck = editMachineTypeId.equals(String.valueOf(pageContext.getAttribute("type"))) ? "selected" : "";
+                                        }
+                                    %>
+                                    <option value="${type.id}" ${type.id == order.machineId ? 'selected' : ''} <%= selectedCheck %>>
+                                        ${type.id} - ${type.typeName}
+                                    </option>
+                                </c:forEach>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">Số lượng <span class="text-danger">*</span></label>
+                            <input type="number" name="quantity" class="form-control" 
+                                   value="<%= editQuantity != null ? editQuantity : (pageContext.getAttribute("order") != null ? ((com.example.argomachinemanagement.entity.Order)pageContext.getAttribute("order")).getQuantity() : 1) %>" min="1" required>
+                        </div>
                     </div>
 
                     <div class="mb-3">

@@ -73,8 +73,12 @@
                         <div>${order.customerAddress != null ? order.customerAddress : '-'}</div>
                     </div>
                     <div class="info-row">
-                        <div class="info-label">Machine ID:</div>
-                        <div>${order.machineId != null ? order.machineId : '-'}</div>
+                        <div class="info-label">Loại máy:</div>
+                        <div class="fw-bold text-primary">${order.machineTypeName != null ? order.machineTypeName : '-'}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Số lượng:</div>
+                        <div><span class="badge bg-secondary fs-6">${order.quantity != null ? order.quantity : '-'}</span></div>
                     </div>
                 </div>
                 

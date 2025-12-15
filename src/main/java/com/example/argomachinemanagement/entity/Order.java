@@ -19,7 +19,8 @@ public class Order {
     private String customerName;
     private String customerPhone;
     private String customerAddress;
-    private Integer machineId;
+    private Integer machineId;  // Lưu machine_type_id
+    private Integer quantity;
     private String serviceDescription;
     private Date startDate;
     private Date endDate;
@@ -33,4 +34,5 @@ public class Order {
     // Additional fields for display
     private String createdByName;
     private String approvedByName;
+    private String machineTypeName;  // Tên loại máy từ machine_types
 }

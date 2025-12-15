@@ -58,12 +58,44 @@
     </div>
   </c:if>
 
-  <!-- Debug Info -->
-  <div class="alert alert-info">
-    <strong>Debug:</strong> 
-    Orders count: ${orders != null ? orders.size() : 'null'} | 
-    User Role: ${userRole} | 
-    Session Role: ${sessionScope.userRole} / ${sessionScope.roleName}
+  <!-- Search Form -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <form action="${pageContext.request.contextPath}/sale/orders" method="get" class="row g-3">
+        <input type="hidden" name="action" value="list"/>
+        
+        <div class="col-md-3">
+          <label class="form-label">Mã hợp đồng</label>
+          <input type="text" name="searchContract" class="form-control" 
+                 placeholder="Nhập mã hợp đồng..." value="${param.searchContract}">
+        </div>
+        
+        <div class="col-md-3">
+          <label class="form-label">Khách hàng</label>
+          <input type="text" name="searchCustomer" class="form-control" 
+                 placeholder="Nhập tên khách hàng..." value="${param.searchCustomer}">
+        </div>
+        
+        <div class="col-md-3">
+          <label class="form-label">Trạng thái</label>
+          <select name="searchStatus" class="form-control">
+            <option value="">-- Tất cả --</option>
+            <option value="PENDING" ${param.searchStatus == 'PENDING' ? 'selected' : ''}>Chờ duyệt</option>
+            <option value="APPROVED" ${param.searchStatus == 'APPROVED' ? 'selected' : ''}>Đã duyệt</option>
+            <option value="REJECTED" ${param.searchStatus == 'REJECTED' ? 'selected' : ''}>Từ chối</option>
+          </select>
+        </div>
+        
+        <div class="col-md-3 d-flex align-items-end">
+          <button type="submit" class="btn btn-primary me-2">
+            <i class="bi bi-search"></i> Tìm kiếm
+          </button>
+          <a href="${pageContext.request.contextPath}/sale/orders?action=list" class="btn btn-secondary">
+            <i class="bi bi-x-circle"></i> Xóa bộ lọc
+          </a>
+        </div>
+      </form>
+    </div>
   </div>
 
   <div class="table-responsive">
