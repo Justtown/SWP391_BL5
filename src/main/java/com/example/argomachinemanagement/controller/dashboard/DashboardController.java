@@ -13,13 +13,10 @@ import java.io.IOException;
  * URL patterns: /manager/dashboard, /sale/dashboard, /customer/dashboard
  */
 @WebServlet(name = "DashboardController", urlPatterns = {
-<<<<<<< HEAD
     "/manager/dashboard",
-=======
     "/admin/dashboard",
     "/manager/dashboard", 
->>>>>>> main
-    "/sale/dashboard", 
+    "/sale/dashboard",
     "/customer/dashboard",
         "/admin/dashboard"
 })
