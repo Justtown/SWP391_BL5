@@ -15,7 +15,7 @@ public class MachineTypeDAO extends DBContext {
      */
     public List<MachineType> findAll() {
         List<MachineType> types = new ArrayList<>();
-        String sql = "SELECT id, type_name, description FROM machine_types ORDER BY type_name";
+        String sql = "SELECT id, type_name, description FROM machine_types ORDER BY id";
         
         try {
             connection = getConnection();

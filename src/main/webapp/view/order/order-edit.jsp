@@ -80,33 +80,32 @@
                         </div>
                     </div>
 
-                    <%
-                        // Lấy giá trị từ request nếu có lỗi
-                        String editMachineTypeId = (String) request.getAttribute("machineTypeId");
-                        String editQuantity = (String) request.getAttribute("quantity");
-                    %>
                     <div class="row">
                         <div class="col-md-8 mb-3">
                             <label class="form-label fw-bold">Tên loại máy <span class="text-danger">*</span></label>
                             <select name="machineTypeId" class="form-control" required>
                                 <option value="">-- Chọn loại máy --</option>
                                 <c:forEach var="type" items="${machineTypes}">
-                                    <%
-                                        String selectedCheck = "";
-                                        if (editMachineTypeId != null) {
-                                            selectedCheck = editMachineTypeId.equals(String.valueOf(pageContext.getAttribute("type"))) ? "selected" : "";
-                                        }
-                                    %>
-                                    <option value="${type.id}" ${type.id == order.machineId ? 'selected' : ''} <%= selectedCheck %>>
-                                        ${type.id} - ${type.typeName}
-                                    </option>
+                                    <c:choose>
+                                        <c:when test="${not empty requestScope.machineTypeId}">
+                                            <option value="${type.id}" ${type.id == requestScope.machineTypeId ? 'selected' : ''}>
+                                                ${type.id} - ${type.typeName}
+                                            </option>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <option value="${type.id}" ${type.id == order.machineId ? 'selected' : ''}>
+                                                ${type.id} - ${type.typeName}
+                                            </option>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </c:forEach>
                             </select>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label fw-bold">Số lượng <span class="text-danger">*</span></label>
                             <input type="number" name="quantity" class="form-control" 
-                                   value="<%= editQuantity != null ? editQuantity : (pageContext.getAttribute("order") != null ? ((com.example.argomachinemanagement.entity.Order)pageContext.getAttribute("order")).getQuantity() : 1) %>" min="1" required>
+                                   value="${not empty requestScope.quantity ? requestScope.quantity : order.quantity}" 
+                                   min="1" required>
                         </div>
                     </div>
 
