@@ -16,11 +16,6 @@
         
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="${ctx}/home">
-                        <i class="fas fa-home"></i> Trang chủ
-                    </a>
-                </li>
             </ul>
             
             <ul class="navbar-nav">
