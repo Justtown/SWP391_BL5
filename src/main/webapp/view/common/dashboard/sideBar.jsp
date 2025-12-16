@@ -49,6 +49,12 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-white" href="${ctx}/manage-account">
+                    <a class="nav-link text-white" href="${ctx}/admin/statistics">
+                        <i class="fas fa-chart-bar me-2"></i>Thống kê
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="${ctx}/admin/manage-account">
                         <i class="fas fa-users me-2"></i>Quản lý User
                     </a>
                 </li>
