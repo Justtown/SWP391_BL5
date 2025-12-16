@@ -112,7 +112,7 @@
             <%-- Menu Items --%>
             <h5 class="mb-3" style="color: #495057; font-weight: 600;">Quản lý hệ thống</h5>
             <div class="menu-grid">
-                <a href="${pageContext.request.contextPath}/manage-account" class="menu-item">
+                <a href="${pageContext.request.contextPath}/admin/manage-account" class="menu-item">
                     <div class="menu-item-title">Quản lý người dùng</div>
                     <div class="menu-item-desc">Xem và quản lý tất cả người dùng trong hệ thống</div>
                 </a>

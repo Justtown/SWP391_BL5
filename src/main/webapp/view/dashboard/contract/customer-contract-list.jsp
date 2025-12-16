@@ -234,7 +234,7 @@
                                 <tr>
                                     <td>${startIndex + loop.index + 1}</td>
                                     <td>
-                                        <a href="${pageContext.request.contextPath}/contracts?action=detail&id=${contract.id}"
+                                        <a href="${pageContext.request.contextPath}/customer/contracts?action=detail&id=${contract.id}"
                                            class="text-decoration-none contract-code-link">
                                             <strong>${contract.contractCode}</strong>
                                         </a>
@@ -249,7 +249,7 @@
                                     <td>${contract.managerName != null ? contract.managerName : 'N/A'}</td>
                                     <td>${contract.createdAt != null ? contract.createdAt : 'N/A'}</td>
                                     <td>
-                                        <a href="${pageContext.request.contextPath}/contracts?action=detail&id=${contract.id}"
+                                        <a href="${pageContext.request.contextPath}/customer/contracts?action=detail&id=${contract.id}"
                                            class="btn btn-view btn-sm">
                                             <i class="fas fa-eye"></i> View
                                         </a>
@@ -353,7 +353,7 @@
             });
         });
 
-        function applyFilters() {
+            function applyFilters() {
             const status = statusFilter.value;
             const keyword = keywordInput.value.trim();
 
@@ -367,7 +367,7 @@
             params.append('page', '1');
 
             const queryString = params.toString();
-            const url = '${pageContext.request.contextPath}/contracts' +
+            const url = '${pageContext.request.contextPath}/customer/contracts' +
                 (queryString ? '?' + queryString : '');
             window.location.href = url;
         }
@@ -386,7 +386,7 @@
             params.append('page', page);
 
             const queryString = params.toString();
-            const url = '${pageContext.request.contextPath}/contracts' +
+            const url = '${pageContext.request.contextPath}/customer/contracts' +
                 (queryString ? '?' + queryString : '');
             window.location.href = url;
         }

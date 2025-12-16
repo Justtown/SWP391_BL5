@@ -137,7 +137,7 @@
                             <!-- Admin Quick Actions -->
                             <c:if test="${sessionScope.roleName == 'admin'}">
                                 <div class="col-md-6">
-                                    <a href="${pageContext.request.contextPath}/manage-account" class="quick-action">
+                                    <a href="${pageContext.request.contextPath}/admin/manage-account" class="quick-action">
                                         <i class="fas fa-users"></i> Quản lý người dùng
                                     </a>
                                 </div>
@@ -194,7 +194,7 @@
                                     </a>
                                 </div>
                                 <div class="col-md-6">
-                                    <a href="${pageContext.request.contextPath}/contracts" class="quick-action">
+                                    <a href="${pageContext.request.contextPath}/customer/contracts" class="quick-action">
                                         <i class="fas fa-file-contract"></i> Hợp đồng của tôi
                                     </a>
                                 </div>
