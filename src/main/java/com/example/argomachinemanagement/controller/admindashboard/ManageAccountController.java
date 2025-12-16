@@ -17,7 +17,7 @@ import java.util.List;
 
 
 
-@WebServlet(name = "ManageAccountController", urlPatterns = { "/manage-account" })
+@WebServlet(name = "ManageAccountController", urlPatterns = { "/admin/manage-account" })
 public class ManageAccountController extends HttpServlet {
     
     private static final int PAGE_SIZE = 5;
@@ -71,7 +71,7 @@ public class ManageAccountController extends HttpServlet {
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
      
-        response.sendRedirect(request.getContextPath() + "/manage-account");
+        response.sendRedirect(request.getContextPath() + "/admin/manage-account");
     }
 
     private void handleListWithFilters(HttpServletRequest request, HttpServletResponse response)

@@ -231,5 +231,31 @@ public class ContractDAO extends DBContext implements I_DAO<Contract> {
         
         return contracts;
     }
+    
+    /**
+     * Generate contract code automatically (format: CT-001, CT-002, ...)
+     */
+    public String generateContractCode() {
+        String sql = "SELECT COUNT(*) as total FROM contracts";
+        int count = 0;
+        
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            resultSet = statement.executeQuery();
+            
+            if (resultSet.next()) {
+                count = resultSet.getInt("total");
+            }
+        } catch (SQLException ex) {
+            System.out.println("Error in generateContractCode: " + ex.getMessage());
+        } finally {
+            closeResources();
+        }
+        
+        // Generate code: CT-001, CT-002, ...
+        int nextNumber = count + 1;
+        return String.format("CT-%03d", nextNumber);
+    }
 }
 

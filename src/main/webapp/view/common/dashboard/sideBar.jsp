@@ -10,10 +10,10 @@
             <i class="fas fa-leaf me-2"></i>Argo Machine
         </h5>
     </div>
-    
+
     <nav class="sidebar-nav">
         <ul class="nav flex-column">
-            
+
             <!-- Dashboard - Hiển thị cho tất cả role -->
             <li class="nav-item">
                 <c:choose>
@@ -39,7 +39,7 @@
                     </c:when>
                 </c:choose>
             </li>
-            
+
             <!-- ==================== ADMIN MENU ==================== -->
             <c:if test="${sessionScope.roleName == 'admin'}">
                 <li class="nav-item">
@@ -54,13 +54,9 @@
                     </a>
                 </li>
                 <li class="nav-item">
+
                     <a class="nav-link text-white" href="${ctx}/admin/manage-account">
                         <i class="fas fa-users me-2"></i>Quản lý User
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/admin/password-reset-requests">
-                        <i class="fas fa-key me-2"></i>Yêu cầu đặt lại MK
                     </a>
                 </li>
                 <li class="nav-item">
@@ -69,7 +65,7 @@
                     </a>
                 </li>
             </c:if>
-            
+
             <!-- ==================== MANAGER MENU ==================== -->
             <c:if test="${sessionScope.roleName == 'manager'}">
                 <li class="nav-item">
@@ -83,16 +79,6 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/manager/machine-types">
-                        <i class="fas fa-layer-group me-2"></i>Quản lý Loại Máy
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/manager/maintenances">
-                        <i class="fas fa-tools me-2"></i>Bảo Trì Máy Trong Kho
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link text-white" href="${ctx}/manager/contracts">
                         <i class="fas fa-file-contract me-2"></i>Quản lý Contract
                     </a>
@@ -103,7 +89,7 @@
                     </a>
                 </li>
             </c:if>
-            
+
             <!-- ==================== SALE MENU ==================== -->
             <c:if test="${sessionScope.roleName == 'sale'}">
                 <li class="nav-item">
@@ -126,8 +112,13 @@
                         <i class="fas fa-shopping-cart me-2"></i>Tạo đơn hàng
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="${ctx}/requests">
+                        <i class="fas fa-clipboard-check me-2"></i>Quản lý Request
+                    </a>
+                </li>
             </c:if>
-            
+
             <!-- ==================== CUSTOMER MENU ==================== -->
             <c:if test="${sessionScope.roleName == 'customer'}">
                 <li class="nav-item">
@@ -141,12 +132,16 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/customer/my-contracts">
+                    <a class="nav-link text-white" href="${ctx}/customer/contracts">
                         <i class="fas fa-file-contract me-2"></i>Contract của tôi
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="${ctx}/requests">
+                        <i class="fas fa-paper-plane me-2"></i>Request của tôi
+                    </a>
+                </li>
             </c:if>
-            
             <!-- ==================== COMMON MENU ==================== -->
             <li class="nav-item">
                 <div class="nav-link text-secondary small text-uppercase mt-3">
@@ -168,7 +163,7 @@
                     <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
                 </a>
             </li>
-            
+
         </ul>
     </nav>
 </div>
@@ -209,39 +204,39 @@
         z-index: 1000;
         transition: all 0.3s;
     }
-    
+
     .sidebar-nav .nav-link {
         padding: 0.75rem 1rem;
         border-radius: 0;
         transition: all 0.2s;
     }
-    
+
     .sidebar-nav .nav-link:hover {
         background-color: rgba(255, 255, 255, 0.1);
         padding-left: 1.25rem;
     }
-    
+
     .sidebar-nav .nav-link.active {
         background-color: rgba(255, 255, 255, 0.15);
         border-left: 3px solid #0d6efd;
     }
-    
+
     .main-content {
         margin-left: 250px;
         padding: 20px;
         min-height: 100vh;
         background-color: #f8f9fa;
     }
-    
+
     @media (max-width: 768px) {
         .sidebar {
             margin-left: -250px;
         }
-        
+
         .sidebar.active {
             margin-left: 0;
         }
-        
+
         .main-content {
             margin-left: 0;
         }
