@@ -105,6 +105,11 @@
                         <i class="fas fa-shopping-cart me-2"></i>Tạo đơn hàng
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="${ctx}/requests">
+                        <i class="fas fa-clipboard-check me-2"></i>Quản lý Request
+                    </a>
+                </li>
             </c:if>
             
             <!-- ==================== CUSTOMER MENU ==================== -->
@@ -122,6 +127,11 @@
                 <li class="nav-item">
                     <a class="nav-link text-white" href="${ctx}/customer/my-contracts">
                         <i class="fas fa-file-contract me-2"></i>Contract của tôi
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="${ctx}/requests">
+                        <i class="fas fa-paper-plane me-2"></i>Request của tôi
                     </a>
                 </li>
             </c:if>
