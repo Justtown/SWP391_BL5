@@ -4,23 +4,26 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.sql.Date;
 import java.sql.Timestamp;
-import java.util.List;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MachineRentRequest {
+public class Request {
+
     private int id;
-    private int machineId;
+    private String title;
+    private String description;
+    // PENDING, APPROVED, DECLINED
+    private String status;
+    private String feedback;
     private int customerId;
-    private Date startDate;
-    private Date endDate;
-    private String note;
-    private String status; // PENDING, APPROVED, REJECTED
-    private Integer reviewedBy;
+    private Integer salerId;
     private Timestamp createdAt;
-    private Timestamp reviewedAt;
+    private Timestamp updatedAt;
+    private String customerUsername;
+
 }
