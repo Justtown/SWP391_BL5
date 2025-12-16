@@ -5,14 +5,12 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * DAO for maintenances table - Quản lý bảo trì máy trong kho
- */
+
 public class MaintenanceDAO extends DBContext {
     
-    /**
-     * Get all maintenances
-     */
+
+     // Get all maintenances
+
     public List<Maintenance> findAll() {
         List<Maintenance> list = new ArrayList<>();
         String sql = "SELECT m.*, mc.machine_code, mc.machine_name, mt.type_name AS machine_type_name " +
@@ -38,9 +36,7 @@ public class MaintenanceDAO extends DBContext {
         return list;
     }
     
-    /**
-     * Find by ID
-     */
+    // Find by ID
     public Maintenance findById(Integer id) {
         Maintenance m = null;
         String sql = "SELECT m.*, mc.machine_code, mc.machine_name, mt.type_name AS machine_type_name " +
@@ -67,9 +63,7 @@ public class MaintenanceDAO extends DBContext {
         return m;
     }
     
-    /**
-     * Find with filters
-     */
+    // Find with filters
     public List<Maintenance> findByFilters(Integer machineId, String maintenanceType, String status) {
         List<Maintenance> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
@@ -121,9 +115,7 @@ public class MaintenanceDAO extends DBContext {
         return list;
     }
     
-    /**
-     * Insert new maintenance
-     */
+    // Insert new maintenance
     public int insert(Maintenance m) {
         int id = 0;
         String sql = "INSERT INTO maintenances (machine_id, maintenance_type, maintenance_date, " +
@@ -156,9 +148,7 @@ public class MaintenanceDAO extends DBContext {
         return id;
     }
     
-    /**
-     * Update maintenance
-     */
+    // Update maintenance
     public boolean update(Maintenance m) {
         boolean success = false;
         String sql = "UPDATE maintenances SET machine_id = ?, maintenance_type = ?, " +
@@ -185,9 +175,7 @@ public class MaintenanceDAO extends DBContext {
         return success;
     }
     
-    /**
-     * Delete maintenance
-     */
+    // Delete maintenance
     public boolean delete(Integer id) {
         boolean success = false;
         String sql = "DELETE FROM maintenances WHERE id = ?";
@@ -206,9 +194,7 @@ public class MaintenanceDAO extends DBContext {
         return success;
     }
     
-    /**
-     * Count all
-     */
+    // Count all
     public int countAll() {
         int count = 0;
         String sql = "SELECT COUNT(*) FROM maintenances";
@@ -229,9 +215,7 @@ public class MaintenanceDAO extends DBContext {
         return count;
     }
     
-    /**
-     * Count by status
-     */
+    // Count by status
     public int countByStatus(String status) {
         int count = 0;
         String sql = "SELECT COUNT(*) FROM maintenances WHERE status = ?";
@@ -253,9 +237,7 @@ public class MaintenanceDAO extends DBContext {
         return count;
     }
     
-    /**
-     * Map ResultSet to Maintenance
-     */
+    // Map ResultSet to Maintenance
     private Maintenance mapResultSet(ResultSet rs) throws SQLException {
         Maintenance m = Maintenance.builder()
                 .id(rs.getInt("id"))

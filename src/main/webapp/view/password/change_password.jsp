@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
     // Check if user is logged in
     Integer userId = (Integer) session.getAttribute("userId");
@@ -105,7 +106,23 @@
 
             <% if (!mustChangePassword) { %>
             <div class="text-center mt-3">
-                <a href="${pageContext.request.contextPath}/home">Quay lại trang chủ</a>
+                <c:choose>
+                    <c:when test="${sessionScope.roleName == 'admin'}">
+                        <a href="${pageContext.request.contextPath}/admin/dashboard">Quay lại Dashboard</a>
+                    </c:when>
+                    <c:when test="${sessionScope.roleName == 'manager'}">
+                        <a href="${pageContext.request.contextPath}/manager/dashboard">Quay lại Dashboard</a>
+                    </c:when>
+                    <c:when test="${sessionScope.roleName == 'sale'}">
+                        <a href="${pageContext.request.contextPath}/sale/dashboard">Quay lại Dashboard</a>
+                    </c:when>
+                    <c:when test="${sessionScope.roleName == 'customer'}">
+                        <a href="${pageContext.request.contextPath}/customer/dashboard">Quay lại Dashboard</a>
+                    </c:when>
+                    <c:otherwise>
+                        <a href="${pageContext.request.contextPath}/dashboard">Quay lại Dashboard</a>
+                    </c:otherwise>
+                </c:choose>
             </div>
             <% } %>
         </div>

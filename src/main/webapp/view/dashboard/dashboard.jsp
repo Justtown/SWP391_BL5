@@ -151,6 +151,11 @@
                             <!-- Manager Quick Actions -->
                             <c:if test="${sessionScope.roleName == 'manager'}">
                                 <div class="col-md-6">
+                                    <a href="${pageContext.request.contextPath}/manager/statistics" class="quick-action">
+                                        <i class="fas fa-chart-bar"></i> Thống kê
+                                    </a>
+                                </div>
+                                <div class="col-md-6">
                                     <a href="${pageContext.request.contextPath}/manager/machines" class="quick-action">
                                         <i class="fas fa-cogs"></i> Quản lý Machine
                                     </a>
