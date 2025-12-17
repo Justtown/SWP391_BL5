@@ -75,7 +75,7 @@ public class RoleAuthFilter implements Filter {
         }
         
         String roleName = (String) session.getAttribute("roleName");
-
+        
         // Kiểm tra quyền truy cập
         if (!hasPermission(path, allowedUrls)
                 && !hasLegacyAliasPermission(path, allowedUrls)

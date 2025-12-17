@@ -102,7 +102,8 @@ public class UserInfoController extends HttpServlet {
                 boolean success = userDAO.update(user);
                 
                 if (success) {
-                    response.sendRedirect(request.getContextPath() + "/user-info?id=" + userId + "&success=User updated successfully");
+                    response.sendRedirect(request.getContextPath() + "/admin/manage-account?success="
+                            + java.net.URLEncoder.encode("User updated successfully", "UTF-8"));
                 } else {
                     request.setAttribute("errorMessage", "Failed to update user. Please try again!");
                     doGet(request, response);

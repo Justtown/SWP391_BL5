@@ -237,7 +237,7 @@
                                 </button>
                                 <button type="button" class="status-btn ${user.status == 0 ? 'active' : ''}" 
                                         onclick="setStatus('0', this)">
-                                    Inactive
+                                    Deactive
                                 </button>
                             </div>
                         </div>
