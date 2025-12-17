@@ -3,6 +3,8 @@
 
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
 
+<c:set var="ctx" value="${pageContext.request.contextPath}" />
+
 <!-- Sidebar -->
 <div class="sidebar bg-dark text-white" id="sidebar">
     <div class="sidebar-header p-3 border-bottom border-secondary">
@@ -10,10 +12,10 @@
             <i class="fas fa-leaf me-2"></i>Argo Machine
         </h5>
     </div>
-
+    
     <nav class="sidebar-nav">
         <ul class="nav flex-column">
-
+            
             <!-- Dashboard - Hiển thị cho tất cả role -->
             <li class="nav-item">
                 <c:choose>
@@ -39,7 +41,7 @@
                     </c:when>
                 </c:choose>
             </li>
-
+            
             <!-- ==================== ADMIN MENU ==================== -->
             <c:if test="${sessionScope.roleName == 'admin'}">
                 <li class="nav-item">
@@ -48,7 +50,7 @@
                     </div>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/admin/manage-account">
+                    <a class="nav-link text-white" href="${ctx}/manage-account">
                         <i class="fas fa-users me-2"></i>Quản lý User
                     </a>
                 </li>
@@ -57,8 +59,13 @@
                         <i class="fas fa-user-shield me-2"></i>Quản lý Permission
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="${ctx}/admin/pending-users">
+                        <i class="fas fa-user-clock me-2"></i>User chờ duyệt
+                    </a>
+                </li>
             </c:if>
-
+            
             <!-- ==================== MANAGER MENU ==================== -->
             <c:if test="${sessionScope.roleName == 'manager'}">
                 <li class="nav-item">
@@ -82,7 +89,7 @@
                     </a>
                 </li>
             </c:if>
-
+            
             <!-- ==================== SALE MENU ==================== -->
             <c:if test="${sessionScope.roleName == 'sale'}">
                 <li class="nav-item">
@@ -105,13 +112,8 @@
                         <i class="fas fa-shopping-cart me-2"></i>Tạo đơn hàng
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/requests">
-                        <i class="fas fa-clipboard-check me-2"></i>Quản lý Request
-                    </a>
-                </li>
             </c:if>
-
+            
             <!-- ==================== CUSTOMER MENU ==================== -->
             <c:if test="${sessionScope.roleName == 'customer'}">
                 <li class="nav-item">
@@ -125,16 +127,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/customer/contracts">
+                    <a class="nav-link text-white" href="${ctx}/customer/my-contracts">
                         <i class="fas fa-file-contract me-2"></i>Contract của tôi
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/requests">
-                        <i class="fas fa-paper-plane me-2"></i>Request của tôi
-                    </a>
-                </li>
             </c:if>
+            
             <!-- ==================== COMMON MENU ==================== -->
             <li class="nav-item">
                 <div class="nav-link text-secondary small text-uppercase mt-3">
@@ -156,8 +154,34 @@
                     <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
                 </a>
             </li>
-
+            
         </ul>
+    </nav>
+</div>
+
+<!-- Logout Modal -->
+<div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 10px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); border: none;">
+            <div class="modal-body p-5 text-center">
+                <div class="mb-4">
+                    <i class="fas fa-sign-out-alt fa-3x text-primary"></i>
+                </div>
+                <h4 class="mb-3">Đăng xuất</h4>
+                <p class="text-muted mb-4">Bạn có muốn đăng xuất khỏi hệ thống không?</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <form action="${ctx}/logout" method="POST" style="display: inline;">
+                        <input type="hidden" name="confirm" value="yes">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="fas fa-check me-1"></i> Có, đăng xuất
+                        </button>
+                    </form>
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Không
+                    </button>
+                </div>
+            </div>
+        </div>
     </nav>
 </div>
 
@@ -197,39 +221,39 @@
         z-index: 1000;
         transition: all 0.3s;
     }
-
+    
     .sidebar-nav .nav-link {
         padding: 0.75rem 1rem;
         border-radius: 0;
         transition: all 0.2s;
     }
-
+    
     .sidebar-nav .nav-link:hover {
         background-color: rgba(255, 255, 255, 0.1);
         padding-left: 1.25rem;
     }
-
+    
     .sidebar-nav .nav-link.active {
         background-color: rgba(255, 255, 255, 0.15);
         border-left: 3px solid #0d6efd;
     }
-
+    
     .main-content {
         margin-left: 250px;
         padding: 20px;
         min-height: 100vh;
         background-color: #f8f9fa;
     }
-
+    
     @media (max-width: 768px) {
         .sidebar {
             margin-left: -250px;
         }
-
+        
         .sidebar.active {
             margin-left: 0;
         }
-
+        
         .main-content {
             margin-left: 0;
         }

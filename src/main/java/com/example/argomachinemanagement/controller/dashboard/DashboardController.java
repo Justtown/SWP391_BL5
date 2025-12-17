@@ -14,12 +14,15 @@ import java.io.IOException;
  */
 @WebServlet(name = "DashboardController", urlPatterns = {
 
+    "/sale/dashboard", 
+    "/customer/dashboard",
     "/manager/dashboard",
-
     "/admin/dashboard",
     "/manager/dashboard", 
-
-    "/sale/dashboard", 
+    "/manager/dashboard",
+    "/admin/dashboard",
+    "/manager/dashboard", 
+    "/sale/dashboard",
     "/customer/dashboard",
         "/admin/dashboard"
 })

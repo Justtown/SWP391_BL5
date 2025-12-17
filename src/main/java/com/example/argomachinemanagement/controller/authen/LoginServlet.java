@@ -61,22 +61,38 @@ public class LoginServlet extends HttpServlet {
             return;
         }
         
-        // Lấy user trong db
+        // Lấy user trong db (không check status trong query)
         User user = userDAO.login(username.trim(), password);
-        
+
         if (user != null) {
-   
+            // Kiểm tra status của user
+            // status = 0: Deactivated, 1: Active, 2: Pending
+            if (user.getStatus() == 2) {
+                // Tài khoản đang chờ duyệt
+                request.setAttribute("error", "Tài khoản của bạn đang chờ Admin phê duyệt. Vui lòng đợi!");
+                request.setAttribute("username", username);
+                request.getRequestDispatcher("/view/authen/login.jsp").forward(request, response);
+                return;
+            } else if (user.getStatus() == 0) {
+                // Tài khoản đã bị vô hiệu hóa
+                request.setAttribute("error", "Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ Admin!");
+                request.setAttribute("username", username);
+                request.getRequestDispatcher("/view/authen/login.jsp").forward(request, response);
+                return;
+            }
+
+            // status = 1: Active - cho phép đăng nhập
             HttpSession session = request.getSession(true);
             session.setAttribute("user", user);
             session.setAttribute("userId", user.getId());
             session.setAttribute("username", user.getUsername());
             session.setAttribute("fullName", user.getFullName());
             session.setAttribute("roleName", user.getRoleName());
-            
+
             // Load danh sách URL patterns được phép từ database và lưu vào session
             Set<String> allowedUrls = permissionDAO.getAllowedUrlPatternsByUserId(user.getId());
             session.setAttribute("allowedUrls", allowedUrls);
-            
+
             // Kiểm tra xem user có login bằng password mới từ admin chưa (chưa đổi mật khẩu)
 //            PasswordResetRequest pendingChange = passwordResetRequestDAO.findUnchangedApprovedRequest(user.getId());
 //            if (pendingChange != null) {
@@ -85,7 +101,7 @@ public class LoginServlet extends HttpServlet {
 //                response.sendRedirect(request.getContextPath() + "/change-password");
 //                return;
 //            }
-            
+
             if ("on".equals(rememberMe)) {
                 session.setMaxInactiveInterval(7 * 24 * 60 * 60); // 7 days
             } else {
@@ -96,9 +112,9 @@ public class LoginServlet extends HttpServlet {
             String redirectUrl = userDAO.getDefaultUrlByUserId(user.getId());
             response.sendRedirect(request.getContextPath() + redirectUrl);
         } else {
-           
+
             request.setAttribute("error", "Tên đăng nhập hoặc mật khẩu không đúng!");
-            request.setAttribute("username", username); 
+            request.setAttribute("username", username);
             request.getRequestDispatcher("/view/authen/login.jsp").forward(request, response);
         }
     }

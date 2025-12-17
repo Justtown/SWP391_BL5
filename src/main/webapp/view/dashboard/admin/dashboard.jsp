@@ -88,9 +88,6 @@
         <div class="dashboard-container">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 class="page-title mb-0">Admin Dashboard</h1>
-                <a href="${pageContext.request.contextPath}/home" class="btn btn-outline-secondary btn-sm">
-                    Về trang chủ
-                </a>
             </div>
             
             <%-- Statistics Cards --%>
@@ -112,6 +109,14 @@
             <%-- Menu Items --%>
             <h5 class="mb-3" style="color: #495057; font-weight: 600;">Quản lý hệ thống</h5>
             <div class="menu-grid">
+                <a href="${pageContext.request.contextPath}/manage-account" class="menu-item">
+                <a href="${pageContext.request.contextPath}/admin/statistics" class="menu-item">
+                    <div class="menu-item-title">
+                        <i class="fas fa-chart-bar me-2"></i>Thống kê
+                    </div>
+                    <div class="menu-item-desc">Xem thống kê chi tiết với biểu đồ</div>
+                </a>
+
                 <a href="${pageContext.request.contextPath}/admin/manage-account" class="menu-item">
                     <div class="menu-item-title">Quản lý người dùng</div>
                     <div class="menu-item-desc">Xem và quản lý tất cả người dùng trong hệ thống</div>
