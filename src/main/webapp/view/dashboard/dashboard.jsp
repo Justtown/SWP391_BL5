@@ -213,6 +213,12 @@
                                         <i class="fas fa-list"></i> Yêu cầu của tôi
                                     </a>
                                 </div>
+                                <div class="col-md-6">
+                                    <a href="${pageContext.request.contextPath}/customer/machines" class="quick-action">
+                                        <i class="fas fa-cogs"></i> Xem danh sách Machine
+                                    </a>
+                                </div>
+
                             </c:if>
                             
                             <!-- Common Actions -->

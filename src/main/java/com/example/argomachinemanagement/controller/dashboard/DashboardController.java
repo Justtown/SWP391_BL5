@@ -18,13 +18,7 @@ import java.io.IOException;
     "/customer/dashboard",
     "/manager/dashboard",
     "/admin/dashboard",
-    "/manager/dashboard", 
-    "/manager/dashboard",
-    "/admin/dashboard",
-    "/manager/dashboard", 
-    "/sale/dashboard",
-    "/customer/dashboard",
-        "/admin/dashboard"
+
 })
 public class DashboardController extends HttpServlet {
     
