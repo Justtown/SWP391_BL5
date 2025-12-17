@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -18,6 +19,16 @@ import java.util.Set;
 public class RoleAuthFilter implements Filter {
     
     private PermissionDAO permissionDAO;
+    /**
+     * Map các URL mới -> URL cũ để tương thích permission đã lưu trong DB.
+     * Ví dụ: DB đang có /contracts nhưng UI/route mới là /manager/contracts.
+     */
+    private static final Map<String, String> LEGACY_PERMISSION_ALIASES = Map.of(
+            "/admin/manage-account", "/manage-account",
+            "/manager/contracts", "/contracts",
+            "/sale/contracts", "/contracts",
+            "/customer/contracts", "/contracts"
+    );
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -62,7 +73,7 @@ public class RoleAuthFilter implements Filter {
         }
         
         // Kiểm tra quyền truy cập
-        if (!hasPermission(path, allowedUrls)) {
+        if (!hasPermission(path, allowedUrls) && !hasLegacyAliasPermission(path, allowedUrls)) {
             // Không có quyền truy cập
             httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, 
                 "Bạn không có quyền truy cập trang này: " + path);
@@ -91,6 +102,18 @@ public class RoleAuthFilter implements Filter {
         }
         
         return false;
+    }
+
+    /**
+     * Kiểm tra quyền thông qua alias (URL mới -> URL cũ).
+     * Chỉ áp dụng cho một số URL đã được map cố định trong LEGACY_PERMISSION_ALIASES.
+     */
+    private boolean hasLegacyAliasPermission(String requestPath, Set<String> allowedUrls) {
+        String legacy = LEGACY_PERMISSION_ALIASES.get(requestPath);
+        if (legacy == null) {
+            return false;
+        }
+        return hasPermission(legacy, allowedUrls);
     }
     
     /**

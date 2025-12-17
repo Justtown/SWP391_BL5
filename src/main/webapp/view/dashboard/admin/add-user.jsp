@@ -212,7 +212,7 @@
                 
                 <!-- Buttons -->
                 <div class="btn-group-custom">
-                    <a href="${pageContext.request.contextPath}/manage-account" class="btn-back">
+                    <a href="${pageContext.request.contextPath}/admin/manage-account" class="btn-back">
                         <i class="fas fa-arrow-left"></i> Back
                     </a>
                     <button type="submit" class="btn btn-add">Add</button>

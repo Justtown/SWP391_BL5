@@ -1,5 +1,10 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<c:set var="contractsPath" value="/contracts" />
+<c:if test="${sessionScope.roleName == 'manager'}"><c:set var="contractsPath" value="/manager/contracts" /></c:if>
+<c:if test="${sessionScope.roleName == 'sale'}"><c:set var="contractsPath" value="/sale/contracts" /></c:if>
+<c:if test="${sessionScope.roleName == 'customer'}"><c:set var="contractsPath" value="/customer/contracts" /></c:if>
+<c:set var="contractsBase" value="${pageContext.request.contextPath}${contractsPath}" />
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -174,7 +179,7 @@
                     <i class="fas fa-times clear-search" id="clearSearch"></i>
                 </div>
                 
-                <a href="${pageContext.request.contextPath}/contracts?action=create" class="add-contract-link">
+                <a href="${contractsBase}?action=create" class="add-contract-link">
                     <i class="fas fa-plus"></i> Create New Contract
                 </a>
             </div>
@@ -218,7 +223,7 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <a href="${pageContext.request.contextPath}/contracts?action=detail&id=${contract.id}" 
+                                            <a href="${contractsBase}?action=detail&id=${contract.id}" 
                                                class="btn btn-sm btn-info">
                                                 <i class="fas fa-eye"></i> View
                                             </a>
@@ -335,7 +340,7 @@
                 params.append('page', '1');
                 
                 const queryString = params.toString();
-                const url = '${pageContext.request.contextPath}/contracts' + 
+                const url = '${contractsBase}' + 
                            (queryString ? '?' + queryString : '');
                 window.location.href = url;
             }
@@ -354,7 +359,7 @@
                 params.append('page', page);
                 
                 const queryString = params.toString();
-                const url = '${pageContext.request.contextPath}/contracts' + 
+                const url = '${contractsBase}' + 
                            (queryString ? '?' + queryString : '');
                 window.location.href = url;
             }

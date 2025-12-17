@@ -15,7 +15,7 @@ import java.util.List;
  * Controller xử lý việc thêm user mới
  * URL: /add-user
  */
-@WebServlet(name = "AddUserController", urlPatterns = { "/add-user" })
+@WebServlet(name = "AddUserController", urlPatterns = { "/add-user", "/admin/add-user" })
 public class AddUserController extends HttpServlet {
     
     private UserDAO userDAO;
@@ -141,7 +141,7 @@ public class AddUserController extends HttpServlet {
         
         if (userId > 0) {
             // Success - redirect to user management page
-            response.sendRedirect(request.getContextPath() + "/manage-account?success=User added successfully");
+            response.sendRedirect(request.getContextPath() + "/admin/manage-account?success=User added successfully");
         } else {
             // Error
             request.setAttribute("errorMessage", "Failed to add user. Please try again!");

@@ -183,7 +183,7 @@
                     <i class="fas fa-times clear-search" id="clearSearch"></i>
                 </div>
                 
-                <a href="${pageContext.request.contextPath}/add-user" class="add-user-link">
+                <a href="${pageContext.request.contextPath}/admin/add-user" class="add-user-link">
                     <i class="fas fa-plus"></i> Add new user
                 </a>
             </div>
@@ -362,7 +362,7 @@
                 params.append('page', '1');
                 
                 const queryString = params.toString();
-                const url = '${pageContext.request.contextPath}/manage-account' + 
+                const url = '${pageContext.request.contextPath}/admin/manage-account' + 
                            (queryString ? '?' + queryString : '');
                 window.location.href = url;
             }
@@ -386,7 +386,7 @@
                 params.append('page', page);
                 
                 const queryString = params.toString();
-                const url = '${pageContext.request.contextPath}/manage-account' + 
+                const url = '${pageContext.request.contextPath}/admin/manage-account' + 
                            (queryString ? '?' + queryString : '');
                 window.location.href = url;
             }

@@ -1,5 +1,10 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<c:set var="contractsPath" value="/contracts" />
+<c:if test="${sessionScope.roleName == 'manager'}"><c:set var="contractsPath" value="/manager/contracts" /></c:if>
+<c:if test="${sessionScope.roleName == 'sale'}"><c:set var="contractsPath" value="/sale/contracts" /></c:if>
+<c:if test="${sessionScope.roleName == 'customer'}"><c:set var="contractsPath" value="/customer/contracts" /></c:if>
+<c:set var="contractsBase" value="${pageContext.request.contextPath}${contractsPath}" />
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -113,7 +118,7 @@
                 <div class="alert alert-danger">${error}</div>
             </c:if>
             
-            <form action="${pageContext.request.contextPath}/contracts" method="POST" id="createContractForm" autocomplete="off">
+            <form action="${contractsBase}" method="POST" id="createContractForm" autocomplete="off">
                 <input type="hidden" name="action" value="create">
                 
                 <div class="mb-3">
@@ -180,7 +185,7 @@
                 </div>
                 
                 <div class="btn-group-custom">
-                    <a href="${pageContext.request.contextPath}/contracts" class="btn-back">
+                    <a href="${contractsBase}" class="btn-back">
                         <i class="fas fa-arrow-left"></i> Back
                     </a>
                     <button type="submit" class="btn btn-add">

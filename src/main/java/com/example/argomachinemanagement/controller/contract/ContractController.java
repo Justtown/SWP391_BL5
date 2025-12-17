@@ -13,7 +13,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-@WebServlet(name = "ContractController", urlPatterns = {"/contracts"})
+@WebServlet(
+        name = "ContractController",
+        urlPatterns = {"/contracts", "/manager/contracts", "/sale/contracts", "/customer/contracts"}
+)
 public class ContractController extends HttpServlet {
     
     private static final int PAGE_SIZE = 5;
