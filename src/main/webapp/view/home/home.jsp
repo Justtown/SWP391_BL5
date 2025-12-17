@@ -67,19 +67,27 @@
 
 <div class="title">Argo Machine Management</div>
 
+<%
+    // Lấy thông tin từ session
+    boolean isAdmin = "admin".equalsIgnoreCase(username); // Nếu username là admin
+%>
+
 <div class="menu">
     <a href="${pageContext.request.contextPath}/home">Home</a>
     <a href="${pageContext.request.contextPath}/product">Product</a>
     <a href="${pageContext.request.contextPath}/introduce">Introduce</a>
 
-    <% if (isLoggedIn) { %>
     <a href="${pageContext.request.contextPath}/my-profile">Profile</a>
     <a href="${pageContext.request.contextPath}/change-password">Change Password</a>
-    <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout (<%= fullName != null ? fullName : username %>)</a>
+    <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
+        Logout (<%= fullName != null ? fullName : username %>)
+    </a>
     <% } else { %>
     <a href="${pageContext.request.contextPath}/login">Login</a>
     <% } %>
 </div>
+
+
 
 <div class="container-main">
     <% if (isLoggedIn) { %>

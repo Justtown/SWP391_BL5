@@ -47,6 +47,7 @@ public class AddUserController extends HttpServlet {
         String address = request.getParameter("address");
         String dob = request.getParameter("dob");
         String password = request.getParameter("password");
+        String confirmPassword = request.getParameter("confirmPassword");
         String roleName = request.getParameter("role");
         String statusStr = request.getParameter("status");
         
@@ -100,6 +101,13 @@ public class AddUserController extends HttpServlet {
             return;
         }
         
+        // Validate confirm password
+        if (confirmPassword == null || !confirmPassword.equals(password)) {
+            request.setAttribute("errorMessage", "Confirm password must match password!");
+            showAddFormWithData(request, response, fullName, email, username, phone, address, dob, roleName, statusStr);
+            return;
+        }
+        
         if (roleName == null || roleName.trim().isEmpty()) {
             request.setAttribute("errorMessage", "Please select a role!");
             showAddFormWithData(request, response, fullName, email, username, phone, address, dob, roleName, statusStr);
@@ -141,7 +149,7 @@ public class AddUserController extends HttpServlet {
         
         if (userId > 0) {
             // Success - redirect to user management page
-            response.sendRedirect(request.getContextPath() + "/manage-account?success=User added successfully");
+            response.sendRedirect(request.getContextPath() + "/admin/manage-account?success=User added successfully");
         } else {
             // Error
             request.setAttribute("errorMessage", "Failed to add user. Please try again!");

@@ -39,10 +39,17 @@ public class RoleAuthFilter implements Filter {
             return;
         }
         
-        // Lấy userId từ session
+        // Lấy userId và roleName từ session
         Integer userId = (Integer) session.getAttribute("userId");
+        String roleName = (String) session.getAttribute("roleName");
         if (userId == null) {
             httpResponse.sendRedirect(httpRequest.getContextPath() + "/login");
+            return;
+        }
+        
+        // Nếu là admin thì cho phép truy cập tất cả các URL /admin/* (bỏ qua kiểm tra permission chi tiết)
+        if (roleName != null && roleName.equalsIgnoreCase("admin")) {
+            chain.doFilter(request, response);
             return;
         }
         
@@ -58,8 +65,16 @@ public class RoleAuthFilter implements Filter {
         // Nếu chưa có trong session, load từ database
         if (allowedUrls == null) {
             allowedUrls = permissionDAO.getAllowedUrlPatternsByUserId(userId);
-            session.setAttribute("allowedUrls", allowedUrls);
         }
+
+        // Bổ sung một số URL mặc định theo role (không cần sửa DB)
+        if (roleName != null && roleName.equalsIgnoreCase("customer") && allowedUrls != null) {
+            // Cho phép customer truy cập trang danh sách hợp đồng riêng
+            allowedUrls.add("/customer/contracts");
+        }
+
+        // Lưu lại vào session (phòng khi có thay đổi ở trên)
+        session.setAttribute("allowedUrls", allowedUrls);
         
         // Kiểm tra quyền truy cập
         if (!hasPermission(path, allowedUrls)) {
