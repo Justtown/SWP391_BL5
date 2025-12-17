@@ -309,6 +309,7 @@
                 </li>
             </c:if>
 
+
             <!-- ==================== COMMON MENU ==================== -->
             <li class="nav-item">
                 <div class="nav-link text-secondary small text-uppercase mt-3">
@@ -441,7 +442,7 @@
             background-color: rgba(255, 255, 255, 0.15);
             border-left: 3px solid #0d6efd;
         }
-        
+
         .main-content {
             margin-left: 250px;
             padding: 20px;
