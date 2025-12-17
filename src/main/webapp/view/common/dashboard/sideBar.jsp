@@ -48,7 +48,6 @@
                     </div>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/manage-account">
                     <a class="nav-link text-white" href="${ctx}/admin/statistics">
                         <i class="fas fa-chart-bar me-2"></i>Thống kê
                     </a>
