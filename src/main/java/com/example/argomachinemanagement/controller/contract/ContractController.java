@@ -1,14 +1,10 @@
 package com.example.argomachinemanagement.controller.contract;
 
 import com.example.argomachinemanagement.dal.ContractDAO;
-import com.example.argomachinemanagement.dal.ContractItemDAO;
-import com.example.argomachinemanagement.dal.MachineDAO;
 import com.example.argomachinemanagement.dal.MachineTypeDAO;
 import com.example.argomachinemanagement.dal.OrderDAO;
 import com.example.argomachinemanagement.dal.UserDAO;
 import com.example.argomachinemanagement.entity.Contract;
-import com.example.argomachinemanagement.entity.ContractItem;
-import com.example.argomachinemanagement.entity.Machine;
 import com.example.argomachinemanagement.entity.MachineType;
 import com.example.argomachinemanagement.entity.Order;
 import com.example.argomachinemanagement.entity.User;
@@ -32,8 +28,6 @@ public class ContractController extends HttpServlet {
     
     private ContractDAO contractDAO;
     private UserDAO userDAO;
-    private ContractItemDAO contractItemDAO;
-    private MachineDAO machineDAO;
     private MachineTypeDAO machineTypeDAO;
     private OrderDAO orderDAO;
     
@@ -41,8 +35,6 @@ public class ContractController extends HttpServlet {
     public void init() throws ServletException {
         contractDAO = new ContractDAO();
         userDAO = new UserDAO();
-        contractItemDAO = new ContractItemDAO();
-        machineDAO = new MachineDAO();
         machineTypeDAO = new MachineTypeDAO();
         orderDAO = new OrderDAO();
     }
@@ -58,8 +50,6 @@ public class ContractController extends HttpServlet {
             handleDetail(request, response);
         } else if ("create".equals(action)) {
             showCreateForm(request, response);
-        } else if ("add-machine".equals(action)) {
-            showAddMachineForm(request, response);
         }
     }
     
@@ -70,10 +60,6 @@ public class ContractController extends HttpServlet {
         
         if ("create".equals(action)) {
             handleCreateContract(request, response);
-        } else if ("add-machine".equals(action)) {
-            handleAddMachine(request, response);
-        } else if ("remove-machine".equals(action)) {
-            handleRemoveMachine(request, response);
         } else {
             // Nếu không phải action nào, redirect về list
             response.sendRedirect(request.getContextPath() + "/contracts");
@@ -422,7 +408,8 @@ public class ContractController extends HttpServlet {
                 .managerId(Integer.parseInt(managerIdStr))
                 .startDate(startDate)
                 .endDate(endDate)
-                .status("DRAFT")
+                // Sau khi manager tạo hợp đồng -> ACTIVE (không để DRAFT)
+                .status("ACTIVE")
                 .note(note != null ? note.trim() : null)
                 .customerName(customerName != null ? customerName.trim() : null)
                 .customerPhone(customerPhone != null ? customerPhone.trim() : null)
@@ -521,14 +508,10 @@ public class ContractController extends HttpServlet {
             }
         }
 
-        // Load danh sách machines trong contract
-        List<ContractItem> contractItems = contractItemDAO.findByContractId(id);
-        
         // Load machine types để hiển thị tên loại máy (cho cả customer và manager)
         List<MachineType> machineTypes = machineTypeDAO.findAll();
         
         request.setAttribute("contract", contract);
-        request.setAttribute("contractItems", contractItems);
         request.setAttribute("machineTypes", machineTypes);
 
         // Customer sẽ sử dụng view "my contract" riêng, các role khác dùng view chung
@@ -538,138 +521,6 @@ public class ContractController extends HttpServlet {
         } else {
             request.getRequestDispatcher("/view/dashboard/contract/contract-detail.jsp")
                     .forward(request, response);
-        }
-    }
-    
-    /**
-     * Hiển thị form thêm machine vào contract
-     */
-    private void showAddMachineForm(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        String contractIdStr = request.getParameter("contractId");
-        if (contractIdStr == null || contractIdStr.trim().isEmpty()) {
-            response.sendRedirect(request.getContextPath() + "/contracts");
-            return;
-        }
-        
-        int contractId;
-        try {
-            contractId = Integer.parseInt(contractIdStr);
-        } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/contracts");
-            return;
-        }
-        
-        // Kiểm tra contract tồn tại
-        Contract contract = contractDAO.findById(contractId);
-        if (contract == null) {
-            response.sendRedirect(request.getContextPath() + "/contracts");
-            return;
-        }
-        
-        // Lấy danh sách machines có thể thêm (chưa được thêm vào contract này)
-        List<Machine> allMachines = machineDAO.findAll();
-        List<Machine> availableMachines = new ArrayList<>();
-        for (Machine machine : allMachines) {
-            if (!contractItemDAO.exists(contractId, machine.getId())) {
-                availableMachines.add(machine);
-            }
-        }
-        
-        request.setAttribute("contract", contract);
-        request.setAttribute("machines", availableMachines);
-        request.getRequestDispatcher("/view/dashboard/contract/contract-add-machine.jsp")
-                .forward(request, response);
-    }
-    
-    /**
-     * Xử lý thêm machine vào contract (POST)
-     */
-    private void handleAddMachine(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        String contractIdStr = request.getParameter("contractId");
-        String machineIdStr = request.getParameter("machineId");
-        String note = request.getParameter("note");
-        
-        if (contractIdStr == null || machineIdStr == null) {
-            response.sendRedirect(request.getContextPath() + "/contracts");
-            return;
-        }
-        
-        int contractId;
-        int machineId;
-        try {
-            contractId = Integer.parseInt(contractIdStr);
-            machineId = Integer.parseInt(machineIdStr);
-        } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/contracts");
-            return;
-        }
-        
-        // Kiểm tra contract tồn tại
-        Contract contract = contractDAO.findById(contractId);
-        if (contract == null) {
-            response.sendRedirect(request.getContextPath() + "/contracts");
-            return;
-        }
-        
-        // Kiểm tra machine đã được thêm chưa
-        if (contractItemDAO.exists(contractId, machineId)) {
-            response.sendRedirect(request.getContextPath() + "/contracts?action=detail&id=" + contractId + "&error=Machine already added");
-            return;
-        }
-        
-        // Lấy thông tin machine để lưu snapshot
-        Machine machine = machineDAO.findById(machineId);
-        if (machine == null) {
-            response.sendRedirect(request.getContextPath() + "/contracts?action=detail&id=" + contractId + "&error=Machine not found");
-            return;
-        }
-        
-        // Tạo ContractItem
-        ContractItem item = ContractItem.builder()
-                .contractId(contractId)
-                .machineId(machineId)
-                .machineNameSnapshot(machine.getMachineName())
-                .note(note != null ? note.trim() : null)
-                .build();
-        
-        int itemId = contractItemDAO.insert(item);
-        if (itemId > 0) {
-            response.sendRedirect(request.getContextPath() + "/contracts?action=detail&id=" + contractId + "&success=Machine added successfully");
-        } else {
-            response.sendRedirect(request.getContextPath() + "/contracts?action=detail&id=" + contractId + "&error=Failed to add machine");
-        }
-    }
-    
-    /**
-     * Xử lý xóa machine khỏi contract
-     */
-    private void handleRemoveMachine(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        String itemIdStr = request.getParameter("itemId");
-        String contractIdStr = request.getParameter("contractId");
-        
-        if (itemIdStr == null) {
-            response.sendRedirect(request.getContextPath() + "/contracts");
-            return;
-        }
-        
-        int itemId;
-        try {
-            itemId = Integer.parseInt(itemIdStr);
-        } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/contracts");
-            return;
-        }
-        
-        boolean success = contractItemDAO.delete(itemId);
-        int contractId = contractIdStr != null ? Integer.parseInt(contractIdStr) : 0;
-        
-        if (success) {
-            response.sendRedirect(request.getContextPath() + "/contracts?action=detail&id=" + contractId + "&success=Machine removed successfully");
-        } else {
-            response.sendRedirect(request.getContextPath() + "/contracts?action=detail&id=" + contractId + "&error=Failed to remove machine");
         }
     }
 }
