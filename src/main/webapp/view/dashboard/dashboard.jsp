@@ -137,7 +137,7 @@
                             <!-- Admin Quick Actions -->
                             <c:if test="${sessionScope.roleName == 'admin'}">
                                 <div class="col-md-6">
-                                    <a href="${pageContext.request.contextPath}/admin/manage-account" class="quick-action">
+                                    <a href="${pageContext.request.contextPath}/manage-account" class="quick-action">
                                         <i class="fas fa-users"></i> Quản lý người dùng
                                     </a>
                                 </div>
@@ -189,11 +189,6 @@
                                         <i class="fas fa-shopping-cart"></i> Tạo đơn hàng mới
                                     </a>
                                 </div>
-                                <div class="col-md-6">
-                                    <a href="${pageContext.request.contextPath}/requests" class="quick-action">
-                                        <i class="fas fa-list-check"></i> Danh sách yêu cầu
-                                    </a>
-                                </div>
                             </c:if>
                             
                             <!-- Customer Quick Actions -->
@@ -204,13 +199,8 @@
                                     </a>
                                 </div>
                                 <div class="col-md-6">
-                                    <a href="${pageContext.request.contextPath}/customer/contracts" class="quick-action">
+                                    <a href="${pageContext.request.contextPath}/customer/my-contracts" class="quick-action">
                                         <i class="fas fa-file-contract"></i> Hợp đồng của tôi
-                                    </a>
-                                </div>
-                                <div class="col-md-6">
-                                    <a href="${pageContext.request.contextPath}/requests" class="quick-action">
-                                        <i class="fas fa-list"></i> Yêu cầu của tôi
                                     </a>
                                 </div>
                             </c:if>
