@@ -1,4 +1,3 @@
-
 <%@ page contentType="text/html; charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -6,8 +5,10 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Chi tiết đơn hàng</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết đơn hàng - Argo Machine Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         .status-badge-lg {
@@ -24,7 +25,10 @@
         }
     </style>
 </head>
-<body class="bg-light">
+<body>
+<jsp:include page="/view/common/dashboard/sideBar.jsp" />
+<div class="main-content">
+<div class="container-fluid">
 <div class="container mt-4">
     <div class="card shadow-sm">
         <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
@@ -186,8 +190,8 @@
                         </a>
                     </c:if>
                     
-                    <!-- Admin can approve/reject PENDING orders -->
-                    <c:if test="${sessionScope.userRole == 'admin' && order.status == 'PENDING'}">
+                    <!-- Manager can approve/reject PENDING orders -->
+                    <c:if test="${sessionScope.userRole == 'manager' && order.status == 'PENDING'}">
                         <button type="button" class="btn btn-success" 
                                 onclick="if(confirm('Bạn có chắc muốn duyệt đơn hàng này?')) { 
                                     document.getElementById('approveForm').submit(); }">
@@ -214,7 +218,8 @@
         </div>
     </div>
 </div>
-
+</div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

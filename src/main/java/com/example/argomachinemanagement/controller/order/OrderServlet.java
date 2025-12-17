@@ -438,7 +438,7 @@ public class OrderServlet extends HttpServlet {
     private void handleApproveOrder(HttpServletRequest request, HttpServletResponse response,
                                      String userRole, Integer userId) 
             throws ServletException, IOException {
-        if (!"admin".equals(userRole)) {
+        if (!"manager".equals(userRole)) {
             response.sendRedirect(request.getContextPath() + "/sale/orders?action=list&error=permission");
             return;
         }
@@ -456,7 +456,7 @@ public class OrderServlet extends HttpServlet {
     private void handleRejectOrder(HttpServletRequest request, HttpServletResponse response,
                                     String userRole, Integer userId) 
             throws ServletException, IOException {
-        if (!"admin".equals(userRole)) {
+        if (!"manager".equals(userRole)) {
             response.sendRedirect(request.getContextPath() + "/sale/orders?action=list&error=permission");
             return;
         }

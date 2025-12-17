@@ -81,6 +81,11 @@
                         <i class="fas fa-box me-2"></i>Quản lý Product
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="${ctx}/sale/orders?action=list">
+                        <i class="fas fa-shopping-cart me-2"></i>Quản lý đơn hàng
+                    </a>
+                </li>
             </c:if>
 
             <!-- ==================== SALE MENU ==================== -->

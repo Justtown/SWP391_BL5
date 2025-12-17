@@ -15,15 +15,7 @@
         </a>
         
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="${ctx}/home">
-                        <i class="fas fa-home"></i> Trang chủ
-                    </a>
-                </li>
-            </ul>
-            
-            <ul class="navbar-nav">
+            <ul class="navbar-nav ms-auto">
                 <!-- User Dropdown -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" 
