@@ -3,10 +3,14 @@ package com.example.argomachinemanagement.controller.contract;
 import com.example.argomachinemanagement.dal.ContractDAO;
 import com.example.argomachinemanagement.dal.ContractItemDAO;
 import com.example.argomachinemanagement.dal.MachineDAO;
+import com.example.argomachinemanagement.dal.MachineTypeDAO;
+import com.example.argomachinemanagement.dal.OrderDAO;
 import com.example.argomachinemanagement.dal.UserDAO;
 import com.example.argomachinemanagement.entity.Contract;
 import com.example.argomachinemanagement.entity.ContractItem;
 import com.example.argomachinemanagement.entity.Machine;
+import com.example.argomachinemanagement.entity.MachineType;
+import com.example.argomachinemanagement.entity.Order;
 import com.example.argomachinemanagement.entity.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -30,6 +34,8 @@ public class ContractController extends HttpServlet {
     private UserDAO userDAO;
     private ContractItemDAO contractItemDAO;
     private MachineDAO machineDAO;
+    private MachineTypeDAO machineTypeDAO;
+    private OrderDAO orderDAO;
     
     @Override
     public void init() throws ServletException {
@@ -37,6 +43,8 @@ public class ContractController extends HttpServlet {
         userDAO = new UserDAO();
         contractItemDAO = new ContractItemDAO();
         machineDAO = new MachineDAO();
+        machineTypeDAO = new MachineTypeDAO();
+        orderDAO = new OrderDAO();
     }
     
     @Override
@@ -149,6 +157,7 @@ public class ContractController extends HttpServlet {
 
     /**
      * Hiển thị form tạo mới contract cho manager/sale/admin
+     * Có thể prefill từ Order nếu có orderId
      */
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -166,18 +175,58 @@ public class ContractController extends HttpServlet {
             return;
         }
 
-        // Sinh mã contract mới
-        String nextCode = contractDAO.getNextContractCode();
+        // Kiểm tra xem có orderId để prefill không
+        String orderIdStr = request.getParameter("orderId");
+        Order order = null;
+        if (orderIdStr != null && !orderIdStr.trim().isEmpty()) {
+            try {
+                int orderId = Integer.parseInt(orderIdStr);
+                order = orderDAO.findById(orderId);
+            } catch (NumberFormatException e) {
+                // Ignore invalid orderId
+            }
+        }
+
+        // Sinh mã contract mới (hoặc dùng từ Order nếu có)
+        String nextCode = order != null && order.getContractCode() != null 
+                ? order.getContractCode() 
+                : contractDAO.getNextContractCode();
 
         // Lấy danh sách customer active và manager/sale active
         List<User> customers = userDAO.findActiveUsersByRole("customer");
         List<User> managers = new ArrayList<>();
         managers.addAll(userDAO.findActiveUsersByRole("manager"));
         managers.addAll(userDAO.findActiveUsersByRole("sale"));
+        
+        // Lấy danh sách machine types
+        List<MachineType> machineTypes = machineTypeDAO.findAll();
 
-        request.setAttribute("contractCode", nextCode);
+        // Prefill từ Order nếu có
+        if (order != null) {
+            request.setAttribute("contractCode", order.getContractCode());
+            request.setAttribute("customerName", order.getCustomerName());
+            request.setAttribute("customerPhone", order.getCustomerPhone());
+            request.setAttribute("customerAddress", order.getCustomerAddress());
+            request.setAttribute("machineTypeId", order.getMachineId()); // Order.machineId là machine_type_id
+            request.setAttribute("quantity", order.getQuantity());
+            request.setAttribute("startDate", order.getStartDate() != null ? order.getStartDate().toString() : null);
+            request.setAttribute("endDate", order.getEndDate() != null ? order.getEndDate().toString() : null);
+            request.setAttribute("totalCost", order.getTotalCost());
+            request.setAttribute("note", order.getServiceDescription());
+            request.setAttribute("fromOrder", true);
+            request.setAttribute("orderId", order.getId());
+        } else {
+            request.setAttribute("contractCode", nextCode);
+        }
+
         request.setAttribute("customers", customers);
         request.setAttribute("managers", managers);
+        request.setAttribute("machineTypes", machineTypes);
+        
+        // Set manager mặc định là user hiện tại nếu là manager
+        if ("manager".equalsIgnoreCase(roleName)) {
+            request.setAttribute("defaultManagerId", userId);
+        }
 
         request.getRequestDispatcher("/view/dashboard/contract/contract-create.jsp").forward(request, response);
     }
@@ -205,15 +254,26 @@ public class ContractController extends HttpServlet {
         String contractCode = request.getParameter("contractCode");
         String customerIdStr = request.getParameter("customerId");
         String managerIdStr = request.getParameter("managerId");
+        String customerName = request.getParameter("customerName");
+        String customerPhone = request.getParameter("customerPhone");
+        String customerAddress = request.getParameter("customerAddress");
+        String machineTypeIdStr = request.getParameter("machineTypeId");
+        String quantityStr = request.getParameter("quantity");
         String startDateStr = request.getParameter("startDate");
         String endDateStr = request.getParameter("endDate");
+        String totalCostStr = request.getParameter("totalCost");
         String note = request.getParameter("note");
+        // String orderIdStr = request.getParameter("orderId"); // Nếu tạo từ Order (có thể dùng sau để update Order status)
         
         // Validate dữ liệu
         List<String> errors = new ArrayList<>();
         
         if (contractCode == null || contractCode.trim().isEmpty()) {
             errors.add("Contract code is required");
+        }
+        
+        if (customerName == null || customerName.trim().isEmpty()) {
+            errors.add("Customer name is required");
         }
         
         if (customerIdStr == null || customerIdStr.trim().isEmpty()) {
@@ -242,19 +302,27 @@ public class ContractController extends HttpServlet {
         if (!errors.isEmpty()) {
             request.setAttribute("errors", errors);
             request.setAttribute("contractCode", contractCode);
+            request.setAttribute("customerName", customerName);
+            request.setAttribute("customerPhone", customerPhone);
+            request.setAttribute("customerAddress", customerAddress);
             request.setAttribute("selectedCustomerId", customerIdStr);
             request.setAttribute("selectedManagerId", managerIdStr);
+            request.setAttribute("machineTypeId", machineTypeIdStr);
+            request.setAttribute("quantity", quantityStr);
             request.setAttribute("startDate", startDateStr);
             request.setAttribute("endDate", endDateStr);
+            request.setAttribute("totalCost", totalCostStr);
             request.setAttribute("note", note);
             
-            // Load lại danh sách customers và managers
+            // Load lại danh sách customers, managers và machine types
             List<User> customers = userDAO.findActiveUsersByRole("customer");
             List<User> managers = new ArrayList<>();
             managers.addAll(userDAO.findActiveUsersByRole("manager"));
             managers.addAll(userDAO.findActiveUsersByRole("sale"));
+            List<MachineType> machineTypes = machineTypeDAO.findAll();
             request.setAttribute("customers", customers);
             request.setAttribute("managers", managers);
+            request.setAttribute("machineTypes", machineTypes);
             
             request.getRequestDispatcher("/view/dashboard/contract/contract-create.jsp")
                     .forward(request, response);
@@ -273,18 +341,26 @@ public class ContractController extends HttpServlet {
                 errors.add("End date must be after or equal to start date");
                 request.setAttribute("errors", errors);
                 request.setAttribute("contractCode", contractCode);
+                request.setAttribute("customerName", customerName);
+                request.setAttribute("customerPhone", customerPhone);
+                request.setAttribute("customerAddress", customerAddress);
                 request.setAttribute("selectedCustomerId", customerIdStr);
                 request.setAttribute("selectedManagerId", managerIdStr);
+                request.setAttribute("machineTypeId", machineTypeIdStr);
+                request.setAttribute("quantity", quantityStr);
                 request.setAttribute("startDate", startDateStr);
                 request.setAttribute("endDate", endDateStr);
+                request.setAttribute("totalCost", totalCostStr);
                 request.setAttribute("note", note);
                 
                 List<User> customers = userDAO.findActiveUsersByRole("customer");
                 List<User> managers = new ArrayList<>();
                 managers.addAll(userDAO.findActiveUsersByRole("manager"));
                 managers.addAll(userDAO.findActiveUsersByRole("sale"));
+                List<MachineType> machineTypes = machineTypeDAO.findAll();
                 request.setAttribute("customers", customers);
                 request.setAttribute("managers", managers);
+                request.setAttribute("machineTypes", machineTypes);
                 
                 request.getRequestDispatcher("/view/dashboard/contract/contract-create.jsp")
                         .forward(request, response);
@@ -294,25 +370,52 @@ public class ContractController extends HttpServlet {
             errors.add("Invalid date format");
             request.setAttribute("errors", errors);
             request.setAttribute("contractCode", contractCode);
+            request.setAttribute("customerName", customerName);
+            request.setAttribute("customerPhone", customerPhone);
+            request.setAttribute("customerAddress", customerAddress);
             request.setAttribute("selectedCustomerId", customerIdStr);
             request.setAttribute("selectedManagerId", managerIdStr);
+            request.setAttribute("machineTypeId", machineTypeIdStr);
+            request.setAttribute("quantity", quantityStr);
             request.setAttribute("startDate", startDateStr);
             request.setAttribute("endDate", endDateStr);
+            request.setAttribute("totalCost", totalCostStr);
             request.setAttribute("note", note);
             
             List<User> customers = userDAO.findActiveUsersByRole("customer");
             List<User> managers = new ArrayList<>();
             managers.addAll(userDAO.findActiveUsersByRole("manager"));
             managers.addAll(userDAO.findActiveUsersByRole("sale"));
+            List<MachineType> machineTypes = machineTypeDAO.findAll();
             request.setAttribute("customers", customers);
             request.setAttribute("managers", managers);
+            request.setAttribute("machineTypes", machineTypes);
             
             request.getRequestDispatcher("/view/dashboard/contract/contract-create.jsp")
                     .forward(request, response);
             return;
         }
         
-        // Tạo Contract object
+        // Parse các giá trị số
+        Integer machineTypeId = null;
+        Integer quantity = null;
+        Double totalCost = null;
+        try {
+            if (machineTypeIdStr != null && !machineTypeIdStr.trim().isEmpty()) {
+                machineTypeId = Integer.parseInt(machineTypeIdStr);
+            }
+            if (quantityStr != null && !quantityStr.trim().isEmpty()) {
+                quantity = Integer.parseInt(quantityStr);
+            }
+            if (totalCostStr != null && !totalCostStr.trim().isEmpty()) {
+                totalCost = Double.parseDouble(totalCostStr);
+            }
+        } catch (NumberFormatException e) {
+            errors.add("Invalid number format");
+            // Handle error...
+        }
+        
+        // Tạo Contract object với các trường mới
         Contract contract = Contract.builder()
                 .contractCode(contractCode.trim())
                 .customerId(Integer.parseInt(customerIdStr))
@@ -321,12 +424,21 @@ public class ContractController extends HttpServlet {
                 .endDate(endDate)
                 .status("DRAFT")
                 .note(note != null ? note.trim() : null)
+                .customerName(customerName != null ? customerName.trim() : null)
+                .customerPhone(customerPhone != null ? customerPhone.trim() : null)
+                .customerAddress(customerAddress != null ? customerAddress.trim() : null)
+                .machineTypeId(machineTypeId)
+                .quantity(quantity)
+                .totalCost(totalCost)
                 .build();
         
         // Lưu vào database
         int contractId = contractDAO.insert(contract);
         
         if (contractId > 0) {
+            // Nếu tạo từ Order, có thể cập nhật status của Order (tùy chọn)
+            // Ví dụ: orderDAO.updateStatus(orderId, "CONVERTED_TO_CONTRACT");
+            
             // Thành công - redirect về danh sách với thông báo
             String redirectPath = "/contracts";
             if ("manager".equalsIgnoreCase(roleName)) {
@@ -340,18 +452,26 @@ public class ContractController extends HttpServlet {
             errors.add("Failed to create contract. Please try again.");
             request.setAttribute("errors", errors);
             request.setAttribute("contractCode", contractCode);
+            request.setAttribute("customerName", customerName);
+            request.setAttribute("customerPhone", customerPhone);
+            request.setAttribute("customerAddress", customerAddress);
             request.setAttribute("selectedCustomerId", customerIdStr);
             request.setAttribute("selectedManagerId", managerIdStr);
+            request.setAttribute("machineTypeId", machineTypeIdStr);
+            request.setAttribute("quantity", quantityStr);
             request.setAttribute("startDate", startDateStr);
             request.setAttribute("endDate", endDateStr);
+            request.setAttribute("totalCost", totalCostStr);
             request.setAttribute("note", note);
             
             List<User> customers = userDAO.findActiveUsersByRole("customer");
             List<User> managers = new ArrayList<>();
             managers.addAll(userDAO.findActiveUsersByRole("manager"));
             managers.addAll(userDAO.findActiveUsersByRole("sale"));
+            List<MachineType> machineTypes = machineTypeDAO.findAll();
             request.setAttribute("customers", customers);
             request.setAttribute("managers", managers);
+            request.setAttribute("machineTypes", machineTypes);
             
             request.getRequestDispatcher("/view/dashboard/contract/contract-create.jsp")
                     .forward(request, response);
@@ -403,8 +523,13 @@ public class ContractController extends HttpServlet {
 
         // Load danh sách machines trong contract
         List<ContractItem> contractItems = contractItemDAO.findByContractId(id);
+        
+        // Load machine types để hiển thị tên loại máy (cho cả customer và manager)
+        List<MachineType> machineTypes = machineTypeDAO.findAll();
+        
         request.setAttribute("contract", contract);
         request.setAttribute("contractItems", contractItems);
+        request.setAttribute("machineTypes", machineTypes);
 
         // Customer sẽ sử dụng view "my contract" riêng, các role khác dùng view chung
         if (currentUser != null && "customer".equalsIgnoreCase(currentUser.getRoleName())) {

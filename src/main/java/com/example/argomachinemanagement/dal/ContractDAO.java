@@ -69,9 +69,11 @@ public class ContractDAO extends DBContext implements I_DAO<Contract> {
     @Override
     public int insert(Contract contract) {
         int contractId = 0;
+        // Thử insert với các trường mới trước, nếu lỗi thì fallback về cấu trúc cũ
         String sql = "INSERT INTO contracts (contract_code, customer_id, manager_id, " +
-                     "start_date, end_date, status, note) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                     "start_date, end_date, status, note, " +
+                     "customer_name, customer_phone, customer_address, machine_type_id, quantity, total_cost) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         try {
             connection = getConnection();
@@ -83,6 +85,25 @@ public class ContractDAO extends DBContext implements I_DAO<Contract> {
             statement.setDate(5, contract.getEndDate());
             statement.setString(6, contract.getStatus() != null ? contract.getStatus() : "DRAFT");
             statement.setString(7, contract.getNote());
+            // Các trường mới
+            statement.setString(8, contract.getCustomerName());
+            statement.setString(9, contract.getCustomerPhone());
+            statement.setString(10, contract.getCustomerAddress());
+            if (contract.getMachineTypeId() != null) {
+                statement.setInt(11, contract.getMachineTypeId());
+            } else {
+                statement.setNull(11, java.sql.Types.INTEGER);
+            }
+            if (contract.getQuantity() != null) {
+                statement.setInt(12, contract.getQuantity());
+            } else {
+                statement.setNull(12, java.sql.Types.INTEGER);
+            }
+            if (contract.getTotalCost() != null) {
+                statement.setDouble(13, contract.getTotalCost());
+            } else {
+                statement.setNull(13, java.sql.Types.DOUBLE);
+            }
             
             int rowsAffected = statement.executeUpdate();
             if (rowsAffected > 0) {
@@ -93,7 +114,39 @@ public class ContractDAO extends DBContext implements I_DAO<Contract> {
                 }
             }
         } catch (SQLException ex) {
-            System.out.println("Error in insert: " + ex.getMessage());
+            // Nếu lỗi do các cột mới chưa tồn tại, thử insert với cấu trúc cũ
+            if (ex.getMessage().contains("Unknown column") || ex.getMessage().contains("doesn't exist")) {
+                System.out.println("New columns not found, using old structure: " + ex.getMessage());
+                try {
+                    closeResources();
+                    // Insert với cấu trúc cũ (không có các trường mới)
+                    String sqlOld = "INSERT INTO contracts (contract_code, customer_id, manager_id, " +
+                                 "start_date, end_date, status, note) " +
+                                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                    connection = getConnection();
+                    statement = connection.prepareStatement(sqlOld, Statement.RETURN_GENERATED_KEYS);
+                    statement.setString(1, contract.getContractCode());
+                    statement.setInt(2, contract.getCustomerId());
+                    statement.setInt(3, contract.getManagerId());
+                    statement.setDate(4, contract.getStartDate());
+                    statement.setDate(5, contract.getEndDate());
+                    statement.setString(6, contract.getStatus() != null ? contract.getStatus() : "DRAFT");
+                    statement.setString(7, contract.getNote());
+                    
+                    int rowsAffected = statement.executeUpdate();
+                    if (rowsAffected > 0) {
+                        ResultSet generatedKeys = statement.getGeneratedKeys();
+                        if (generatedKeys.next()) {
+                            contractId = generatedKeys.getInt(1);
+                            generatedKeys.close();
+                        }
+                    }
+                } catch (SQLException ex2) {
+                    System.out.println("Error in insert (fallback): " + ex2.getMessage());
+                }
+            } else {
+                System.out.println("Error in insert: " + ex.getMessage());
+            }
         } finally {
             closeResources();
         }
@@ -156,10 +209,34 @@ public class ContractDAO extends DBContext implements I_DAO<Contract> {
                 .updatedAt(rs.getTimestamp("updated_at"))
                 .build();
         
-        // Set display names
+        // Set display names và các trường mới
         try {
-            contract.setCustomerName(rs.getString("customer_name"));
+            // Nếu có customer_name từ JOIN với users thì dùng, nếu không thì dùng từ cột customer_name trong contracts
+            String customerNameFromJoin = rs.getString("customer_name");
+            if (customerNameFromJoin == null) {
+                try {
+                    contract.setCustomerName(rs.getString("c.customer_name"));
+                } catch (SQLException e) {
+                    // Ignore
+                }
+            } else {
+                contract.setCustomerName(customerNameFromJoin);
+            }
             contract.setManagerName(rs.getString("manager_name"));
+            
+            // Các trường mới từ contracts table
+            try {
+                contract.setCustomerPhone(rs.getString("customer_phone"));
+                contract.setCustomerAddress(rs.getString("customer_address"));
+                contract.setMachineTypeId(rs.getInt("machine_type_id"));
+                if (rs.wasNull()) contract.setMachineTypeId(null);
+                contract.setQuantity(rs.getInt("quantity"));
+                if (rs.wasNull()) contract.setQuantity(null);
+                contract.setTotalCost(rs.getDouble("total_cost"));
+                if (rs.wasNull()) contract.setTotalCost(null);
+            } catch (SQLException e) {
+                // Ignore if columns don't exist (backward compatibility)
+            }
         } catch (SQLException e) {
             // Ignore if columns don't exist
         }
@@ -174,7 +251,7 @@ public class ContractDAO extends DBContext implements I_DAO<Contract> {
         List<Contract> contracts = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
             "SELECT c.*, " +
-            "cu.full_name AS customer_name, " +
+            "COALESCE(c.customer_name, cu.full_name) AS customer_name, " +
             "m.full_name AS manager_name " +
             "FROM contracts c " +
             "LEFT JOIN users cu ON c.customer_id = cu.id " +
@@ -190,8 +267,13 @@ public class ContractDAO extends DBContext implements I_DAO<Contract> {
         }
         
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append(" AND (c.contract_code LIKE ? OR cu.full_name LIKE ? OR m.full_name LIKE ?)");
+            // Tìm kiếm theo contract_code, customer_name (từ contracts table hoặc users table), manager name
+            sql.append(" AND (c.contract_code LIKE ? OR " +
+                       "COALESCE(c.customer_name, cu.full_name) LIKE ? OR " +
+                       "c.customer_phone LIKE ? OR " +
+                       "m.full_name LIKE ?)");
             String searchPattern = "%" + keyword.trim() + "%";
+            params.add(searchPattern);
             params.add(searchPattern);
             params.add(searchPattern);
             params.add(searchPattern);

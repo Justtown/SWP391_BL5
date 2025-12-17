@@ -72,18 +72,35 @@
                     </span>
                 </div>
 
+                <!-- Contract Information Section -->
+                <h5 class="mb-3 mt-4">
+                    <i class="fas fa-info-circle me-2"></i>Thông tin hợp đồng
+                </h5>
+                
                 <div class="row">
                     <div class="col-md-6">
                         <div class="info-row">
-                            <div class="info-label">Contract Code</div>
+                            <div class="info-label">Mã hợp đồng</div>
                             <div class="info-value">
                                 <strong>${contract.contractCode}</strong>
                             </div>
                         </div>
                         <div class="info-row">
-                            <div class="info-label">Customer</div>
+                            <div class="info-label">Tên khách hàng</div>
                             <div class="info-value">
                                 ${contract.customerName != null ? contract.customerName : 'N/A'}
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Số điện thoại</div>
+                            <div class="info-value">
+                                ${contract.customerPhone != null ? contract.customerPhone : 'N/A'}
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Địa chỉ</div>
+                            <div class="info-value">
+                                ${contract.customerAddress != null ? contract.customerAddress : 'N/A'}
                             </div>
                         </div>
                         <div class="info-row">
@@ -95,22 +112,60 @@
                     </div>
                     <div class="col-md-6">
                         <div class="info-row">
-                            <div class="info-label">Start Date</div>
+                            <div class="info-label">Loại máy</div>
+                            <div class="info-value">
+                                <c:choose>
+                                    <c:when test="${not empty contract.machineTypeId}">
+                                        <c:forEach var="mt" items="${machineTypes}">
+                                            <c:if test="${mt.id == contract.machineTypeId}">
+                                                ${mt.typeName}
+                                            </c:if>
+                                        </c:forEach>
+                                        <c:if test="${empty machineTypes}">
+                                            Machine Type ID: ${contract.machineTypeId}
+                                        </c:if>
+                                    </c:when>
+                                    <c:otherwise>N/A</c:otherwise>
+                                </c:choose>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Số lượng</div>
+                            <div class="info-value">
+                                ${contract.quantity != null ? contract.quantity : 'N/A'}
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Ngày bắt đầu (thuê)</div>
                             <div class="info-value">
                                 <fmt:formatDate value="${contract.startDate}" pattern="dd/MM/yyyy"/>
                             </div>
                         </div>
                         <div class="info-row">
-                            <div class="info-label">End Date</div>
+                            <div class="info-label">Ngày kết thúc (thuê)</div>
                             <div class="info-value">
                                 <fmt:formatDate value="${contract.endDate}" pattern="dd/MM/yyyy"/>
                             </div>
                         </div>
                         <div class="info-row">
-                            <div class="info-label">Created At</div>
+                            <div class="info-label">Tổng giá trị</div>
+                            <div class="info-value">
+                                <c:choose>
+                                    <c:when test="${not empty contract.totalCost}">
+                                        <fmt:formatNumber value="${contract.totalCost}" type="currency" currencySymbol="đ" groupingUsed="true"/>
+                                    </c:when>
+                                    <c:otherwise>N/A</c:otherwise>
+                                </c:choose>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Ngày tạo (ngày tạo hợp đồng)</div>
                             <div class="info-value">
                                 <c:if test="${not empty contract.createdAt}">
                                     <fmt:formatDate value="${contract.createdAt}" pattern="dd/MM/yyyy HH:mm"/>
+                                </c:if>
+                                <c:if test="${empty contract.createdAt}">
+                                    N/A
                                 </c:if>
                             </div>
                         </div>

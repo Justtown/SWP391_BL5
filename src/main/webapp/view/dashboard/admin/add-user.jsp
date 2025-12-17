@@ -171,9 +171,19 @@
                 
                 <!-- Password -->
                 <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
+                    <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
                     <input type="password" class="form-control" id="password" name="password" 
                            required minlength="6">
+                </div>
+                
+                <!-- Confirm Password -->
+                <div class="mb-3">
+                    <label for="confirmPassword" class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                    <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" 
+                           required minlength="6">
+                    <div class="invalid-feedback" id="passwordMismatchError" style="display: none;">
+                        Passwords do not match!
+                    </div>
                 </div>
                 
                 <!-- Role -->
@@ -235,11 +245,39 @@
             });
         }
         
+        // Password match validation
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const passwordMismatchError = document.getElementById('passwordMismatchError');
+        
+        function validatePasswordMatch() {
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            
+            if (confirmPassword && password !== confirmPassword) {
+                confirmPasswordInput.classList.add('is-invalid');
+                passwordMismatchError.style.display = 'block';
+                return false;
+            } else {
+                confirmPasswordInput.classList.remove('is-invalid');
+                passwordMismatchError.style.display = 'none';
+                return true;
+            }
+        }
+        
+        confirmPasswordInput.addEventListener('input', validatePasswordMatch);
+        passwordInput.addEventListener('input', function() {
+            if (confirmPasswordInput.value) {
+                validatePasswordMatch();
+            }
+        });
+        
         // Form validation
         document.getElementById('addUserForm').addEventListener('submit', function(e) {
             const fullName = document.getElementById('fullName').value.trim();
             const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
             const role = document.getElementById('role').value;
             
             if (!fullName) {
@@ -257,6 +295,12 @@
             if (!password || password.length < 6) {
                 e.preventDefault();
                 alert('Password must be at least 6 characters!');
+                return false;
+            }
+            
+            if (!validatePasswordMatch()) {
+                e.preventDefault();
+                alert('Passwords do not match! Please check and try again.');
                 return false;
             }
             
