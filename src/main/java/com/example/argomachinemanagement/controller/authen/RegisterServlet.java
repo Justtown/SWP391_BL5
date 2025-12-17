@@ -14,7 +14,9 @@ import java.io.IOException;
 import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @WebServlet(name = "RegisterServlet", urlPatterns = {"/register"})
 public class RegisterServlet extends HttpServlet {
@@ -39,6 +41,13 @@ public class RegisterServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/home");
             return;
         }
+
+        // Load danh sách roles cho dropdown (loại bỏ admin)
+        List<String> availableRoles = userDAO.getAllRoles().stream()
+                .filter(role -> !"admin".equalsIgnoreCase(role))
+                .collect(Collectors.toList());
+        request.setAttribute("availableRoles", availableRoles);
+
         request.getRequestDispatcher("/view/authen/register.jsp").forward(request, response);
     }
     
@@ -58,7 +67,8 @@ public class RegisterServlet extends HttpServlet {
         String password = request.getParameter("password");
         String confirmPassword = request.getParameter("confirmPassword");
         String birthdateStr = request.getParameter("birthdate");
-        
+        String selectedRole = request.getParameter("role"); // Role được chọn
+
         // Store form data for re-display on error
         request.setAttribute("username", username);
         request.setAttribute("email", email);
@@ -67,6 +77,13 @@ public class RegisterServlet extends HttpServlet {
         request.setAttribute("phoneNumber", phoneNumber);
         request.setAttribute("address", address);
         request.setAttribute("birthdate", birthdateStr);
+        request.setAttribute("selectedRole", selectedRole);
+
+        // Load lại danh sách roles cho dropdown khi có lỗi
+        List<String> availableRoles = userDAO.getAllRoles().stream()
+                .filter(role -> !"admin".equalsIgnoreCase(role))
+                .collect(Collectors.toList());
+        request.setAttribute("availableRoles", availableRoles);
         
         // Validation
         StringBuilder errors = new StringBuilder();
@@ -91,7 +108,14 @@ public class RegisterServlet extends HttpServlet {
         if (confirmPassword == null || !confirmPassword.equals(password)) {
             errors.append("Mật khẩu xác nhận không khớp. ");
         }
-        
+
+        // Role validation
+        if (selectedRole == null || selectedRole.trim().isEmpty()) {
+            errors.append("Vui lòng chọn vai trò. ");
+        } else if ("admin".equalsIgnoreCase(selectedRole.trim())) {
+            errors.append("Không thể đăng ký với vai trò Admin. ");
+        }
+
         // Phone validation (optional but if provided must be valid)
         if (phoneNumber != null && !phoneNumber.trim().isEmpty()) {
             if (!PHONE_PATTERN.matcher(phoneNumber.trim()).matches()) {
@@ -146,7 +170,7 @@ public class RegisterServlet extends HttpServlet {
             fullPhoneNumber = (phoneCode != null ? phoneCode : "+84") + phoneNumber.trim();
         }
         
-        // Create new user
+        // Create new user với status = 2 (Pending - chờ Admin duyệt)
         User newUser = User.builder()
                 .username(username.trim())
                 .password(password) // Will be encoded in DAO
@@ -155,7 +179,8 @@ public class RegisterServlet extends HttpServlet {
                 .phoneNumber(fullPhoneNumber)
                 .address(address != null ? address.trim() : null)
                 .birthdate(birthdate)
-                .status(1) // Active by default
+                .status(2) // Pending - chờ Admin phê duyệt
+                .roleName(selectedRole.trim()) // Gán role đã chọn
                 .build();
         
         // Insert user into database
@@ -182,7 +207,7 @@ public class RegisterServlet extends HttpServlet {
             
             // Success - redirect to login with success message
             HttpSession session = request.getSession(true);
-            session.setAttribute("registerSuccess", "Đăng ký thành công! Vui lòng đăng nhập.");
+            session.setAttribute("registerSuccess", "Đăng ký thành công! Tài khoản của bạn đang chờ Admin phê duyệt.");
             response.sendRedirect(request.getContextPath() + "/login");
         } else {
             // Failed to insert

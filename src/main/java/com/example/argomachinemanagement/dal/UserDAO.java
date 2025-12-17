@@ -11,13 +11,17 @@ import java.util.Map;
 public class UserDAO extends DBContext implements I_DAO<User> {
 
    
+    /**
+     * Đăng nhập - trả về user nếu credentials đúng (không check status)
+     * Controller sẽ kiểm tra status để hiển thị message phù hợp
+     */
     public User login(String username, String password) {
         User user = null;
         String sql = "SELECT u.*, r.role_name " +
                      "FROM users u " +
                      "LEFT JOIN user_role ur ON u.id = ur.user_id " +
                      "LEFT JOIN roles r ON ur.role_id = r.id " +
-                     "WHERE u.username = ? AND u.password = ? AND u.status = 1";
+                     "WHERE u.username = ? AND u.password = ?";
         
         try {
             connection = getConnection();
@@ -449,6 +453,66 @@ public class UserDAO extends DBContext implements I_DAO<User> {
         }
         
         return defaultUrl;
+    }
+
+    /**
+     * Lấy danh sách users theo status
+     * @param status Status code (0=Deactivated, 1=Active, 2=Pending)
+     * @return List of users with specified status
+     */
+    public List<User> findByStatus(int status) {
+        List<User> users = new ArrayList<>();
+        String sql = "SELECT u.*, r.role_name " +
+                     "FROM users u " +
+                     "LEFT JOIN user_role ur ON u.id = ur.user_id " +
+                     "LEFT JOIN roles r ON ur.role_id = r.id " +
+                     "WHERE u.status = ? " +
+                     "ORDER BY u.created_at DESC";
+
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, status);
+            resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                User user = getFromResultSet(resultSet);
+                users.add(user);
+            }
+        } catch (SQLException ex) {
+            System.out.println("Error in findByStatus: " + ex.getMessage());
+        } finally {
+            closeResources();
+        }
+
+        return users;
+    }
+
+    /**
+     * Cập nhật status của user
+     * @param userId User ID
+     * @param status New status (0=Deactivated, 1=Active, 2=Pending)
+     * @return true if update successful
+     */
+    public boolean updateStatus(int userId, int status) {
+        boolean success = false;
+        String sql = "UPDATE users SET status = ? WHERE id = ?";
+
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, status);
+            statement.setInt(2, userId);
+
+            int rowsAffected = statement.executeUpdate();
+            success = rowsAffected > 0;
+        } catch (SQLException ex) {
+            System.out.println("Error in updateStatus: " + ex.getMessage());
+        } finally {
+            closeResources();
+        }
+
+        return success;
     }
 
 }
