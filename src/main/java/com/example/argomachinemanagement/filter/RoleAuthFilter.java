@@ -25,6 +25,8 @@ public class RoleAuthFilter implements Filter {
      */
     private static final Map<String, String> LEGACY_PERMISSION_ALIASES = Map.of(
             "/admin/manage-account", "/manage-account",
+            "/admin/add-user", "/add-user",
+            "/admin/pending-users", "/pending-users",
             "/manager/contracts", "/contracts",
             "/sale/contracts", "/contracts",
             "/customer/contracts", "/contracts"
@@ -72,8 +74,12 @@ public class RoleAuthFilter implements Filter {
             session.setAttribute("allowedUrls", allowedUrls);
         }
         
+        String roleName = (String) session.getAttribute("roleName");
+
         // Kiểm tra quyền truy cập
-        if (!hasPermission(path, allowedUrls) && !hasLegacyAliasPermission(path, allowedUrls)) {
+        if (!hasPermission(path, allowedUrls)
+                && !hasLegacyAliasPermission(path, allowedUrls)
+                && !hasRoleBasedDefaultPermission(path, roleName)) {
             // Không có quyền truy cập
             httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, 
                 "Bạn không có quyền truy cập trang này: " + path);
@@ -114,6 +120,29 @@ public class RoleAuthFilter implements Filter {
             return false;
         }
         return hasPermission(legacy, allowedUrls);
+    }
+
+    /**
+     * Một số URL quan trọng được cho phép mặc định theo role
+     * để tránh lỗi 403 nếu chưa cấu hình permission trong DB.
+     */
+    private boolean hasRoleBasedDefaultPermission(String requestPath, String roleName) {
+        if (roleName == null || requestPath == null) {
+            return false;
+        }
+
+        switch (roleName) {
+            case "admin":
+                // Admin luôn được vào một số trang quản trị quan trọng
+                return requestPath.startsWith("/admin/pending-users")
+                        || requestPath.startsWith("/admin/manage-account")
+                        || requestPath.startsWith("/admin/add-user");
+            case "customer":
+                // Customer luôn được xem hợp đồng của mình
+                return requestPath.startsWith("/customer/contracts");
+            default:
+                return false;
+        }
     }
     
     /**

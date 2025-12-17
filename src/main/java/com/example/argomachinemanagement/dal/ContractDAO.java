@@ -231,5 +231,38 @@ public class ContractDAO extends DBContext implements I_DAO<Contract> {
         
         return contracts;
     }
+
+    /**
+     * Lấy mã hợp đồng tiếp theo dạng CT-001, CT-002...
+     */
+    public String getNextContractCode() {
+        String sql = "SELECT contract_code FROM contracts ORDER BY id DESC LIMIT 1";
+        String prefix = "CT-";
+        String defaultCode = prefix + "001";
+
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                String lastCode = resultSet.getString("contract_code");
+                if (lastCode != null && lastCode.startsWith(prefix)) {
+                    try {
+                        int num = Integer.parseInt(lastCode.substring(prefix.length()));
+                        return prefix + String.format("%03d", num + 1);
+                    } catch (NumberFormatException ignored) {
+                        // Fallback to default if parse failed
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            System.out.println("Error in getNextContractCode: " + ex.getMessage());
+        } finally {
+            closeResources();
+        }
+
+        return defaultCode;
+    }
 }
 

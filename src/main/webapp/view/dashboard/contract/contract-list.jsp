@@ -14,10 +14,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            background-color: #f5f5f5;
-            padding: 20px;
-        }
         .contract-management-container {
             background: white;
             border-radius: 10px;
@@ -157,9 +153,22 @@
     </style>
 </head>
 <body>
-    <div class="container-fluid" style="max-width: 100%; overflow-x: hidden;">
+    <!-- Sidebar + layout -->
+    <jsp:include page="/view/common/dashboard/sideBar.jsp" />
+
+    <div class="main-content">
+        <div class="container-fluid" style="max-width: 100%; overflow-x: hidden;">
         <div class="contract-management-container">
-            <h1 class="page-title">Contract Management</h1>
+            <h1 class="page-title">
+                <c:choose>
+                    <c:when test="${sessionScope.roleName == 'customer'}">
+                        My Contracts
+                    </c:when>
+                    <c:otherwise>
+                        Contract Management
+                    </c:otherwise>
+                </c:choose>
+            </h1>
             
             <!-- Filter & Search Section -->
             <div class="filter-section">
@@ -179,9 +188,11 @@
                     <i class="fas fa-times clear-search" id="clearSearch"></i>
                 </div>
                 
-                <a href="${contractsBase}?action=create" class="add-contract-link">
-                    <i class="fas fa-plus"></i> Create New Contract
-                </a>
+                <c:if test="${sessionScope.roleName != 'customer'}">
+                    <a href="${contractsBase}?action=create" class="add-contract-link">
+                        <i class="fas fa-plus"></i> Create New Contract
+                    </a>
+                </c:if>
             </div>
             
             <!-- Pagination Info -->
@@ -289,8 +300,8 @@
                 </div>
             </c:if>
         </div>
+        </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {

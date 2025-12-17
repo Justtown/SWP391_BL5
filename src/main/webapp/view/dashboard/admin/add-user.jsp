@@ -9,10 +9,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            background-color: #f5f5f5;
-            padding: 20px;
-        }
         .add-user-container {
             background: white;
             border-radius: 10px;
@@ -116,7 +112,11 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Sidebar + layout -->
+    <jsp:include page="/view/common/dashboard/sideBar.jsp" />
+
+    <div class="main-content">
+        <div class="container">
         <div class="add-user-container">
             <h2 class="page-title">Add new user</h2>
             
@@ -218,6 +218,7 @@
                     <button type="submit" class="btn btn-add">Add</button>
                 </div>
             </form>
+        </div>
         </div>
     </div>
 

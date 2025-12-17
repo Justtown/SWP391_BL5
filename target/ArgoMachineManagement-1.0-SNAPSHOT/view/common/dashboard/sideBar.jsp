@@ -31,7 +31,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/manage-account">
+                    <a class="nav-link text-white" href="${ctx}/admin/manage-account">
                         <i class="fas fa-users me-2"></i>Quản lý User
                     </a>
                 </li>
@@ -74,7 +74,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/contracts">
+                    <a class="nav-link text-white" href="${ctx}/manager/contracts">
                         <i class="fas fa-file-contract me-2"></i>Quản lý Contract
                     </a>
                 </li>
@@ -125,7 +125,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/customer/my-contracts">
+                    <a class="nav-link text-white" href="${ctx}/customer/contracts">
                         <i class="fas fa-file-contract me-2"></i>Contract của tôi
                     </a>
                 </li>
