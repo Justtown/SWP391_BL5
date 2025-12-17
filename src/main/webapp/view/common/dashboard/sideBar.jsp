@@ -57,6 +57,11 @@
                         <i class="fas fa-user-shield me-2"></i>Quản lý Permission
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="${ctx}/admin/pending-users">
+                        <i class="fas fa-user-clock me-2"></i>User chờ duyệt
+                    </a>
+                </li>
             </c:if>
             
             <!-- ==================== MANAGER MENU ==================== -->
