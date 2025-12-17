@@ -149,7 +149,7 @@ public class AddUserController extends HttpServlet {
         
         if (userId > 0) {
             // Success - redirect to user management page
-            response.sendRedirect(request.getContextPath() + "/manage-account?success=User added successfully");
+            response.sendRedirect(request.getContextPath() + "/admin/manage-account?success=User added successfully");
         } else {
             // Error
             request.setAttribute("errorMessage", "Failed to add user. Please try again!");

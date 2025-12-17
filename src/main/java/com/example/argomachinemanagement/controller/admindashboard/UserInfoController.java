@@ -30,7 +30,7 @@ public class UserInfoController extends HttpServlet {
         String userIdStr = request.getParameter("id");
         
         if (userIdStr == null || userIdStr.trim().isEmpty()) {
-            response.sendRedirect(request.getContextPath() + "/manage-account?error=User ID is required");
+            response.sendRedirect(request.getContextPath() + "/admin/manage-account?error=User ID is required");
             return;
         }
         
@@ -39,7 +39,7 @@ public class UserInfoController extends HttpServlet {
             User user = userDAO.findById(userId);
             
             if (user == null) {
-                response.sendRedirect(request.getContextPath() + "/manage-account?error=User not found");
+                response.sendRedirect(request.getContextPath() + "/admin/manage-account?error=User not found");
                 return;
             }
             
@@ -53,7 +53,7 @@ public class UserInfoController extends HttpServlet {
             request.getRequestDispatcher("/view/dashboard/admin/user-info.jsp").forward(request, response);
             
         } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/manage-account?error=Invalid user ID");
+            response.sendRedirect(request.getContextPath() + "/admin/manage-account?error=Invalid user ID");
         }
     }
 
@@ -64,7 +64,7 @@ public class UserInfoController extends HttpServlet {
         String action = request.getParameter("action");
         
         if (userIdStr == null || userIdStr.trim().isEmpty()) {
-            response.sendRedirect(request.getContextPath() + "/manage-account?error=User ID is required");
+            response.sendRedirect(request.getContextPath() + "/admin/manage-account?error=User ID is required");
             return;
         }
         
@@ -73,7 +73,7 @@ public class UserInfoController extends HttpServlet {
             User user = userDAO.findById(userId);
             
             if (user == null) {
-                response.sendRedirect(request.getContextPath() + "/manage-account?error=User not found");
+                response.sendRedirect(request.getContextPath() + "/admin/manage-account?error=User not found");
                 return;
             }
             
@@ -102,7 +102,7 @@ public class UserInfoController extends HttpServlet {
                 boolean success = userDAO.update(user);
                 
                 if (success) {
-                    response.sendRedirect(request.getContextPath() + "/manage-account?success=User updated successfully");
+                    response.sendRedirect(request.getContextPath() + "/admin/manage-account?success=User updated successfully");
                 } else {
                     request.setAttribute("errorMessage", "Failed to update user. Please try again!");
                     doGet(request, response);
@@ -112,7 +112,7 @@ public class UserInfoController extends HttpServlet {
             }
             
         } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/manage-account?error=Invalid user ID");
+            response.sendRedirect(request.getContextPath() + "/admin/manage-account?error=Invalid user ID");
         }
     }
 }

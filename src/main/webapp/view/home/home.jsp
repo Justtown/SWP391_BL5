@@ -77,13 +77,6 @@
     <a href="${pageContext.request.contextPath}/product">Product</a>
     <a href="${pageContext.request.contextPath}/introduce">Introduce</a>
 
-    <% if (isLoggedIn) { %>
-    <% if (isAdmin) { %>
-    <a href="${pageContext.request.contextPath}/admin/rent-requests">Request</a>
-    <% } else { %>
-    <a href="${pageContext.request.contextPath}/rent-request">Request</a>
-    <% } %>
-
     <a href="${pageContext.request.contextPath}/my-profile">Profile</a>
     <a href="${pageContext.request.contextPath}/change-password">Change Password</a>
     <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">

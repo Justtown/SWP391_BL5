@@ -1,4 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="vi">
     <head>
@@ -179,14 +180,32 @@
                                         <span class="input-group-text">
                                             <i class="fas fa-map-marker-alt"></i>
                                         </span>
-                                        <input 
-                                            type="text" 
-                                            class="form-control" 
-                                            id="address" 
-                                            name="address" 
+                                        <input
+                                            type="text"
+                                            class="form-control"
+                                            id="address"
+                                            name="address"
                                             placeholder="Ho Guom, Ha Noi"
                                             value="<%= request.getAttribute("address") != null ? request.getAttribute("address") : "" %>">
                                     </div>
+                                </div>
+
+                                <!-- Role Selection -->
+                                <div class="mb-3">
+                                    <label for="role" class="form-label">Vai trò <span class="text-danger">*</span></label>
+                                    <div class="input-group has-validation">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-user-tag"></i>
+                                        </span>
+                                        <select class="form-select" id="role" name="role" required>
+                                            <option value="">-- Chọn vai trò --</option>
+                                            <c:forEach var="role" items="${availableRoles}">
+                                                <option value="${role}" ${selectedRole == role ? 'selected' : ''}>${role}</option>
+                                            </c:forEach>
+                                        </select>
+                                        <div class="invalid-feedback">Vui lòng chọn vai trò</div>
+                                    </div>
+                                    <div class="error-message" id="roleError"></div>
                                 </div>
 
                                 <!-- Password -->
@@ -281,6 +300,7 @@
                 const email = document.getElementById('email');
                 const phoneNumber = document.getElementById('phoneNumber');
                 const birthdate = document.getElementById('birthdate');
+                const roleSelect = document.getElementById('role');
                 
                 // Helper function to show error
                 function showError(input, errorElement, message) {
@@ -372,7 +392,17 @@
                         hideError(this, errorEl);
                     }
                 });
-                
+
+                // Role validation
+                roleSelect.addEventListener('change', function() {
+                    const errorEl = document.getElementById('roleError');
+                    if (!this.value) {
+                        showError(this, errorEl, 'Vui lòng chọn vai trò');
+                    } else {
+                        hideError(this, errorEl);
+                    }
+                });
+
                 // Birthdate validation - cannot be in the future
                 birthdate.addEventListener('input', function() {
                     const errorEl = document.getElementById('birthdateError');
@@ -441,7 +471,13 @@
                         showError(phoneNumber, document.getElementById('phoneError'), 'Số điện thoại không hợp lệ (9-15 số)');
                         isValid = false;
                     }
-                    
+
+                    // Role validation
+                    if (!roleSelect.value) {
+                        showError(roleSelect, document.getElementById('roleError'), 'Vui lòng chọn vai trò');
+                        isValid = false;
+                    }
+
                     // Birthdate validation
                     if (birthdate.value) {
                         const selectedDate = new Date(birthdate.value);

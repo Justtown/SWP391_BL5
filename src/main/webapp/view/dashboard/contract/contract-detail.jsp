@@ -129,9 +129,18 @@
             
             <c:if test="${empty contract}">
                 <div class="alert alert-danger">Contract not found!</div>
-                <a href="${pageContext.request.contextPath}/contracts" class="btn-back">
-                    <i class="fas fa-arrow-left"></i> Back to Contracts
-                </a>
+                <c:choose>
+                    <c:when test="${sessionScope.roleName == 'customer'}">
+                        <a href="${pageContext.request.contextPath}/customer/contracts" class="btn-back">
+                            <i class="fas fa-arrow-left"></i> Back to Contracts
+                        </a>
+                    </c:when>
+                    <c:otherwise>
+                        <a href="${pageContext.request.contextPath}/contracts" class="btn-back">
+                            <i class="fas fa-arrow-left"></i> Back to Contracts
+                        </a>
+                    </c:otherwise>
+                </c:choose>
             </c:if>
             
             <c:if test="${not empty contract}">
@@ -190,9 +199,18 @@
                 
                 <!-- Action Buttons -->
                 <div class="btn-group-custom">
-                    <a href="${pageContext.request.contextPath}/contracts" class="btn-back">
-                        <i class="fas fa-arrow-left"></i> Back to Contracts
-                    </a>
+                    <c:choose>
+                        <c:when test="${sessionScope.roleName == 'customer'}">
+                            <a href="${pageContext.request.contextPath}/customer/contracts" class="btn-back">
+                                <i class="fas fa-arrow-left"></i> Back to Contracts
+                            </a>
+                        </c:when>
+                        <c:otherwise>
+                            <a href="${pageContext.request.contextPath}/contracts" class="btn-back">
+                                <i class="fas fa-arrow-left"></i> Back to Contracts
+                            </a>
+                        </c:otherwise>
+                    </c:choose>
                     <!-- Add Machine chỉ dành cho vai trò không phải customer -->
                     <c:if test="${sessionScope.roleName != 'customer'}">
                         <button type="button" class="btn-add-machine" onclick="alert('Coming soon')">
