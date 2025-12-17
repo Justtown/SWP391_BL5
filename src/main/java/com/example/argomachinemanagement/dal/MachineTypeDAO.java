@@ -8,7 +8,7 @@ import java.util.List;
 
 public class MachineTypeDAO extends DBContext {
     
-    // et all machine types for dropdown
+    // Get all machine types for dropdown
     public List<MachineType> findAll() {
         List<MachineType> types = new ArrayList<>();
         String sql = "SELECT id, type_name, description FROM machine_types ORDER BY id";

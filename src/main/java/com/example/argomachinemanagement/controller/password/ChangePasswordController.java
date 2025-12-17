@@ -168,13 +168,30 @@ public class ChangePasswordController extends HttpServlet {
                     session.removeAttribute("mustChangePassword");
                 }
                 
-                request.setAttribute("message", "Đổi mật khẩu thành công!");
+                // Lấy role để redirect về đúng dashboard
+                String roleName = (String) session.getAttribute("roleName");
+                String redirectUrl = "/dashboard";
                 
-                // Nếu bắt buộc đổi mật khẩu, redirect về home sau 2 giây
-                if (mustChangePassword) {
-                    response.sendRedirect(request.getContextPath() + "/home?passwordChanged=true");
-                    return;
+                if (roleName != null) {
+                    switch (roleName.toLowerCase()) {
+                        case "admin":
+                            redirectUrl = "/admin/dashboard";
+                            break;
+                        case "manager":
+                            redirectUrl = "/manager/dashboard";
+                            break;
+                        case "sale":
+                            redirectUrl = "/sale/dashboard";
+                            break;
+                        case "customer":
+                            redirectUrl = "/customer/dashboard";
+                            break;
+                    }
                 }
+                
+                session.setAttribute("message", "Đổi mật khẩu thành công!");
+                response.sendRedirect(request.getContextPath() + redirectUrl);
+                return;
             } else {
                 request.setAttribute("error", "Không thể cập nhật mật khẩu. Vui lòng thử lại.");
             }

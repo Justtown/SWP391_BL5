@@ -49,12 +49,24 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-white" href="${ctx}/manage-account">
+                    <a class="nav-link text-white" href="${ctx}/admin/statistics">
+                        <i class="fas fa-chart-bar me-2"></i>Thống kê
+                    </a>
+                </li>
+                <li class="nav-item">
+
+                    <a class="nav-link text-white" href="${ctx}/admin/manage-account">
                         <i class="fas fa-users me-2"></i>Quản lý User
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-white" href="${ctx}/admin/roles">
                         <i class="fas fa-user-shield me-2"></i>Quản lý Permission
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="${ctx}/admin/pending-users">
+                        <i class="fas fa-user-clock me-2"></i>User chờ duyệt
                     </a>
                 </li>
             </c:if>
@@ -72,7 +84,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/contracts">
+                    <a class="nav-link text-white" href="${ctx}/manager/contracts">
                         <i class="fas fa-file-contract me-2"></i>Quản lý Contract
                     </a>
                 </li>
@@ -91,7 +103,7 @@
                     </div>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/contracts">
+                    <a class="nav-link text-white" href="${ctx}/sale/contracts">
                         <i class="fas fa-file-contract me-2"></i>Xem Contract
                     </a>
                 </li>
@@ -103,6 +115,11 @@
                 <li class="nav-item">
                     <a class="nav-link text-white" href="${ctx}/sale/orders?action=list">
                         <i class="fas fa-shopping-cart me-2"></i>Quản lý đơn hàng
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="${ctx}/requests">
+                        <i class="fas fa-clipboard-check me-2"></i>Quản lý Request
                     </a>
                 </li>
             </c:if>
@@ -120,8 +137,13 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/contracts">
+                    <a class="nav-link text-white" href="${ctx}/customer/contracts">
                         <i class="fas fa-file-contract me-2"></i>Contract của tôi
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="${ctx}/requests">
+                        <i class="fas fa-paper-plane me-2"></i>Request của tôi
                     </a>
                 </li>
             </c:if>

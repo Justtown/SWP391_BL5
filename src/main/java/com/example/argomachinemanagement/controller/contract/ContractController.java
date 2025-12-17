@@ -15,7 +15,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@WebServlet(name = "ContractController", urlPatterns = {"/contracts", "/manager/contracts", "/sale/contracts"})
+@WebServlet(name = "ContractController", urlPatterns = {
+        "/contracts",              // generic contracts list
+        "/manager/contracts",      // manager view
+        "/sale/contracts",         // sale view
+        "/customer/contracts"      // customer "My Contracts" view
+})
 public class ContractController extends HttpServlet {
     
     private static final int PAGE_SIZE = 3;
