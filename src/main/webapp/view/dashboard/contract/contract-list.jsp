@@ -152,14 +152,9 @@
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <jsp:include page="/view/common/dashboard/sideBar.jsp" />
-
-    <!-- Main Content -->
-    <div class="main-content">
-        <div class="container-fluid" style="max-width: 100%; overflow-x: hidden;">
-            <div class="contract-management-container">
-                <h1 class="page-title">Contract Management</h1>
+    <div class="container-fluid" style="max-width: 100%; overflow-x: hidden;">
+        <div class="contract-management-container">
+            <h1 class="page-title">Contract Management</h1>
             
             <!-- Filter & Search Section -->
             <div class="filter-section">
@@ -365,8 +360,6 @@
             }
         });
     </script>
-
-    </div> <!-- end main-content -->
 </body>
 </html>
 

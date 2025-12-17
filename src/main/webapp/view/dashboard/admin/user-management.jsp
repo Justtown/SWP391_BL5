@@ -155,30 +155,9 @@
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <jsp:include page="/view/common/dashboard/sideBar.jsp" />
-
-    <!-- Main Content -->
-    <div class="main-content">
-        <div class="container-fluid" style="max-width: 100%; overflow-x: hidden;">
-            <div class="user-management-container">
-                <h1 class="page-title">User Management</h1>
-            
-            <!-- Success Message -->
-            <c:if test="${not empty param.success}">
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="fas fa-check-circle"></i> ${param.success}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            </c:if>
-            
-            <!-- Error Message -->
-            <c:if test="${not empty param.error}">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="fas fa-exclamation-circle"></i> ${param.error}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            </c:if>
+    <div class="container-fluid" style="max-width: 100%; overflow-x: hidden;">
+        <div class="user-management-container">
+            <h1 class="page-title">User Management</h1>
             
             <!-- Filter and Search Section -->
             <div class="filter-section">
@@ -313,8 +292,6 @@
             </c:if>
         </div>
     </div>
-
-    </div> <!-- end main-content -->
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>

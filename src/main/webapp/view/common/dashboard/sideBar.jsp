@@ -3,7 +3,6 @@
 
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
 
-<!-- Sidebar -->
 <div class="sidebar bg-dark text-white" id="sidebar">
     <div class="sidebar-header p-3 border-bottom border-secondary">
         <h5 class="mb-0">
@@ -14,33 +13,12 @@
     <nav class="sidebar-nav">
         <ul class="nav flex-column">
 
-            <!-- Dashboard - Hiển thị cho tất cả role -->
             <li class="nav-item">
-                <c:choose>
-                    <c:when test="${sessionScope.roleName == 'admin'}">
-                        <a class="nav-link text-white" href="${ctx}/admin/dashboard">
-                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                        </a>
-                    </c:when>
-                    <c:when test="${sessionScope.roleName == 'manager'}">
-                        <a class="nav-link text-white" href="${ctx}/manager/dashboard">
-                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                        </a>
-                    </c:when>
-                    <c:when test="${sessionScope.roleName == 'sale'}">
-                        <a class="nav-link text-white" href="${ctx}/sale/dashboard">
-                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                        </a>
-                    </c:when>
-                    <c:when test="${sessionScope.roleName == 'customer'}">
-                        <a class="nav-link text-white" href="${ctx}/customer/dashboard">
-                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                        </a>
-                    </c:when>
-                </c:choose>
+                <a class="nav-link text-white" href="${ctx}/${sessionScope.roleName}/dashboard">
+                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                </a>
             </li>
 
-            <!-- ==================== ADMIN MENU ==================== -->
             <c:if test="${sessionScope.roleName == 'admin'}">
                 <li class="nav-item">
                     <div class="nav-link text-secondary small text-uppercase mt-3">
@@ -53,9 +31,13 @@
                     </a>
                 </li>
                 <li class="nav-item">
-
                     <a class="nav-link text-white" href="${ctx}/admin/manage-account">
                         <i class="fas fa-users me-2"></i>Quản lý User
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="${ctx}/admin/password-reset-requests">
+                        <i class="fas fa-key me-2"></i>Yêu cầu đặt lại MK
                     </a>
                 </li>
                 <li class="nav-item">
@@ -70,7 +52,6 @@
                 </li>
             </c:if>
 
-            <!-- ==================== MANAGER MENU ==================== -->
             <c:if test="${sessionScope.roleName == 'manager'}">
                 <li class="nav-item">
                     <div class="nav-link text-secondary small text-uppercase mt-3">
@@ -80,6 +61,16 @@
                 <li class="nav-item">
                     <a class="nav-link text-white" href="${ctx}/manager/machines">
                         <i class="fas fa-cogs me-2"></i>Quản lý Machine
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="${ctx}/manager/machine-types">
+                        <i class="fas fa-layer-group me-2"></i>Quản lý Loại Máy
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="${ctx}/manager/maintenances">
+                        <i class="fas fa-tools me-2"></i>Bảo Trì Máy Trong Kho
                     </a>
                 </li>
                 <li class="nav-item">
@@ -94,7 +85,6 @@
                 </li>
             </c:if>
 
-            <!-- ==================== SALE MENU ==================== -->
             <c:if test="${sessionScope.roleName == 'sale'}">
                 <li class="nav-item">
                     <div class="nav-link text-secondary small text-uppercase mt-3">
@@ -112,8 +102,8 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/sale/orders">
-                        <i class="fas fa-shopping-cart me-2"></i>Tạo đơn hàng
+                    <a class="nav-link text-white" href="${ctx}/sale/orders?action=list">
+                        <i class="fas fa-shopping-cart me-2"></i>Quản lý đơn hàng
                     </a>
                 </li>
                 <li class="nav-item">
@@ -123,7 +113,6 @@
                 </li>
             </c:if>
 
-            <!-- ==================== CUSTOMER MENU ==================== -->
             <c:if test="${sessionScope.roleName == 'customer'}">
                 <li class="nav-item">
                     <div class="nav-link text-secondary small text-uppercase mt-3">
@@ -136,7 +125,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/customer/contracts">
+                    <a class="nav-link text-white" href="${ctx}/customer/my-contracts">
                         <i class="fas fa-file-contract me-2"></i>Contract của tôi
                     </a>
                 </li>
@@ -146,7 +135,7 @@
                     </a>
                 </li>
             </c:if>
-            <!-- ==================== COMMON MENU ==================== -->
+
             <li class="nav-item">
                 <div class="nav-link text-secondary small text-uppercase mt-3">
                     <span>Tài khoản</span>
@@ -167,12 +156,10 @@
                     <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
                 </a>
             </li>
-
         </ul>
     </nav>
 </div>
 
-<!-- Logout Modal -->
 <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" style="border-radius: 10px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); border: none;">
@@ -236,11 +223,9 @@
         .sidebar {
             margin-left: -250px;
         }
-
         .sidebar.active {
             margin-left: 0;
         }
-
         .main-content {
             margin-left: 0;
         }

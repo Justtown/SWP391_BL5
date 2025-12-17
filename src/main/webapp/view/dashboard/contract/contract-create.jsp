@@ -95,14 +95,9 @@
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <jsp:include page="/view/common/dashboard/sideBar.jsp" />
-
-    <!-- Main Content -->
-    <div class="main-content">
-        <div class="container-fluid">
-            <div class="contract-form-container">
-                <h1 class="page-title">Create New Contract</h1>
+    <div class="container-fluid">
+        <div class="contract-form-container">
+            <h1 class="page-title">Create New Contract</h1>
             
             <c:if test="${not empty errors}">
                 <div class="alert alert-danger">
@@ -284,8 +279,6 @@
             validateCustomerManager();
         });
     </script>
-
-    </div> <!-- end main-content -->
 </body>
 </html>
 
