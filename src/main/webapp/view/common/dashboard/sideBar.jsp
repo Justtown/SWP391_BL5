@@ -308,12 +308,7 @@
                     </a>
                 </li>
             </c:if>
-<<<<<<< HEAD
 
-
-=======
->>>>>>> parent of cfcf442 (Merge branch 'main' into dungdn)
-            
             <!-- ==================== COMMON MENU ==================== -->
             <li class="nav-item">
                 <div class="nav-link text-secondary small text-uppercase mt-3">
@@ -436,7 +431,6 @@
             border-radius: 0;
             transition: all 0.2s;
         }
-<<<<<<< HEAD
 
         .sidebar-nav .nav-link:hover {
             background-color: rgba(255, 255, 255, 0.1);
@@ -447,8 +441,6 @@
             background-color: rgba(255, 255, 255, 0.15);
             border-left: 3px solid #0d6efd;
         }
-=======
->>>>>>> parent of cfcf442 (Merge branch 'main' into dungdn)
         
         .main-content {
             margin-left: 250px;
@@ -457,7 +449,6 @@
             background-color: #f8f9fa;
         }
     }
-<<<<<<< HEAD
 
         @media (max-width: 768px) {
             .sidebar {
@@ -473,6 +464,6 @@
             }
         }
     </style>
-=======
->>>>>>> parent of cfcf442 (Merge branch 'main' into dungdn)
+
+
 </style>
