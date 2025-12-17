@@ -37,6 +37,14 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 <%
+                    } else if ("invalid_customer".equals(error)) {
+                %>
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <strong>Lỗi!</strong> Tên khách hàng không có trong hệ thống. Vui lòng chọn từ danh sách gợi ý.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                <%
                     }
                     // Lấy machineTypeId và quantity từ request nếu có
                     String editMachineTypeId = (String) request.getAttribute("machineTypeId");
@@ -60,7 +68,20 @@
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Tên khách hàng <span class="text-danger">*</span></label>
                             <input type="text" name="customerName" class="form-control" 
-                                   value="${order.customerName}" required>
+                                   placeholder="Nhập tên khách hàng..." required
+                                   list="customerList" id="customerInput"
+                                   value="${order.customerName}">
+                            <datalist id="customerList">
+                                <c:forEach var="customer" items="${customers}">
+                                    <option value="${customer.username}" 
+                                            data-fullname="${customer.fullName}"
+                                            data-phone="${customer.phoneNumber}" 
+                                            data-address="${customer.address}">
+                                        ${customer.fullName}
+                                    </option>
+                                </c:forEach>
+                            </datalist>
+                            <div class="form-text">Nhập để tìm kiếm khách hàng</div>
                         </div>
                     </div>
 
@@ -70,13 +91,17 @@
                             <input type="tel" name="customerPhone" class="form-control" 
                                    value="${order.customerPhone}"
                                    pattern="[0-9]{10,11}"
-                                   title="Số điện thoại 10-11 số">
+                                   title="Số điện thoại 10-11 số"
+                                   id="customerPhone"
+                                   readonly>
                         </div>
 
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Địa chỉ khách hàng</label>
                             <input type="text" name="customerAddress" class="form-control" 
-                                   value="${order.customerAddress}">
+                                   value="${order.customerAddress}"
+                                   id="customerAddress"
+                                   readonly>
                         </div>
                     </div>
 
@@ -155,6 +180,41 @@
 </div>
 
 <script>
+// Build customer data map
+const customerData = new Map();
+<c:forEach var="customer" items="${customers}">
+    customerData.set('${customer.username}', {
+        fullName: '${customer.fullName}',
+        phone: '${customer.phoneNumber}' || '',
+        address: '${customer.address}' || ''
+    });
+</c:forEach>
+
+// Auto-fill customer info when typing/selecting
+const customerInput = document.getElementById('customerInput');
+const phoneInput = document.getElementById('customerPhone');
+const addressInput = document.getElementById('customerAddress');
+
+if (customerInput) {
+    customerInput.addEventListener('input', function() {
+        const username = this.value.trim();
+        if (customerData.has(username)) {
+            const customer = customerData.get(username);
+            phoneInput.value = customer.phone;
+            addressInput.value = customer.address;
+        }
+    });
+
+    customerInput.addEventListener('blur', function() {
+        const username = this.value.trim();
+        if (customerData.has(username)) {
+            const customer = customerData.get(username);
+            phoneInput.value = customer.phone;
+            addressInput.value = customer.address;
+        }
+    });
+}
+
 // Validation: End date must be after start date
 document.getElementById('orderForm')?.addEventListener('submit', function(e) {
     const startDate = document.querySelector('[name="startDate"]').value;

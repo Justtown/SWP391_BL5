@@ -145,15 +145,6 @@
               <c:when test="${o.status == 'REJECTED'}">
                 <span class="badge badge-rejected">Từ chối</span>
               </c:when>
-              <c:when test="${o.status == 'IN_PROGRESS'}">
-                <span class="badge badge-in-progress">Đang xử lý</span>
-              </c:when>
-              <c:when test="${o.status == 'COMPLETED'}">
-                <span class="badge badge-completed">Hoàn thành</span>
-              </c:when>
-              <c:when test="${o.status == 'CANCELLED'}">
-                <span class="badge badge-cancelled">Đã hủy</span>
-              </c:when>
               <c:otherwise>
                 <span class="badge bg-secondary">${o.status}</span>
               </c:otherwise>

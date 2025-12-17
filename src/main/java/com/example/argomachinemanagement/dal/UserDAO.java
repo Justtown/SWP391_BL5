@@ -451,5 +451,68 @@ public class UserDAO extends DBContext implements I_DAO<User> {
         return defaultUrl;
     }
 
+    /**
+     * Lấy danh sách customers (users có role customer)
+     * @return List of customers
+     */
+    public List<User> findCustomers() {
+        List<User> customers = new ArrayList<>();
+        String sql = "SELECT u.*, r.role_name " +
+                     "FROM users u " +
+                     "INNER JOIN user_role ur ON u.id = ur.user_id " +
+                     "INNER JOIN roles r ON ur.role_id = r.id " +
+                     "WHERE r.role_name = 'customer' AND u.status = 1 " +
+                     "ORDER BY u.username";
+        
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            resultSet = statement.executeQuery();
+            
+            while (resultSet.next()) {
+                User user = getFromResultSet(resultSet);
+                user.setRoleName(resultSet.getString("role_name"));
+                customers.add(user);
+            }
+        } catch (SQLException ex) {
+            System.out.println("Error in findCustomers: " + ex.getMessage());
+        } finally {
+            closeResources();
+        }
+        
+        return customers;
+    }
+
+    /**
+     * Kiểm tra username có phải là customer hợp lệ không
+     * @param username Username to check
+     * @return true nếu là customer hợp lệ, false nếu không
+     */
+    public boolean isValidCustomer(String username) {
+        boolean isValid = false;
+        String sql = "SELECT COUNT(*) " +
+                     "FROM users u " +
+                     "INNER JOIN user_role ur ON u.id = ur.user_id " +
+                     "INNER JOIN roles r ON ur.role_id = r.id " +
+                     "WHERE u.username = ? AND r.role_name = 'customer' AND u.status = 1";
+        
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, username);
+            resultSet = statement.executeQuery();
+            
+            if (resultSet.next()) {
+                isValid = resultSet.getInt(1) > 0;
+            }
+        } catch (SQLException ex) {
+            System.out.println("Error in isValidCustomer: " + ex.getMessage());
+        } finally {
+            closeResources();
+        }
+        
+        return isValid;
+    }
+
 }
 
