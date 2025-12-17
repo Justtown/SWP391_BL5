@@ -7,9 +7,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Service để gửi email
- */
+
 public class EmailService {
     
     private static final Logger logger = Logger.getLogger(EmailService.class.getName());
@@ -19,12 +17,10 @@ public class EmailService {
     private static final String SMTP_PORT = System.getProperty("smtp.port", "587");
     private static final String SMTP_USERNAME = System.getProperty("smtp.username", "");
     private static final String SMTP_PASSWORD = System.getProperty("smtp.password", "");
-    private static final String SMTP_FROM_EMAIL = System.getProperty("smtp.from.email", "d");
+    private static final String SMTP_FROM_EMAIL = System.getProperty("smtp.from.email", "");
     private static final String SMTP_FROM_NAME = System.getProperty("smtp.from.name", "Argo Machine Management");
     
-    /**
-     * Gửi email với mật khẩu mới
-     */
+
     public static boolean sendPasswordResetEmail(String recipientEmail, String newPassword) {
         try {
             Properties properties = new Properties();

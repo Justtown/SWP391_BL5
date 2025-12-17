@@ -176,6 +176,13 @@
                            required minlength="6">
                 </div>
                 
+                <!-- Confirm Password -->
+                <div class="mb-3">
+                    <label for="confirmPassword" class="form-label">Confirm password</label>
+                    <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" 
+                           required minlength="6">
+                </div>
+                
                 <!-- Role -->
                 <div class="mb-3">
                     <label for="role" class="form-label">Role</label>
@@ -212,7 +219,7 @@
                 
                 <!-- Buttons -->
                 <div class="btn-group-custom">
-                    <a href="${pageContext.request.contextPath}/manage-account" class="btn-back">
+                    <a href="${pageContext.request.contextPath}/admin/manage-account" class="btn-back">
                         <i class="fas fa-arrow-left"></i> Back
                     </a>
                     <button type="submit" class="btn btn-add">Add</button>
@@ -239,6 +246,7 @@
             const fullName = document.getElementById('fullName').value.trim();
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
             const role = document.getElementById('role').value;
             
             if (!fullName) {
@@ -256,6 +264,12 @@
             if (!password || password.length < 6) {
                 e.preventDefault();
                 alert('Password must be at least 6 characters!');
+                return false;
+            }
+            
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                alert('Confirm password must match password!');
                 return false;
             }
             

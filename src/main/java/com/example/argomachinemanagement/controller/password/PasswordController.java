@@ -14,10 +14,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Controller xử lý forgot password và reset password
- * URL: /forgot-password, /reset-password
- */
+
 @WebServlet(name = "PasswordController", urlPatterns = {"/forgot-password", "/reset-password"})
 public class PasswordController extends HttpServlet {
     
@@ -59,9 +56,7 @@ public class PasswordController extends HttpServlet {
         }
     }
     
-    /**
-     * Xử lý forgot password: Tạo request mới gửi tới admin
-     */
+
     private void handleForgotPassword(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String email = request.getParameter("email");

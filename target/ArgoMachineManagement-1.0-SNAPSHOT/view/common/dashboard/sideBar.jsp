@@ -3,6 +3,8 @@
 
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
 
+<c:set var="ctx" value="${pageContext.request.contextPath}" />
+
 <!-- Sidebar -->
 <div class="sidebar bg-dark text-white" id="sidebar">
     <div class="sidebar-header p-3 border-bottom border-secondary">
@@ -154,6 +156,32 @@
             </li>
             
         </ul>
+    </nav>
+</div>
+
+<!-- Logout Modal -->
+<div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 10px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); border: none;">
+            <div class="modal-body p-5 text-center">
+                <div class="mb-4">
+                    <i class="fas fa-sign-out-alt fa-3x text-primary"></i>
+                </div>
+                <h4 class="mb-3">Đăng xuất</h4>
+                <p class="text-muted mb-4">Bạn có muốn đăng xuất khỏi hệ thống không?</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <form action="${ctx}/logout" method="POST" style="display: inline;">
+                        <input type="hidden" name="confirm" value="yes">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="fas fa-check me-1"></i> Có, đăng xuất
+                        </button>
+                    </form>
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Không
+                    </button>
+                </div>
+            </div>
+        </div>
     </nav>
 </div>
 

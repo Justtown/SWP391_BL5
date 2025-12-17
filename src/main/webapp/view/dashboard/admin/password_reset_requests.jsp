@@ -146,8 +146,8 @@
         <div class="requests-container">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 class="page-title mb-0">Quản Lý Yêu Cầu Đặt Lại Mật Khẩu</h1>
-                <a href="${pageContext.request.contextPath}/manage-account" class="btn btn-outline-secondary btn-sm">
-                    Quay lại
+                <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i>Quay lại
                 </a>
             </div>
             

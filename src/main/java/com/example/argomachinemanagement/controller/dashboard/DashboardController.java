@@ -9,14 +9,23 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
 /**
- * Controller xử lý dashboard chung cho tất cả các role
- * URL patterns: /admin/dashboard, /manager/dashboard, /sale/dashboard, /customer/dashboard
+ * Controller xử lý dashboard chung cho các role (trừ admin - admin có controller riêng)
+ * URL patterns: /manager/dashboard, /sale/dashboard, /customer/dashboard
  */
 @WebServlet(name = "DashboardController", urlPatterns = {
-    "/admin/dashboard", 
+    "/admin/dashboard",
     "/manager/dashboard", 
     "/sale/dashboard", 
-    "/customer/dashboard"
+    "/customer/dashboard",
+    "/manager/dashboard",
+    "/admin/dashboard",
+    "/manager/dashboard", 
+    "/manager/dashboard",
+    "/admin/dashboard",
+    "/manager/dashboard", 
+    "/sale/dashboard",
+    "/customer/dashboard",
+        "/admin/dashboard"
 })
 public class DashboardController extends HttpServlet {
     
