@@ -15,7 +15,7 @@ import java.util.List;
  * Controller xử lý việc thêm user mới
  * URL: /add-user
  */
-@WebServlet(name = "AddUserController", urlPatterns = { "/add-user" })
+@WebServlet(name = "AddUserController", urlPatterns = { "/add-user", "/admin/add-user" })
 public class AddUserController extends HttpServlet {
     
     private UserDAO userDAO;
@@ -102,8 +102,14 @@ public class AddUserController extends HttpServlet {
         }
         
         // Validate confirm password
-        if (confirmPassword == null || !confirmPassword.equals(password)) {
-            request.setAttribute("errorMessage", "Confirm password must match password!");
+        if (confirmPassword == null || confirmPassword.trim().isEmpty()) {
+            request.setAttribute("errorMessage", "Please confirm your password!");
+            showAddFormWithData(request, response, fullName, email, username, phone, address, dob, roleName, statusStr);
+            return;
+        }
+        
+        if (!password.equals(confirmPassword)) {
+            request.setAttribute("errorMessage", "Passwords do not match! Please check and try again.");
             showAddFormWithData(request, response, fullName, email, username, phone, address, dob, roleName, statusStr);
             return;
         }

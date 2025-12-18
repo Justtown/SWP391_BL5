@@ -27,8 +27,15 @@ public class Contract {
     private Timestamp createdAt;
     private Timestamp updatedAt;
     
-    // Thông tin từ bảng users (để hiển thị)
+    // Các trường mới từ Order
     private String customerName;
+    private String customerPhone;
+    private String customerAddress;
+    private Integer machineTypeId; // Loại máy
+    private Integer quantity; // Số lượng
+    private Double totalCost; // Tổng giá trị
+    
+    // Thông tin từ bảng users (để hiển thị)
     private String managerName;
     
     // Danh sách máy trong hợp đồng

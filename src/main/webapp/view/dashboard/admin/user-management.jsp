@@ -9,10 +9,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            background-color: #f5f5f5;
-            padding: 20px;
-        }
         .user-management-container {
             background: white;
             border-radius: 10px;
@@ -155,27 +151,24 @@
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
+    <!-- Sidebar + layout -->
     <jsp:include page="/view/common/dashboard/sideBar.jsp" />
 
-    <!-- Main Content -->
     <div class="main-content">
         <div class="container-fluid" style="max-width: 100%; overflow-x: hidden;">
-            <div class="user-management-container">
-                <h1 class="page-title">User Management</h1>
+        <div class="user-management-container">
+            <h1 class="page-title">User Management</h1>
             
-            <!-- Success Message -->
+            <!-- Success/Error Messages -->
             <c:if test="${not empty param.success}">
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="fas fa-check-circle"></i> ${param.success}
+                    <i class="fas fa-check-circle me-2"></i>${param.success}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             </c:if>
-            
-            <!-- Error Message -->
             <c:if test="${not empty param.error}">
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="fas fa-exclamation-circle"></i> ${param.error}
+                    <i class="fas fa-exclamation-circle me-2"></i>${param.error}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             </c:if>
@@ -204,7 +197,7 @@
                     <i class="fas fa-times clear-search" id="clearSearch"></i>
                 </div>
                 
-                <a href="${pageContext.request.contextPath}/add-user" class="add-user-link">
+                <a href="${pageContext.request.contextPath}/admin/add-user" class="add-user-link">
                     <i class="fas fa-plus"></i> Add new user
                 </a>
             </div>
@@ -312,10 +305,8 @@
                 </div>
             </c:if>
         </div>
+        </div>
     </div>
-
-    </div> <!-- end main-content -->
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Filter and search functionality
@@ -385,7 +376,7 @@
                 params.append('page', '1');
                 
                 const queryString = params.toString();
-                const url = '${pageContext.request.contextPath}/manage-account' + 
+                const url = '${pageContext.request.contextPath}/admin/manage-account' + 
                            (queryString ? '?' + queryString : '');
                 window.location.href = url;
             }
@@ -409,7 +400,7 @@
                 params.append('page', page);
                 
                 const queryString = params.toString();
-                const url = '${pageContext.request.contextPath}/manage-account' + 
+                const url = '${pageContext.request.contextPath}/admin/manage-account' + 
                            (queryString ? '?' + queryString : '');
                 window.location.href = url;
             }

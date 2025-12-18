@@ -9,10 +9,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            background-color: #f5f5f5;
-            padding: 20px;
-        }
         .add-user-container {
             background: white;
             border-radius: 10px;
@@ -116,46 +112,50 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Sidebar + layout -->
+    <jsp:include page="/view/common/dashboard/sideBar.jsp" />
+
+    <div class="main-content">
+        <div class="container">
         <div class="add-user-container">
             <h2 class="page-title">Add new user</h2>
             
-            <form action="${pageContext.request.contextPath}/add-user" method="POST" id="addUserForm">
+            <form action="${pageContext.request.contextPath}/add-user" method="POST" id="addUserForm" autocomplete="off">
                 
                 <!-- Full name -->
                 <div class="mb-3">
                     <label for="fullName" class="form-label">Full name</label>
                     <input type="text" class="form-control" id="fullName" name="fullName" 
-                           value="${fullName != null ? fullName : ''}" required>
+                           value="${requestScope.fullName != null ? requestScope.fullName : ''}" required autocomplete="off">
                 </div>
                 
                 <!-- Email -->
                 <div class="mb-3">
                     <label for="email" class="form-label">Email</label>
                     <input type="email" class="form-control" id="email" name="email" 
-                           value="${email != null ? email : ''}" required>
+                           value="${requestScope.email != null ? requestScope.email : ''}" required autocomplete="off">
                 </div>
                 
                 <!-- Username (Optional) -->
                 <div class="mb-3">
                     <label for="username" class="form-label">Username </label>
                     <input type="text" class="form-control" id="username" name="username" 
-                           value="${username != null ? username : ''}" 
-                           maxlength="100">
+                           value="${requestScope.username != null ? requestScope.username : ''}" 
+                           maxlength="100" autocomplete="off">
                 </div>
                 
                 <!-- Phone -->
                 <div class="mb-3">
                     <label for="phone" class="form-label">Phone</label>
                     <input type="tel" class="form-control" id="phone" name="phone" 
-                           value="${phone != null ? phone : ''}">
+                           value="${requestScope.phone != null ? requestScope.phone : ''}" autocomplete="off">
                 </div>
                 
                 <!-- Address -->
                 <div class="mb-3">
                     <label for="address" class="form-label">Address</label>
                     <textarea class="form-control" id="address" name="address" rows="3" 
-                              maxlength="500">${address != null ? address : ''}</textarea>
+                              maxlength="500" autocomplete="off">${requestScope.address != null ? requestScope.address : ''}</textarea>
                     <small class="text-muted">Maximum 500 characters</small>
                 </div>
                 
@@ -164,23 +164,26 @@
                     <label for="dob" class="form-label">DOB</label>
                     <div class="date-input-wrapper">
                         <input type="date" class="form-control" id="dob" name="dob" 
-                               value="${dob != null ? dob : ''}">
+                               value="${requestScope.dob != null ? requestScope.dob : ''}" autocomplete="off">
                         <i class="fas fa-calendar-alt date-icon"></i>
                     </div>
                 </div>
                 
                 <!-- Password -->
                 <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
+                    <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
                     <input type="password" class="form-control" id="password" name="password" 
-                           required minlength="6">
+                           required minlength="6" autocomplete="new-password">
                 </div>
                 
                 <!-- Confirm Password -->
                 <div class="mb-3">
-                    <label for="confirmPassword" class="form-label">Confirm password</label>
+                    <label for="confirmPassword" class="form-label">Confirm Password <span class="text-danger">*</span></label>
                     <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" 
-                           required minlength="6">
+                           required minlength="6" autocomplete="new-password">
+                    <div class="invalid-feedback" id="passwordMismatchError" style="display: none;">
+                        Passwords do not match!
+                    </div>
                 </div>
                 
                 <!-- Role -->
@@ -198,14 +201,14 @@
                 <div class="mb-3">
                     <label class="form-label">Status</label>
                     <div class="status-buttons">
-                        <input type="hidden" id="status" name="status" value="${status != null ? status : '1'}">
-                        <button type="button" class="status-btn ${status == '1' || status == null ? 'active' : 'inactive'}" 
+                        <input type="hidden" id="status" name="status" value="${requestScope.status != null ? requestScope.status : '1'}">
+                        <button type="button" class="status-btn ${requestScope.status == '1' || requestScope.status == null ? 'active' : 'inactive'}" 
                                 onclick="setStatus('1', this)">
-                            active
+                            Active
                         </button>
-                        <button type="button" class="status-btn ${status == '0' ? 'active' : 'inactive'}" 
+                        <button type="button" class="status-btn ${requestScope.status == '0' ? 'active' : 'inactive'}" 
                                 onclick="setStatus('0', this)">
-                            inactive
+                            Deactive
                         </button>
                     </div>
                 </div>
@@ -226,6 +229,7 @@
                 </div>
             </form>
         </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -241,12 +245,39 @@
             });
         }
         
+        // Password match validation
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const passwordMismatchError = document.getElementById('passwordMismatchError');
+        
+        function validatePasswordMatch() {
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            
+            if (confirmPassword && password !== confirmPassword) {
+                confirmPasswordInput.classList.add('is-invalid');
+                passwordMismatchError.style.display = 'block';
+                return false;
+            } else {
+                confirmPasswordInput.classList.remove('is-invalid');
+                passwordMismatchError.style.display = 'none';
+                return true;
+            }
+        }
+        
+        confirmPasswordInput.addEventListener('input', validatePasswordMatch);
+        passwordInput.addEventListener('input', function() {
+            if (confirmPasswordInput.value) {
+                validatePasswordMatch();
+            }
+        });
+        
         // Form validation
         document.getElementById('addUserForm').addEventListener('submit', function(e) {
             const fullName = document.getElementById('fullName').value.trim();
             const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
             const role = document.getElementById('role').value;
             
             if (!fullName) {
@@ -267,9 +298,9 @@
                 return false;
             }
             
-            if (password !== confirmPassword) {
+            if (!validatePasswordMatch()) {
                 e.preventDefault();
-                alert('Confirm password must match password!');
+                alert('Passwords do not match! Please check and try again.');
                 return false;
             }
             

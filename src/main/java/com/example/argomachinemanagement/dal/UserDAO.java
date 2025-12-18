@@ -179,6 +179,38 @@ public class UserDAO extends DBContext implements I_DAO<User> {
         
         return roles;
     }
+
+    /**
+     * Lấy danh sách user đang active theo role
+     * (dùng cho tạo Contract: lấy customer, manager, sale đang hoạt động)
+     */
+    public List<User> findActiveUsersByRole(String roleName) {
+        List<User> users = new ArrayList<>();
+        String sql = "SELECT u.*, r.role_name " +
+                     "FROM users u " +
+                     "INNER JOIN user_role ur ON u.id = ur.user_id " +
+                     "INNER JOIN roles r ON ur.role_id = r.id " +
+                     "WHERE u.status = 1 AND r.role_name = ? " +
+                     "ORDER BY u.full_name";
+
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, roleName);
+            resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                User user = getFromResultSet(resultSet);
+                users.add(user);
+            }
+        } catch (SQLException ex) {
+            System.out.println("Error in findActiveUsersByRole: " + ex.getMessage());
+        } finally {
+            closeResources();
+        }
+
+        return users;
+    }
     
     /**
      * Lấy role_id từ role_name
