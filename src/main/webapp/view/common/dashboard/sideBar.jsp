@@ -84,6 +84,11 @@
                         <i class="fas fa-box me-2"></i>Quản lý Product
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white ${currentUri != null && currentUri.contains('/manager/statistics') ? 'active' : ''}" href="${ctx}/manager/statistics">
+                        <i class="fas fa-box me-2"></i>Thống kê
+                    </a>
+                </li>
             </c:if>
 
             <c:if test="${sessionScope.roleName == 'sale'}">
