@@ -12,7 +12,6 @@
     <style>
         body {
             background-color: #f8f9fa;
-            padding: 20px;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
         }
         .requests-container {
@@ -142,14 +141,18 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="requests-container">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="page-title mb-0">Quản Lý Yêu Cầu Đặt Lại Mật Khẩu</h1>
-                <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-outline-secondary btn-sm">
-                    <i class="fas fa-arrow-left me-1"></i>Quay lại
-                </a>
-            </div>
+    <!-- Include Sidebar -->
+    <jsp:include page="/view/common/dashboard/sideBar.jsp" />
+
+    <div class="main-content">
+        <div class="container-fluid">
+            <div class="requests-container">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="page-title mb-0">Quản Lý Yêu Cầu Đặt Lại Mật Khẩu</h1>
+                    <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-arrow-left me-1"></i>Quay lại
+                    </a>
+                </div>
             
             <%-- Display messages --%>
             <c:if test="${not empty message}">
@@ -325,6 +328,7 @@
                     </c:if>
                 </c:otherwise>
             </c:choose>
+            </div>
         </div>
     </div>
     

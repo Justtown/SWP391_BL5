@@ -301,5 +301,79 @@ public class MachineDAO extends DBContext implements I_DAO<Machine> {
         
         return machine;
     }
+
+
+    public List<Machine> findAllForCustomer() {
+        List<Machine> machines = new ArrayList<>();
+
+        String sql = """
+        SELECT m.id,
+               m.machine_code,
+               m.machine_name,
+               m.status,
+               mt.type_name AS machine_type_name
+        FROM machines m
+        JOIN machine_types mt ON m.machine_type_id = mt.id
+        WHERE m.status = 'ACTIVE'
+          AND m.is_rentable = 1
+        ORDER BY m.created_at DESC
+    """;
+
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                Machine machine = Machine.builder()
+                        .id(resultSet.getInt("id"))
+                        .machineCode(resultSet.getString("machine_code"))
+                        .machineName(resultSet.getString("machine_name"))
+                        .status(resultSet.getString("status"))
+                        .machineTypeName(resultSet.getString("machine_type_name"))
+                        .build();
+
+                machines.add(machine);
+            }
+        } catch (SQLException ex) {
+            System.out.println("Error in MachineDAO.findAllForCustomer: " + ex.getMessage());
+        } finally {
+            closeResources();
+        }
+
+        return machines;
+    }
+
+    public Machine findDetailForCustomer(Integer id) {
+        Machine machine = null;
+
+        String sql = """
+        SELECT m.*,
+               mt.type_name AS machine_type_name
+        FROM machines m
+        JOIN machine_types mt ON m.machine_type_id = mt.id
+        WHERE m.id = ?
+          AND m.status = 'ACTIVE'
+          AND m.is_rentable = 1
+    """;
+
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, id);
+            resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                machine = getFromResultSet(resultSet);
+            }
+        } catch (SQLException ex) {
+            System.out.println("Error in MachineDAO.findDetailForCustomer: " + ex.getMessage());
+        } finally {
+            closeResources();
+        }
+
+        return machine;
+    }
+
 }
 

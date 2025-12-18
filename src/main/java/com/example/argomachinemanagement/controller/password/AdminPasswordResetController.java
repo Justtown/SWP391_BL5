@@ -188,9 +188,9 @@ public class AdminPasswordResetController extends HttpServlet {
                 return;
             }
             
-            // Cập nhật status và lưu password mới vào request để gửi email
+            // Cập nhật status và lưu new_password dưới dạng hash (không lưu plain password)
             boolean statusUpdateSuccess = passwordResetRequestDAO.updateRequestStatus(
-                resetRequest.getId(), "approved", newPassword);
+                resetRequest.getId(), "approved", hashedPassword);
             
             if (!statusUpdateSuccess) {
                 logger.warning("Failed to update request status to approved for requestId: " + resetRequest.getId());

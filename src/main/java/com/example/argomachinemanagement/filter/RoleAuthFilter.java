@@ -29,7 +29,10 @@ public class RoleAuthFilter implements Filter {
             "/admin/pending-users", "/pending-users",
             "/manager/contracts", "/contracts",
             "/sale/contracts", "/contracts",
-            "/customer/contracts", "/contracts"
+            "/customer/contracts", "/contracts",
+            // Manager routes mới nhưng permission DB có thể đang lưu route cũ
+            "/manager/machine-types", "/machine-types",
+            "/manager/maintenances", "/maintenances"
     );
 
     @Override
@@ -115,11 +118,31 @@ public class RoleAuthFilter implements Filter {
      * Chỉ áp dụng cho một số URL đã được map cố định trong LEGACY_PERMISSION_ALIASES.
      */
     private boolean hasLegacyAliasPermission(String requestPath, Set<String> allowedUrls) {
-        String legacy = LEGACY_PERMISSION_ALIASES.get(requestPath);
-        if (legacy == null) {
+        if (requestPath == null || allowedUrls == null || allowedUrls.isEmpty()) {
             return false;
         }
-        return hasPermission(legacy, allowedUrls);
+
+        // Hỗ trợ cả trường hợp sub-path: /new/foo/bar -> /legacy/foo/bar
+        for (Map.Entry<String, String> entry : LEGACY_PERMISSION_ALIASES.entrySet()) {
+            String newBase = entry.getKey();
+            String legacyBase = entry.getValue();
+
+            if (matchesUrl(requestPath, newBase)) {
+                // replace prefix nếu có phần đuôi path
+                String legacyPath = requestPath;
+                if (legacyPath.startsWith(newBase)) {
+                    legacyPath = legacyBase + legacyPath.substring(newBase.length());
+                } else {
+                    // fallback nếu matchUrl do normalize/wildcard
+                    legacyPath = legacyBase;
+                }
+                if (hasPermission(legacyPath, allowedUrls)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -131,15 +154,16 @@ public class RoleAuthFilter implements Filter {
             return false;
         }
 
-        switch (roleName) {
+        switch (roleName.toLowerCase()) {
             case "admin":
-                // Admin luôn được vào một số trang quản trị quan trọng
-                return requestPath.startsWith("/admin/pending-users")
-                        || requestPath.startsWith("/admin/manage-account")
-                        || requestPath.startsWith("/admin/add-user")
-                        || requestPath.startsWith("/admin/permissions")
-                        || requestPath.startsWith("/admin/roles")
-                        || requestPath.startsWith("/admin/dashboard");
+                // Admin mặc định được phép truy cập toàn bộ khu vực /admin/*
+                // để tránh lỗi 403 nếu permission trong DB chưa cấu hình đầy đủ.
+                return requestPath.startsWith("/admin/");
+            case "manager":
+                // Manager mặc định được vào các trang nghiệp vụ cốt lõi để tránh 403
+                // khi DB chưa kịp cấu hình permission cho route mới
+                return requestPath.startsWith("/manager/machine-types")
+                        || requestPath.startsWith("/manager/maintenances");
             case "customer":
                 // Customer luôn được xem hợp đồng của mình
                 return requestPath.startsWith("/customer/contracts");
@@ -156,18 +180,36 @@ public class RoleAuthFilter implements Filter {
         if (pattern == null || requestPath == null) {
             return false;
         }
-        
-        // Exact match
-        if (requestPath.equals(pattern)) {
+
+        // Normalize: ensure leading slash & remove trailing slash (except root)
+        String normalizedRequest = requestPath.startsWith("/") ? requestPath : "/" + requestPath;
+        String normalizedPattern = pattern.startsWith("/") ? pattern : "/" + pattern;
+        if (normalizedPattern.length() > 1 && normalizedPattern.endsWith("/")) {
+            normalizedPattern = normalizedPattern.substring(0, normalizedPattern.length() - 1);
+        }
+
+        // Support wildcard patterns commonly stored in DB: "/foo/*" or "/foo*"
+        String basePattern = normalizedPattern;
+        if (normalizedPattern.endsWith("/*")) {
+            basePattern = normalizedPattern.substring(0, normalizedPattern.length() - 2);
+        } else if (normalizedPattern.endsWith("*")) {
+            basePattern = normalizedPattern.substring(0, normalizedPattern.length() - 1);
+        }
+        if (basePattern.length() > 1 && basePattern.endsWith("/")) {
+            basePattern = basePattern.substring(0, basePattern.length() - 1);
+        }
+
+        // Exact match (also allow wildcard base match)
+        if (normalizedRequest.equals(normalizedPattern) || normalizedRequest.equals(basePattern)) {
             return true;
         }
-        
+
         // StartsWith match (cho phép sub-paths và query params)
         // VD: /manager/machines/add được phép nếu có quyền /manager/machines
-        if (requestPath.startsWith(pattern + "/") || requestPath.startsWith(pattern + "?")) {
+        if (normalizedRequest.startsWith(basePattern + "/") || normalizedRequest.startsWith(basePattern + "?")) {
             return true;
         }
-        
+
         return false;
     }
 
