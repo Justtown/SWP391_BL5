@@ -146,18 +146,36 @@ public class PermissionDAO extends DBContext {
         if (pattern == null || requestPath == null) {
             return false;
         }
-        
-        // Exact match
-        if (requestPath.equals(pattern)) {
+
+        // Normalize: ensure leading slash & remove trailing slash (except root)
+        String normalizedRequest = requestPath.startsWith("/") ? requestPath : "/" + requestPath;
+        String normalizedPattern = pattern.startsWith("/") ? pattern : "/" + pattern;
+        if (normalizedPattern.length() > 1 && normalizedPattern.endsWith("/")) {
+            normalizedPattern = normalizedPattern.substring(0, normalizedPattern.length() - 1);
+        }
+
+        // Support wildcard patterns: "/foo/*" or "/foo*"
+        String basePattern = normalizedPattern;
+        if (normalizedPattern.endsWith("/*")) {
+            basePattern = normalizedPattern.substring(0, normalizedPattern.length() - 2);
+        } else if (normalizedPattern.endsWith("*")) {
+            basePattern = normalizedPattern.substring(0, normalizedPattern.length() - 1);
+        }
+        if (basePattern.length() > 1 && basePattern.endsWith("/")) {
+            basePattern = basePattern.substring(0, basePattern.length() - 1);
+        }
+
+        // Exact match (also allow wildcard base match)
+        if (normalizedRequest.equals(normalizedPattern) || normalizedRequest.equals(basePattern)) {
             return true;
         }
-        
+
         // StartsWith match (cho phép sub-paths)
         // VD: /manager/machines/add được phép nếu có quyền /manager/machines
-        if (requestPath.startsWith(pattern + "/") || requestPath.startsWith(pattern + "?")) {
+        if (normalizedRequest.startsWith(basePattern + "/") || normalizedRequest.startsWith(basePattern + "?")) {
             return true;
         }
-        
+
         return false;
     }
 

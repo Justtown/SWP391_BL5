@@ -103,13 +103,13 @@ public class LoginServlet extends HttpServlet {
             session.setAttribute("allowedUrls", allowedUrls);
 
             // Kiểm tra xem user có login bằng password mới từ admin chưa (chưa đổi mật khẩu)
-//            PasswordResetRequest pendingChange = passwordResetRequestDAO.findUnchangedApprovedRequest(user.getId());
-//            if (pendingChange != null) {
-//                // Bắt user phải đổi mật khẩu
-//                session.setAttribute("mustChangePassword", true);
-//                response.sendRedirect(request.getContextPath() + "/change-password");
-//                return;
-//            }
+            PasswordResetRequest pendingChange = passwordResetRequestDAO.findUnchangedApprovedRequest(user.getId());
+            if (pendingChange != null) {
+                // Bắt user phải đổi mật khẩu (đã login bằng mật khẩu reset)
+                session.setAttribute("mustChangePassword", true);
+                response.sendRedirect(request.getContextPath() + "/change-password");
+                return;
+            }
 
             if ("on".equals(rememberMe)) {
                 session.setMaxInactiveInterval(7 * 24 * 60 * 60); // 7 days

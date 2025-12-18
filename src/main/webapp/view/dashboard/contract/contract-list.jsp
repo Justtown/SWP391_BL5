@@ -5,6 +5,10 @@
 <c:if test="${sessionScope.roleName == 'sale'}"><c:set var="contractsPath" value="/sale/contracts" /></c:if>
 <c:if test="${sessionScope.roleName == 'customer'}"><c:set var="contractsPath" value="/customer/contracts" /></c:if>
 <c:set var="contractsBase" value="${pageContext.request.contextPath}${contractsPath}" />
+<c:set var="pageTitleText" value="Contract Management" />
+<c:if test="${sessionScope.roleName == 'customer'}">
+    <c:set var="pageTitleText" value="My Contracts" />
+</c:if>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,27 +18,31 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .contract-management-container {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            max-width: 100%;
-            box-sizing: border-box;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: #f8f9fa;
         }
-        .page-title {
-            font-size: 2rem;
-            font-weight: bold;
-            margin-bottom: 30px;
-            text-align: center;
+
+        .page-header {
+            background: white;
+            border-bottom: 1px solid #dee2e6;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
         }
         .filter-section {
             display: flex;
             gap: 10px;
-            margin-bottom: 30px;
-            flex-wrap: nowrap;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
             align-items: center;
-            width: 100%;
         }
         .filter-dropdown {
             width: 150px;
@@ -43,7 +51,7 @@
         .search-container {
             flex: 1 1 auto;
             position: relative;
-            min-width: 0;
+            min-width: 200px;
         }
         .search-input {
             padding-left: 40px;
@@ -67,16 +75,6 @@
         }
         .clear-search:hover {
             color: #dc3545;
-        }
-        .add-contract-link {
-            color: #0d6efd;
-            text-decoration: none;
-            font-weight: 500;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-        .add-contract-link:hover {
-            text-decoration: underline;
         }
         .table-container {
             overflow-x: auto;
@@ -157,18 +155,45 @@
     <jsp:include page="/view/common/dashboard/sideBar.jsp" />
 
     <div class="main-content">
+        <!-- Page Header (match other management pages) -->
+        <div class="page-header d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="mb-1"><i class="fas fa-file-contract me-2"></i>${pageTitleText}</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item">
+                            <a href="${pageContext.request.contextPath}/${sessionScope.roleName}/dashboard">Dashboard</a>
+                        </li>
+                        <li class="breadcrumb-item active">Contracts</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="d-flex align-items-center">
+                <span class="me-3">
+                    <i class="fas fa-user-circle me-1"></i> ${sessionScope.fullName}
+                </span>
+                <a href="#" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+
         <div class="container-fluid" style="max-width: 100%; overflow-x: hidden;">
-        <div class="contract-management-container">
-            <h1 class="page-title">
-                <c:choose>
-                    <c:when test="${sessionScope.roleName == 'customer'}">
-                        My Contracts
-                    </c:when>
-                    <c:otherwise>
-                        Contract Management
-                    </c:otherwise>
-                </c:choose>
-            </h1>
+        <div class="content-card">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0">
+                    <c:choose>
+                        <c:when test="${sessionScope.roleName == 'customer'}">Danh sách hợp đồng</c:when>
+                        <c:otherwise>Danh sách hợp đồng</c:otherwise>
+                    </c:choose>
+                </h5>
+                <c:if test="${sessionScope.roleName != 'customer'}">
+                    <button type="button" class="btn btn-primary"
+                            onclick="window.location.href='${contractsBase}?action=create'">
+                        <i class="fas fa-plus"></i> Thêm contract mới
+                    </button>
+                </c:if>
+            </div>
             
             <!-- Success/Error Messages -->
             <c:if test="${not empty param.success}">
@@ -201,12 +226,6 @@
                            value="${keyword != null ? keyword : ''}">
                     <i class="fas fa-times clear-search" id="clearSearch"></i>
                 </div>
-                
-                <c:if test="${sessionScope.roleName != 'customer'}">
-                    <a href="${contractsBase}?action=create" class="add-contract-link">
-                        <i class="fas fa-plus"></i> Create New Contract
-                    </a>
-                </c:if>
             </div>
             
             <!-- Pagination Info -->
@@ -218,8 +237,8 @@
             
             <!-- Contract Table -->
             <div class="table-container">
-                <table class="table table-striped table-hover">
-                    <thead>
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
                         <tr>
                             <th>STT</th>
                             <th>Contract Code</th>
@@ -338,6 +357,7 @@
             statusFilter.addEventListener('change', applyFilters);
             keywordInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
+                    e.preventDefault();
                     applyFilters();
                 }
             });
@@ -388,6 +408,9 @@
                            (queryString ? '?' + queryString : '');
                 window.location.href = url;
             }
+
+            // Initial clear button state
+            clearSearch.style.display = keywordInput.value.trim() ? 'block' : 'none';
         });
     </script>
 </body>

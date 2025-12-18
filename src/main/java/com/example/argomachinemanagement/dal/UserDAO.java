@@ -6,9 +6,12 @@ import java.sql.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class UserDAO extends DBContext implements I_DAO<User> {
+    private static final Logger LOGGER = Logger.getLogger(UserDAO.class.getName());
 
    
     /**
@@ -264,7 +267,7 @@ public class UserDAO extends DBContext implements I_DAO<User> {
      */
     private boolean isUsernameExists(String username) {
         boolean exists = false;
-        String sql = "SELECT COUNT(*) FROM users WHERE username = ?";
+        String sql = "SELECT COUNT(*) FROM users WHERE username IS NOT NULL AND TRIM(LOWER(username)) = TRIM(LOWER(?))";
         
         try {
             connection = getConnection();
@@ -281,6 +284,77 @@ public class UserDAO extends DBContext implements I_DAO<User> {
             closeResources();
         }
         
+        return exists;
+    }
+
+    /**
+     * Kiểm tra email đã tồn tại chưa (không phân biệt hoa/thường)
+     */
+    public boolean isEmailExists(String email) {
+        if (email == null) {
+            return false;
+        }
+        boolean exists = false;
+        String sql = "SELECT COUNT(*) FROM users WHERE email IS NOT NULL AND TRIM(LOWER(email)) = TRIM(LOWER(?))";
+
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, email);
+            resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                exists = resultSet.getInt(1) > 0;
+            }
+        } catch (SQLException ex) {
+            System.out.println("Error in isEmailExists: " + ex.getMessage());
+        } finally {
+            closeResources();
+        }
+
+        return exists;
+    }
+
+    /**
+     * Kiểm tra username đã tồn tại chưa (không phân biệt hoa/thường)
+     */
+    public boolean isUsernameExistsPublic(String username) {
+        if (username == null) {
+            return false;
+        }
+        return isUsernameExists(username);
+    }
+
+    /**
+     * Kiểm tra phone đã tồn tại chưa (normalize: bỏ space, '-', '.', '(', ')', '+')
+     */
+    public boolean isPhoneExists(String phone) {
+        if (phone == null) {
+            return false;
+        }
+        boolean exists = false;
+        // Normalize in SQL for common separators; keep digits/leading 0s
+        String sql =
+                "SELECT COUNT(*) FROM users " +
+                "WHERE phone_number IS NOT NULL " +
+                "AND REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(TRIM(phone_number),' ',''),'-',''),'.',''),'(',''),')',''),'+','') = " +
+                "    REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(TRIM(?),' ',''),'-',''),'.',''),'(',''),')',''),'+','')";
+
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, phone);
+            resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                exists = resultSet.getInt(1) > 0;
+            }
+        } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "Error in isPhoneExists: " + ex.getMessage(), ex);
+        } finally {
+            closeResources();
+        }
+
         return exists;
     }
     
@@ -306,6 +380,27 @@ public class UserDAO extends DBContext implements I_DAO<User> {
     @Override
     public int insert(User user) {
         int userId = 0;
+
+        // Final safety net: block duplicates even if caller forgot to check
+        try {
+            if (user != null) {
+                if (user.getEmail() != null && isEmailExists(user.getEmail())) {
+                    LOGGER.warning("[AddUser][BLOCKED] Duplicate email: " + user.getEmail());
+                    return 0;
+                }
+                if (user.getUsername() != null && isUsernameExists(user.getUsername())) {
+                    LOGGER.warning("[AddUser][BLOCKED] Duplicate username: " + user.getUsername());
+                    return 0;
+                }
+                if (user.getPhoneNumber() != null && isPhoneExists(user.getPhoneNumber())) {
+                    LOGGER.warning("[AddUser][BLOCKED] Duplicate phone: " + user.getPhoneNumber());
+                    return 0;
+                }
+            }
+        } catch (Exception e) {
+            // Do not block insert due to check failure, but log loudly
+            LOGGER.log(Level.SEVERE, "[AddUser] Duplicate-check failed before insert", e);
+        }
         
         // Tạo username nếu chưa có
         if (user.getUsername() == null || user.getUsername().isEmpty()) {
@@ -362,7 +457,7 @@ public class UserDAO extends DBContext implements I_DAO<User> {
     
     public User findByUsername(String username) {
         User user = null;
-        String sql = "SELECT * FROM users WHERE username = ?";
+        String sql = "SELECT * FROM users WHERE LOWER(username) = LOWER(?)";
         
         try {
             connection = getConnection();
@@ -384,7 +479,7 @@ public class UserDAO extends DBContext implements I_DAO<User> {
     
     public User findByEmail(String email) {
         User user = null;
-        String sql = "SELECT * FROM users WHERE email = ?";
+        String sql = "SELECT * FROM users WHERE LOWER(email) = LOWER(?)";
         
         try {
             connection = getConnection();
