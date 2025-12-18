@@ -6,6 +6,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RoleDAO extends DBContext {
+    
+    public List<Role> findAll() {
+        List<Role> list = new ArrayList<>();
+        try {
+            String sql = "SELECT id, role_name, description, status FROM roles ORDER BY role_name";
+            Connection conn = getConnection();
+            statement = conn.prepareStatement(sql);
+            resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                Role r = new Role();
+                r.setRoleId(resultSet.getInt("id"));
+                r.setRoleName(resultSet.getString("role_name"));
+                r.setDescription(resultSet.getString("description"));
+                r.setStatus(resultSet.getBoolean("status"));
+                list.add(r);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            closeStmt();
+        }
+        return list;
+    }
+    
     public int count(String keyword) {
         int total = 0;
         try {

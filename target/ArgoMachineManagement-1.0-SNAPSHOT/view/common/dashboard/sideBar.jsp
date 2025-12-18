@@ -42,7 +42,12 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-white" href="${ctx}/admin/roles">
-                        <i class="fas fa-user-shield me-2"></i>Quản lý Permission
+                        <i class="fas fa-user-tag me-2"></i>Quản lý Role
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="${ctx}/admin/permissions?action=matrix">
+                        <i class="fas fa-shield-alt me-2"></i>Quản lý Permission
                     </a>
                 </li>
                 <li class="nav-item">
@@ -81,6 +86,11 @@
                 <li class="nav-item">
                     <a class="nav-link text-white" href="${ctx}/manager/products">
                         <i class="fas fa-box me-2"></i>Quản lý Product
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="${ctx}/manager/orders?action=list">
+                        <i class="fas fa-shopping-cart me-2"></i>Quản lý đơn hàng
                     </a>
                 </li>
             </c:if>
@@ -142,7 +152,7 @@
                 </div>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-white" href="${ctx}/profile">
+                <a class="nav-link text-white" href="${ctx}/my-profile">
                     <i class="fas fa-user me-2"></i>Hồ sơ cá nhân
                 </a>
             </li>

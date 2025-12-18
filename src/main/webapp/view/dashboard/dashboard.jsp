@@ -142,7 +142,7 @@
                                     </a>
                                 </div>
                                 <div class="col-md-6">
-                                    <a href="${pageContext.request.contextPath}/admin/roles" class="quick-action">
+                                    <a href="${pageContext.request.contextPath}/admin/permissions" class="quick-action">
                                         <i class="fas fa-user-shield"></i> Quản lý phân quyền
                                     </a>
                                 </div>

@@ -42,7 +42,12 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-white" href="${ctx}/admin/roles">
-                        <i class="fas fa-user-shield me-2"></i>Quản lý Permission
+                        <i class="fas fa-user-tag me-2"></i>Quản lý Role
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="${ctx}/admin/permissions?action=matrix">
+                        <i class="fas fa-shield-alt me-2"></i>Quản lý Permission
                     </a>
                 </li>
                 <li class="nav-item">

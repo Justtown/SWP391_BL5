@@ -136,7 +136,10 @@ public class RoleAuthFilter implements Filter {
                 // Admin luôn được vào một số trang quản trị quan trọng
                 return requestPath.startsWith("/admin/pending-users")
                         || requestPath.startsWith("/admin/manage-account")
-                        || requestPath.startsWith("/admin/add-user");
+                        || requestPath.startsWith("/admin/add-user")
+                        || requestPath.startsWith("/admin/permissions")
+                        || requestPath.startsWith("/admin/roles")
+                        || requestPath.startsWith("/admin/dashboard");
             case "customer":
                 // Customer luôn được xem hợp đồng của mình
                 return requestPath.startsWith("/customer/contracts");

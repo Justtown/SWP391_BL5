@@ -125,12 +125,6 @@
                                value="<%= quantity != null ? quantity : "1" %>" min="1" required>
                     </div>
                 </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Mô tả dịch vụ <span class="text-danger">*</span></label>
-                    <textarea name="serviceDescription" class="form-control" rows="4" required
-                              placeholder="Mô tả chi tiết về dịch vụ gia công, yêu cầu kỹ thuật, v.v."><%= serviceDescription != null ? serviceDescription : "" %></textarea>
-                </div>
                 <% if (machineTypeId != null) { %>
                 <script>
                     document.addEventListener('DOMContentLoaded', function() {
@@ -139,6 +133,11 @@
                 </script>
                 <% } %>
 
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Mô tả dịch vụ <span class="text-danger">*</span></label>
+                    <textarea name="serviceDescription" class="form-control" rows="4" required
+                              placeholder="Mô tả chi tiết về dịch vụ gia công, yêu cầu kỹ thuật, v.v."><%= serviceDescription != null ? serviceDescription : "" %></textarea>
+                </div>
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold">Ngày bắt đầu <span class="text-danger">*</span></label>
