@@ -94,7 +94,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/sale/orders?action=list">
+                    <a class="nav-link text-white" href="${ctx}/manager/orders?action=list">
                         <i class="fas fa-shopping-cart me-2"></i>Quản lý đơn hàng
                     </a>
                 </li>
@@ -159,7 +159,7 @@
                 </div>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-white" href="${ctx}/profile">
+                <a class="nav-link text-white" href="${ctx}/my-profile">
                     <i class="fas fa-user me-2"></i>Hồ sơ cá nhân
                 </a>
             </li>

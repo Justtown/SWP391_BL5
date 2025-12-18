@@ -28,7 +28,7 @@
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                         <li>
-                            <a class="dropdown-item" href="${ctx}/profile">
+                            <a class="dropdown-item" href="${ctx}/my-profile">
                                 <i class="fas fa-user me-2"></i> Hồ sơ cá nhân
                             </a>
                         </li>

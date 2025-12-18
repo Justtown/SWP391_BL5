@@ -222,7 +222,7 @@
                             
                             <!-- Common Actions -->
                             <div class="col-md-6">
-                                <a href="${pageContext.request.contextPath}/profile" class="quick-action">
+                                <a href="${pageContext.request.contextPath}/my-profile" class="quick-action">
                                     <i class="fas fa-user"></i> Xem hồ sơ cá nhân
                                 </a>
                             </div>
@@ -254,7 +254,7 @@
                             </div>
                         </div>
                         <hr>
-                        <a href="${pageContext.request.contextPath}/profile" class="btn btn-outline-primary btn-sm w-100">
+                        <a href="${pageContext.request.contextPath}/my-profile?mode=edit" class="btn btn-outline-primary btn-sm w-100">
                             <i class="fas fa-edit me-1"></i> Chỉnh sửa hồ sơ
                         </a>
                     </div>

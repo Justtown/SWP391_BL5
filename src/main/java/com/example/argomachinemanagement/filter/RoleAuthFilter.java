@@ -68,9 +68,15 @@ public class RoleAuthFilter implements Filter {
         }
 
         // Bổ sung một số URL mặc định theo role (không cần sửa DB)
-        if (roleName != null && roleName.equalsIgnoreCase("customer") && allowedUrls != null) {
-            // Cho phép customer truy cập trang danh sách hợp đồng riêng
-            allowedUrls.add("/customer/contracts");
+        if (roleName != null && allowedUrls != null) {
+            if (roleName.equalsIgnoreCase("customer")) {
+                // Cho phép customer truy cập trang danh sách hợp đồng riêng
+                allowedUrls.add("/customer/contracts");
+            }
+            if (roleName.equalsIgnoreCase("manager")) {
+                // Cho phép manager truy cập trang quản lý đơn hàng
+                allowedUrls.add("/manager/orders");
+            }
         }
 
         // Lưu lại vào session (phòng khi có thay đổi ở trên)

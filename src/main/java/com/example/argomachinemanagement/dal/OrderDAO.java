@@ -270,15 +270,35 @@ public class OrderDAO extends DBContext {
         }
     }
 
-    public void updateStatus(int orderId, String status) {
+    public boolean updateStatus(int orderId, String status) {
         String sql = "UPDATE service_orders SET status = ? WHERE id = ?";
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, status);
             ps.setInt(2, orderId);
-            ps.executeUpdate();
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Cập nhật status và approved_by cho đơn hàng
+     */
+    public boolean updateStatusWithApprover(int orderId, String status, int approvedBy) {
+        String sql = "UPDATE service_orders SET status = ?, approved_by = ?, updated_at = NOW() WHERE id = ?";
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setInt(2, approvedBy);
+            ps.setInt(3, orderId);
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
