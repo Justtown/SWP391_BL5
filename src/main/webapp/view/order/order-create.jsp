@@ -1,5 +1,11 @@
 <%@ page contentType="text/html; charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%
+    // Prevent caching to always get fresh contract code
+    response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    response.setHeader("Pragma", "no-cache");
+    response.setDateHeader("Expires", 0);
+%>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -60,11 +66,9 @@
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold">Mã hợp đồng <span class="text-danger">*</span></label>
                         <input type="text" name="contractCode" class="form-control" 
-                               placeholder="VD: HD001" required 
-                               pattern="[A-Za-z0-9]+" 
-                               title="Chỉ chứa chữ và số"
-                               value="<%= contractCode != null ? contractCode : "" %>">
-                        <div class="form-text">Mã duy nhất cho hợp đồng này</div>
+                               value="${nextContractCode}" required readonly
+                               style="background-color: #e9ecef;">
+                        <div class="form-text">Mã tự động tăng dần cho hợp đồng này</div>
                     </div>
 
                     <div class="col-md-6 mb-3">
@@ -110,28 +114,38 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-md-8 mb-3">
-                        <label class="form-label fw-bold">Tên loại máy <span class="text-danger">*</span></label>
-                        <select name="machineTypeId" class="form-control" required id="machineTypeSelect">
-                            <option value="">-- Chọn loại máy --</option>
-                            <c:forEach var="type" items="${machineTypes}">
-                                <option value="${type.id}">${type.id} - ${type.typeName}</option>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">Mã máy <span class="text-danger">*</span></label>
+                        <select name="machineId" class="form-control" required id="machineSelect">
+                            <option value="">-- Chọn mã máy --</option>
+                            <c:forEach var="machine" items="${machines}">
+                                <option value="${machine.id}" 
+                                        data-name="${machine.machineName}" 
+                                        data-type="${machine.machineTypeName}">
+                                    ${machine.machineCode}
+                                </option>
                             </c:forEach>
                         </select>
                     </div>
                     <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">Tên máy</label>
+                        <input type="text" id="machineNameDisplay" class="form-control" readonly 
+                               placeholder="Tự động điền khi chọn mã máy">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">Loại máy</label>
+                        <input type="text" id="machineTypeDisplay" class="form-control" readonly 
+                               placeholder="Tự động điền khi chọn mã máy">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12 mb-3">
                         <label class="form-label fw-bold">Số lượng <span class="text-danger">*</span></label>
                         <input type="number" name="quantity" class="form-control" 
                                value="<%= quantity != null ? quantity : "1" %>" min="1" required>
                     </div>
                 </div>
-                <% if (machineTypeId != null) { %>
-                <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        document.getElementById('machineTypeSelect').value = '<%= machineTypeId %>';
-                    });
-                </script>
-                <% } %>
 
                 <div class="mb-3">
                     <label class="form-label fw-bold">Mô tả dịch vụ <span class="text-danger">*</span></label>
@@ -157,9 +171,10 @@
                 <div class="mb-3">
                     <label class="form-label fw-bold">Tổng giá trị hợp đồng (VNĐ)</label>
                     <input type="number" step="1000" name="totalCost" class="form-control" 
-                           placeholder="VD: 50000000" min="0"
-                           value="<%= totalCost != null ? totalCost : "" %>">
-                    <div class="form-text">Giá trị ước tính hoặc đã thỏa thuận</div>
+                           placeholder="VD: 5000000" min="1000000" required
+                           value="<%= totalCost != null ? totalCost : "" %>"
+                           id="totalCostInput">
+                    <div class="form-text text-danger">* Giá trị phải từ 1,000,000 VNĐ trở lên</div>
                 </div>
 
                 <div class="alert alert-info" role="alert">
@@ -214,14 +229,52 @@ customerInput.addEventListener('blur', function() {
     }
 });
 
+// Auto-fill machine name and type when selecting machine code
+const machineSelect = document.getElementById('machineSelect');
+const machineNameDisplay = document.getElementById('machineNameDisplay');
+const machineTypeDisplay = document.getElementById('machineTypeDisplay');
+
+machineSelect.addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    if (selectedOption.value) {
+        machineNameDisplay.value = selectedOption.getAttribute('data-name') || '';
+        machineTypeDisplay.value = selectedOption.getAttribute('data-type') || '';
+    } else {
+        machineNameDisplay.value = '';
+        machineTypeDisplay.value = '';
+    }
+});
+
+// Validation cho tổng giá trị hợp đồng
+const totalCostInput = document.getElementById('totalCostInput');
+if (totalCostInput) {
+    totalCostInput.addEventListener('input', function() {
+        const value = parseFloat(this.value);
+        if (isNaN(value) || value < 1000000) {
+            this.setCustomValidity('Giá trị hợp đồng phải từ 1,000,000 VNĐ trở lên!');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+}
+
 // Validation: End date must be after start date
 document.getElementById('orderForm').addEventListener('submit', function(e) {
     const startDate = document.querySelector('[name="startDate"]').value;
     const endDate = document.querySelector('[name="endDate"]').value;
+    const totalCost = parseFloat(totalCostInput.value);
     
     if (endDate && startDate && new Date(endDate) < new Date(startDate)) {
         e.preventDefault();
         alert('Ngày kết thúc phải sau ngày bắt đầu!');
+        return false;
+    }
+    
+    if (isNaN(totalCost) || totalCost < 1000000) {
+        e.preventDefault();
+        alert('Giá trị hợp đồng phải từ 1,000,000 VNĐ trở lên!');
+        totalCostInput.focus();
+        return false;
     }
 });
 </script>

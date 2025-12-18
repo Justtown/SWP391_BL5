@@ -24,7 +24,7 @@
 <div class="main-content">
 <div class="container-fluid mt-4">
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3><i class="bi bi-cart-check"></i> Quản lý đơn hàng</h3>
+    <h3><i class="bi bi-cart-check"></i> Quản lý Order</h3>
   </div>
 
   <!-- Success/Error Messages -->
@@ -94,38 +94,23 @@
     <table class="table table-striped table-bordered table-hover">
       <thead class="table-dark">
       <tr>
-        <th>Mã HĐ</th>
-        <th>Khách hàng</th>
-        <th>SĐT</th>
-        <th>Mô tả dịch vụ</th>
-        <th>Ngày bắt đầu</th>
-        <th>Ngày kết thúc</th>
-        <th>Tổng tiền</th>
-        <th>Trạng thái</th>
-        <th>Người tạo</th>
-        <th>Người duyệt</th>
-        <th>Hành động</th>
+        <th>Order Code</th>
+        <th>Mã hợp đồng</th>
+        <th>Customer Name</th>
+        <th>Sale Name</th>
+        <th>Created Date</th>
+        <th>Status</th>
+        <th>Action</th>
       </tr>
       </thead>
       <tbody>
-      <c:forEach var="o" items="${orders}">
+      <c:forEach var="o" items="${orders}" varStatus="status">
         <tr>
-          <td><strong>${o.contractCode}</strong></td>
+          <td><strong>${status.index + 1}</strong></td>
+          <td><span class="text-muted">${o.contractCode}</span></td>
           <td>${o.customerName}</td>
-          <td>${o.customerPhone}</td>
-          <td>
-            <c:choose>
-              <c:when test="${o.serviceDescription.length() > 50}">
-                ${o.serviceDescription.substring(0, 50)}...
-              </c:when>
-              <c:otherwise>
-                ${o.serviceDescription}
-              </c:otherwise>
-            </c:choose>
-          </td>
-          <td><fmt:formatDate value="${o.startDate}" pattern="dd/MM/yyyy"/></td>
-          <td><fmt:formatDate value="${o.endDate}" pattern="dd/MM/yyyy"/></td>
-          <td><fmt:formatNumber value="${o.totalCost}" type="currency" currencySymbol="đ" groupingUsed="true"/></td>
+          <td><small>${o.createdByName != null ? o.createdByName : '-'}</small></td>
+          <td><fmt:formatDate value="${o.createdAt}" pattern="dd/MM/yyyy HH:mm"/></td>
           <td>
             <c:choose>
               <c:when test="${o.status == 'PENDING'}">
@@ -142,25 +127,23 @@
               </c:otherwise>
             </c:choose>
           </td>
-          <td><small>${o.createdByName}</small></td>
-          <td><small>${o.approvedByName != null ? o.approvedByName : '-'}</small></td>
           <td>
             <div class="btn-group btn-group-sm" role="group">
               <a href="${pageContext.request.contextPath}/manager/orders?action=detail&id=${o.id}" 
-                 class="btn btn-info" title="Xem chi tiết">
-                <i class="bi bi-eye"></i>
+                 class="btn btn-info" title="View Detail">
+                <i class="bi bi-eye"></i> View Detail
               </a>
               
               <c:if test="${o.status == 'PENDING'}">
                 <button type="button" class="btn btn-success" title="Duyệt"
-                        onclick="if(confirm('Duyệt đơn hàng này?')) { 
+                        onclick="if(confirm('Duyệt order này?')) { 
                           location.href='${pageContext.request.contextPath}/manager/orders?action=approve&id=${o.id}'; }">
-                  <i class="bi bi-check-circle"></i>
+                  <i class="bi bi-check-circle"></i> Duyệt
                 </button>
                 <button type="button" class="btn btn-danger" title="Từ chối"
-                        onclick="if(confirm('Từ chối đơn hàng này?')) { 
+                        onclick="if(confirm('Từ chối order này?')) { 
                           location.href='${pageContext.request.contextPath}/manager/orders?action=reject&id=${o.id}'; }">
-                  <i class="bi bi-x-circle"></i>
+                  <i class="bi bi-x-circle"></i> Từ chối
                 </button>
               </c:if>
             </div>
@@ -169,7 +152,7 @@
       </c:forEach>
       <c:if test="${empty orders}">
         <tr>
-          <td colspan="11" class="text-center text-muted">Không có đơn hàng nào</td>
+          <td colspan="7" class="text-center text-muted">Không có order nào</td>
         </tr>
       </c:if>
       </tbody>

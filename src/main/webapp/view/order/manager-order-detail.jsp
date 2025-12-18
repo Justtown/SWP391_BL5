@@ -77,8 +77,16 @@
                         <div>${order.customerAddress != null ? order.customerAddress : '-'}</div>
                     </div>
                     <div class="info-row">
+                        <div class="info-label">Mã máy:</div>
+                        <div class="fw-bold text-primary">${order.machineCode != null ? order.machineCode : '-'}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Tên máy:</div>
+                        <div class="fw-bold">${order.machineName != null ? order.machineName : '-'}</div>
+                    </div>
+                    <div class="info-row">
                         <div class="info-label">Loại máy:</div>
-                        <div class="fw-bold text-primary">${order.machineTypeName != null ? order.machineTypeName : '-'}</div>
+                        <div class="text-success">${order.machineTypeName != null ? order.machineTypeName : '-'}</div>
                     </div>
                     <div class="info-row">
                         <div class="info-label">Số lượng:</div>

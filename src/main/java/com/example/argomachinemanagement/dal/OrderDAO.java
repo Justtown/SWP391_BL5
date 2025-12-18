@@ -72,11 +72,12 @@ public class OrderDAO extends DBContext {
     public List<Order> findAll() {
         List<Order> list = new ArrayList<>();
         String sql = "SELECT o.*, u1.full_name as created_by_name, u2.full_name as approved_by_name, " +
-                     "mt.type_name as machine_type_name " +
+                     "m.machine_code, m.machine_name, mt.type_name as machine_type_name " +
                      "FROM service_orders o " +
                      "LEFT JOIN users u1 ON o.created_by = u1.id " +
                      "LEFT JOIN users u2 ON o.approved_by = u2.id " +
-                     "LEFT JOIN machine_types mt ON o.machine_id = mt.id " +
+                     "LEFT JOIN machines m ON o.machine_id = m.id " +
+                     "LEFT JOIN machine_types mt ON m.machine_type_id = mt.id " +
                      "ORDER BY o.created_at DESC";
         
         System.out.println("=== findAll() ===");
@@ -111,11 +112,12 @@ public class OrderDAO extends DBContext {
     public List<Order> findBySaleUser(int userId) {
         List<Order> list = new ArrayList<>();
         String sql = "SELECT o.*, u1.full_name as created_by_name, u2.full_name as approved_by_name, " +
-                     "mt.type_name as machine_type_name " +
+                     "m.machine_code, m.machine_name, mt.type_name as machine_type_name " +
                      "FROM service_orders o " +
                      "LEFT JOIN users u1 ON o.created_by = u1.id " +
                      "LEFT JOIN users u2 ON o.approved_by = u2.id " +
-                     "LEFT JOIN machine_types mt ON o.machine_id = mt.id " +
+                     "LEFT JOIN machines m ON o.machine_id = m.id " +
+                     "LEFT JOIN machine_types mt ON m.machine_type_id = mt.id " +
                      "WHERE o.created_by = ? " +
                      "ORDER BY o.created_at DESC";
         
@@ -155,11 +157,12 @@ public class OrderDAO extends DBContext {
         List<Order> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
             "SELECT o.*, u1.full_name as created_by_name, u2.full_name as approved_by_name, " +
-            "mt.type_name as machine_type_name " +
+            "m.machine_code, m.machine_name, mt.type_name as machine_type_name " +
             "FROM service_orders o " +
             "LEFT JOIN users u1 ON o.created_by = u1.id " +
             "LEFT JOIN users u2 ON o.approved_by = u2.id " +
-            "LEFT JOIN machine_types mt ON o.machine_id = mt.id " +
+            "LEFT JOIN machines m ON o.machine_id = m.id " +
+            "LEFT JOIN machine_types mt ON m.machine_type_id = mt.id " +
             "WHERE 1=1 "
         );
         
@@ -207,11 +210,12 @@ public class OrderDAO extends DBContext {
 
     public Order findById(int id) {
         String sql = "SELECT o.*, u1.full_name as created_by_name, u2.full_name as approved_by_name, " +
-                     "mt.type_name as machine_type_name " +
+                     "m.machine_code, m.machine_name, mt.type_name as machine_type_name " +
                      "FROM service_orders o " +
                      "LEFT JOIN users u1 ON o.created_by = u1.id " +
                      "LEFT JOIN users u2 ON o.approved_by = u2.id " +
-                     "LEFT JOIN machine_types mt ON o.machine_id = mt.id " +
+                     "LEFT JOIN machines m ON o.machine_id = m.id " +
+                     "LEFT JOIN machine_types mt ON m.machine_type_id = mt.id " +
                      "WHERE o.id = ?";
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -328,6 +332,42 @@ public class OrderDAO extends DBContext {
         return false;
     }
 
+    /**
+     * Tự động tạo mã hợp đồng tiếp theo (HD1, HD2, HD3...)
+     */
+    public String generateNextContractCode() {
+        String sql = "SELECT contract_code FROM service_orders " +
+                     "WHERE contract_code LIKE 'HD%' " +
+                     "ORDER BY CAST(SUBSTRING(contract_code, 3) AS UNSIGNED) DESC " +
+                     "LIMIT 1";
+        
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                String lastCode = rs.getString("contract_code");
+                // Lấy số từ mã cuối cùng (VD: HD5 -> 5)
+                String numberPart = lastCode.substring(2);
+                int nextNumber = Integer.parseInt(numberPart) + 1;
+                String newCode = "HD" + nextNumber;
+                System.out.println("=== Generate Contract Code ===");
+                System.out.println("Last Code: " + lastCode);
+                System.out.println("Next Code: " + newCode);
+                return newCode;
+            } else {
+                // Nếu chưa có mã nào, bắt đầu từ HD1
+                System.out.println("=== Generate Contract Code ===");
+                System.out.println("No existing codes, returning HD1");
+                return "HD1";
+            }
+        } catch (Exception e) {
+            System.err.println("=== Error generating contract code ===");
+            e.printStackTrace();
+            // Nếu có lỗi, trả về HD1
+            return "HD1";
+        }
+    }
+
     public void approve(int orderId, int approvedBy) {
         String sql = "UPDATE service_orders SET status = 'APPROVED', approved_by = ? WHERE id = ?";
         try (Connection con = getConnection();
@@ -393,6 +433,8 @@ public class OrderDAO extends DBContext {
         o.setUpdatedAt(rs.getTimestamp("updated_at"));
         o.setCreatedByName(rs.getString("created_by_name"));
         o.setApprovedByName(rs.getString("approved_by_name"));
+        o.setMachineCode(rs.getString("machine_code"));
+        o.setMachineName(rs.getString("machine_name"));
         o.setMachineTypeName(rs.getString("machine_type_name"));
         return o;
     }

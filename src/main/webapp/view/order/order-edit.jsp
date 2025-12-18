@@ -51,8 +51,8 @@
                     </div>
                 <%
                     }
-                    // Lấy machineTypeId và quantity từ request nếu có
-                    String editMachineTypeId = (String) request.getAttribute("machineTypeId");
+                    // Lấy machineId và quantity từ request nếu có
+                    String editMachineId = (String) request.getAttribute("machineId");
                     String editQuantity = (String) request.getAttribute("quantity");
                 %>
                 
@@ -111,20 +111,26 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-8 mb-3">
-                            <label class="form-label fw-bold">Tên loại máy <span class="text-danger">*</span></label>
-                            <select name="machineTypeId" class="form-control" required>
-                                <option value="">-- Chọn loại máy --</option>
-                                <c:forEach var="type" items="${machineTypes}">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">Mã máy <span class="text-danger">*</span></label>
+                            <select name="machineId" class="form-control" required id="machineSelectEdit">
+                                <option value="">-- Chọn mã máy --</option>
+                                <c:forEach var="machine" items="${machines}">
                                     <c:choose>
-                                        <c:when test="${not empty requestScope.machineTypeId}">
-                                            <option value="${type.id}" ${type.id == requestScope.machineTypeId ? 'selected' : ''}>
-                                                ${type.id} - ${type.typeName}
+                                        <c:when test="${not empty requestScope.machineId}">
+                                            <option value="${machine.id}" 
+                                                    data-name="${machine.machineName}" 
+                                                    data-type="${machine.machineTypeName}"
+                                                    ${machine.id == requestScope.machineId ? 'selected' : ''}>
+                                                ${machine.machineCode}
                                             </option>
                                         </c:when>
                                         <c:otherwise>
-                                            <option value="${type.id}" ${type.id == order.machineId ? 'selected' : ''}>
-                                                ${type.id} - ${type.typeName}
+                                            <option value="${machine.id}" 
+                                                    data-name="${machine.machineName}" 
+                                                    data-type="${machine.machineTypeName}"
+                                                    ${machine.id == order.machineId ? 'selected' : ''}>
+                                                ${machine.machineCode}
                                             </option>
                                         </c:otherwise>
                                     </c:choose>
@@ -132,6 +138,19 @@
                             </select>
                         </div>
                         <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">Tên máy</label>
+                            <input type="text" id="machineNameDisplayEdit" class="form-control" readonly 
+                                   placeholder="Tự động điền khi chọn mã máy">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">Loại máy</label>
+                            <input type="text" id="machineTypeDisplayEdit" class="form-control" readonly 
+                                   placeholder="Tự động điền khi chọn mã máy">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
                             <label class="form-label fw-bold">Số lượng <span class="text-danger">*</span></label>
                             <input type="number" name="quantity" class="form-control" 
                                    value="${not empty requestScope.quantity ? requestScope.quantity : order.quantity}" 
@@ -220,6 +239,32 @@ if (customerInput) {
     });
 }
 
+// Auto-fill machine name and type when selecting machine code (for edit form)
+const machineSelectEdit = document.getElementById('machineSelectEdit');
+const machineNameDisplayEdit = document.getElementById('machineNameDisplayEdit');
+const machineTypeDisplayEdit = document.getElementById('machineTypeDisplayEdit');
+
+if (machineSelectEdit) {
+    // Fill on page load if there's already a selected option
+    const selectedOption = machineSelectEdit.options[machineSelectEdit.selectedIndex];
+    if (selectedOption && selectedOption.value) {
+        machineNameDisplayEdit.value = selectedOption.getAttribute('data-name') || '';
+        machineTypeDisplayEdit.value = selectedOption.getAttribute('data-type') || '';
+    }
+
+    // Fill when selection changes
+    machineSelectEdit.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption.value) {
+            machineNameDisplayEdit.value = selectedOption.getAttribute('data-name') || '';
+            machineTypeDisplayEdit.value = selectedOption.getAttribute('data-type') || '';
+        } else {
+            machineNameDisplayEdit.value = '';
+            machineTypeDisplayEdit.value = '';
+        }
+    });
+}
+
 // Validation: End date must be after start date
 document.getElementById('orderForm')?.addEventListener('submit', function(e) {
     const startDate = document.querySelector('[name="startDate"]').value;
@@ -231,7 +276,6 @@ document.getElementById('orderForm')?.addEventListener('submit', function(e) {
     }
 });
 </script>
-</div>
 </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
