@@ -1,10 +1,12 @@
 package com.example.argomachinemanagement.controller.contract;
 
 import com.example.argomachinemanagement.dal.ContractDAO;
+import com.example.argomachinemanagement.dal.MachineDAO;
 import com.example.argomachinemanagement.dal.MachineTypeDAO;
 import com.example.argomachinemanagement.dal.OrderDAO;
 import com.example.argomachinemanagement.dal.UserDAO;
 import com.example.argomachinemanagement.entity.Contract;
+import com.example.argomachinemanagement.entity.Machine;
 import com.example.argomachinemanagement.entity.MachineType;
 import com.example.argomachinemanagement.entity.Order;
 import com.example.argomachinemanagement.entity.User;
@@ -15,8 +17,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 @WebServlet(
         name = "ContractController",
@@ -25,10 +29,12 @@ import java.util.List;
 public class ContractController extends HttpServlet {
     
     private static final int PAGE_SIZE = 5;
+    private static final Logger LOGGER = Logger.getLogger(ContractController.class.getName());
     
     private ContractDAO contractDAO;
     private UserDAO userDAO;
     private MachineTypeDAO machineTypeDAO;
+    private MachineDAO machineDAO;
     private OrderDAO orderDAO;
     
     @Override
@@ -36,6 +42,7 @@ public class ContractController extends HttpServlet {
         contractDAO = new ContractDAO();
         userDAO = new UserDAO();
         machineTypeDAO = new MachineTypeDAO();
+        machineDAO = new MachineDAO();
         orderDAO = new OrderDAO();
     }
     
@@ -72,8 +79,10 @@ public class ContractController extends HttpServlet {
     private void handleListWithFilters(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         // Get filter parameters
-        String statusFilter = request.getParameter("status");
+        String statusParam = request.getParameter("status");
         String keyword = request.getParameter("keyword");
+
+        String statusFilterForQuery = statusParam;
         
         // Get pagination parameter
         String pageStr = request.getParameter("page");
@@ -108,7 +117,7 @@ public class ContractController extends HttpServlet {
         
         // Get filtered contracts
         List<Contract> allContracts = contractDAO.findByFilters(
-            statusFilter, keyword, customerId, managerId
+            statusFilterForQuery, keyword, customerId, managerId
         );
         
         // Pagination logic
@@ -129,7 +138,7 @@ public class ContractController extends HttpServlet {
         
         // Set attributes for JSP
         request.setAttribute("contracts", paginatedContracts);
-        request.setAttribute("statusFilter", statusFilter != null ? statusFilter : "All Status");
+        request.setAttribute("statusFilter", statusParam != null ? statusParam : "All Status");
         request.setAttribute("keyword", keyword != null ? keyword : "");
         request.setAttribute("currentPage", currentPage);
         request.setAttribute("totalPages", totalPages);
@@ -184,8 +193,8 @@ public class ContractController extends HttpServlet {
         managers.addAll(userDAO.findActiveUsersByRole("manager"));
         managers.addAll(userDAO.findActiveUsersByRole("sale"));
         
-        // Lấy danh sách machine types
-        List<MachineType> machineTypes = machineTypeDAO.findAll();
+        // Lấy danh sách machines (để giống form tạo Order)
+        List<Machine> machines = machineDAO.findAll();
 
         // Prefill từ Order nếu có
         if (order != null) {
@@ -193,12 +202,12 @@ public class ContractController extends HttpServlet {
             request.setAttribute("customerName", order.getCustomerName());
             request.setAttribute("customerPhone", order.getCustomerPhone());
             request.setAttribute("customerAddress", order.getCustomerAddress());
-            request.setAttribute("machineTypeId", order.getMachineId()); // Order.machineId là machine_type_id
+            request.setAttribute("machineId", order.getMachineId());
             request.setAttribute("quantity", order.getQuantity());
             request.setAttribute("startDate", order.getStartDate() != null ? order.getStartDate().toString() : null);
             request.setAttribute("endDate", order.getEndDate() != null ? order.getEndDate().toString() : null);
             request.setAttribute("totalCost", order.getTotalCost());
-            request.setAttribute("note", order.getServiceDescription());
+            request.setAttribute("serviceDescription", order.getServiceDescription());
             request.setAttribute("fromOrder", true);
             request.setAttribute("orderId", order.getId());
         } else {
@@ -207,7 +216,7 @@ public class ContractController extends HttpServlet {
 
         request.setAttribute("customers", customers);
         request.setAttribute("managers", managers);
-        request.setAttribute("machineTypes", machineTypes);
+        request.setAttribute("machines", machines);
         
         // Set manager mặc định là user hiện tại nếu là manager
         if ("manager".equalsIgnoreCase(roleName)) {
@@ -243,12 +252,13 @@ public class ContractController extends HttpServlet {
         String customerName = request.getParameter("customerName");
         String customerPhone = request.getParameter("customerPhone");
         String customerAddress = request.getParameter("customerAddress");
-        String machineTypeIdStr = request.getParameter("machineTypeId");
+        String machineIdStr = request.getParameter("machineId");
         String quantityStr = request.getParameter("quantity");
         String startDateStr = request.getParameter("startDate");
         String endDateStr = request.getParameter("endDate");
         String totalCostStr = request.getParameter("totalCost");
-        String note = request.getParameter("note");
+        String serviceDescription = request.getParameter("serviceDescription");
+        String note = request.getParameter("note"); // legacy
         // String orderIdStr = request.getParameter("orderId"); // Nếu tạo từ Order (có thể dùng sau để update Order status)
         
         // Validate dữ liệu
@@ -262,10 +272,24 @@ public class ContractController extends HttpServlet {
             errors.add("Customer name is required");
         }
         
+        // Resolve customerId from input (if not provided)
         if (customerIdStr == null || customerIdStr.trim().isEmpty()) {
-            errors.add("Customer is required");
+            User u = userDAO.findByUsername(customerName != null ? customerName.trim() : null);
+            if (u == null) {
+                u = userDAO.findByFullName(customerName != null ? customerName.trim() : null);
+            }
+            if (u != null) {
+                customerIdStr = String.valueOf(u.getId());
+            } else {
+                errors.add("Customer is required");
+            }
         }
-        
+
+        // If managerId not provided, use current user (manager/sale)
+        if (managerIdStr == null || managerIdStr.trim().isEmpty()) {
+            managerIdStr = userId != null ? String.valueOf(userId) : null;
+        }
+
         if (managerIdStr == null || managerIdStr.trim().isEmpty()) {
             errors.add("Manager is required");
         }
@@ -276,6 +300,19 @@ public class ContractController extends HttpServlet {
         
         if (endDateStr == null || endDateStr.trim().isEmpty()) {
             errors.add("End date is required");
+        }
+
+        if (machineIdStr == null || machineIdStr.trim().isEmpty()) {
+            errors.add("Machine is required");
+        }
+
+        if (serviceDescription == null || serviceDescription.trim().isEmpty()) {
+            // allow legacy note field
+            if (note == null || note.trim().isEmpty()) {
+                errors.add("Service description is required");
+            } else {
+                serviceDescription = note;
+            }
         }
         
         // Kiểm tra customer và manager không được giống nhau
@@ -293,22 +330,21 @@ public class ContractController extends HttpServlet {
             request.setAttribute("customerAddress", customerAddress);
             request.setAttribute("selectedCustomerId", customerIdStr);
             request.setAttribute("selectedManagerId", managerIdStr);
-            request.setAttribute("machineTypeId", machineTypeIdStr);
+            request.setAttribute("machineId", machineIdStr);
             request.setAttribute("quantity", quantityStr);
             request.setAttribute("startDate", startDateStr);
             request.setAttribute("endDate", endDateStr);
             request.setAttribute("totalCost", totalCostStr);
-            request.setAttribute("note", note);
+            request.setAttribute("serviceDescription", serviceDescription);
             
             // Load lại danh sách customers, managers và machine types
             List<User> customers = userDAO.findActiveUsersByRole("customer");
             List<User> managers = new ArrayList<>();
             managers.addAll(userDAO.findActiveUsersByRole("manager"));
             managers.addAll(userDAO.findActiveUsersByRole("sale"));
-            List<MachineType> machineTypes = machineTypeDAO.findAll();
             request.setAttribute("customers", customers);
             request.setAttribute("managers", managers);
-            request.setAttribute("machineTypes", machineTypes);
+            request.setAttribute("machines", machineDAO.findAll());
             
             request.getRequestDispatcher("/view/dashboard/contract/contract-create.jsp")
                     .forward(request, response);
@@ -321,6 +357,37 @@ public class ContractController extends HttpServlet {
         try {
             startDate = Date.valueOf(startDateStr);
             endDate = Date.valueOf(endDateStr);
+
+            // startDate must be today or later
+            Date today = Date.valueOf(LocalDate.now());
+            if (startDate.before(today)) {
+                errors.add("Ngày bắt đầu thuê phải từ hôm nay trở đi");
+                request.setAttribute("errors", errors);
+                request.setAttribute("contractCode", contractCode);
+                request.setAttribute("customerName", customerName);
+                request.setAttribute("customerPhone", customerPhone);
+                request.setAttribute("customerAddress", customerAddress);
+                request.setAttribute("selectedCustomerId", customerIdStr);
+                request.setAttribute("selectedManagerId", managerIdStr);
+                request.setAttribute("machineId", machineIdStr);
+                request.setAttribute("quantity", quantityStr);
+                request.setAttribute("startDate", startDateStr);
+                request.setAttribute("endDate", endDateStr);
+                request.setAttribute("totalCost", totalCostStr);
+                request.setAttribute("serviceDescription", serviceDescription);
+
+                List<User> customers = userDAO.findActiveUsersByRole("customer");
+                List<User> managers = new ArrayList<>();
+                managers.addAll(userDAO.findActiveUsersByRole("manager"));
+                managers.addAll(userDAO.findActiveUsersByRole("sale"));
+                request.setAttribute("customers", customers);
+                request.setAttribute("managers", managers);
+                request.setAttribute("machines", machineDAO.findAll());
+
+                request.getRequestDispatcher("/view/dashboard/contract/contract-create.jsp")
+                        .forward(request, response);
+                return;
+            }
             
             // Kiểm tra endDate >= startDate
             if (endDate.before(startDate)) {
@@ -332,7 +399,7 @@ public class ContractController extends HttpServlet {
                 request.setAttribute("customerAddress", customerAddress);
                 request.setAttribute("selectedCustomerId", customerIdStr);
                 request.setAttribute("selectedManagerId", managerIdStr);
-                request.setAttribute("machineTypeId", machineTypeIdStr);
+                request.setAttribute("machineId", machineIdStr);
                 request.setAttribute("quantity", quantityStr);
                 request.setAttribute("startDate", startDateStr);
                 request.setAttribute("endDate", endDateStr);
@@ -343,10 +410,9 @@ public class ContractController extends HttpServlet {
                 List<User> managers = new ArrayList<>();
                 managers.addAll(userDAO.findActiveUsersByRole("manager"));
                 managers.addAll(userDAO.findActiveUsersByRole("sale"));
-                List<MachineType> machineTypes = machineTypeDAO.findAll();
                 request.setAttribute("customers", customers);
                 request.setAttribute("managers", managers);
-                request.setAttribute("machineTypes", machineTypes);
+                request.setAttribute("machines", machineDAO.findAll());
                 
                 request.getRequestDispatcher("/view/dashboard/contract/contract-create.jsp")
                         .forward(request, response);
@@ -361,7 +427,7 @@ public class ContractController extends HttpServlet {
             request.setAttribute("customerAddress", customerAddress);
             request.setAttribute("selectedCustomerId", customerIdStr);
             request.setAttribute("selectedManagerId", managerIdStr);
-            request.setAttribute("machineTypeId", machineTypeIdStr);
+            request.setAttribute("machineId", machineIdStr);
             request.setAttribute("quantity", quantityStr);
             request.setAttribute("startDate", startDateStr);
             request.setAttribute("endDate", endDateStr);
@@ -372,10 +438,9 @@ public class ContractController extends HttpServlet {
             List<User> managers = new ArrayList<>();
             managers.addAll(userDAO.findActiveUsersByRole("manager"));
             managers.addAll(userDAO.findActiveUsersByRole("sale"));
-            List<MachineType> machineTypes = machineTypeDAO.findAll();
             request.setAttribute("customers", customers);
             request.setAttribute("managers", managers);
-            request.setAttribute("machineTypes", machineTypes);
+            request.setAttribute("machines", machineDAO.findAll());
             
             request.getRequestDispatcher("/view/dashboard/contract/contract-create.jsp")
                     .forward(request, response);
@@ -383,12 +448,27 @@ public class ContractController extends HttpServlet {
         }
         
         // Parse các giá trị số
+        Integer machineId = null;
         Integer machineTypeId = null;
         Integer quantity = null;
         Double totalCost = null;
         try {
-            if (machineTypeIdStr != null && !machineTypeIdStr.trim().isEmpty()) {
-                machineTypeId = Integer.parseInt(machineTypeIdStr);
+            if (machineIdStr != null && !machineIdStr.trim().isEmpty()) {
+                machineId = Integer.parseInt(machineIdStr);
+                Machine selectedMachine = machineDAO.findById(machineId);
+                if (selectedMachine != null) {
+                    machineTypeId = selectedMachine.getMachineTypeId();
+
+                    String mStatus = selectedMachine.getStatus() != null ? selectedMachine.getStatus().trim().toUpperCase() : "UNKNOWN";
+                    boolean rentable = selectedMachine.getIsRentable() != null ? selectedMachine.getIsRentable() : false;
+                    if (!"ACTIVE".equals(mStatus) || !rentable) {
+                        errors.add("Máy đang ở trạng thái " + mStatus + " nên không thể tạo hợp đồng");
+                        LOGGER.warning("[CreateContract][BLOCKED] machineId=" + machineId
+                                + ", machineCode=" + selectedMachine.getMachineCode()
+                                + ", status=" + mStatus
+                                + ", isRentable=" + rentable);
+                    }
+                }
             }
             if (quantityStr != null && !quantityStr.trim().isEmpty()) {
                 quantity = Integer.parseInt(quantityStr);
@@ -398,7 +478,60 @@ public class ContractController extends HttpServlet {
             }
         } catch (NumberFormatException e) {
             errors.add("Invalid number format");
-            // Handle error...
+            request.setAttribute("errors", errors);
+            request.setAttribute("contractCode", contractCode);
+            request.setAttribute("customerName", customerName);
+            request.setAttribute("customerPhone", customerPhone);
+            request.setAttribute("customerAddress", customerAddress);
+            request.setAttribute("selectedCustomerId", customerIdStr);
+            request.setAttribute("selectedManagerId", managerIdStr);
+            request.setAttribute("machineId", machineIdStr);
+            request.setAttribute("quantity", quantityStr);
+            request.setAttribute("startDate", startDateStr);
+            request.setAttribute("endDate", endDateStr);
+            request.setAttribute("totalCost", totalCostStr);
+            request.setAttribute("serviceDescription", serviceDescription);
+
+            List<User> customers = userDAO.findActiveUsersByRole("customer");
+            List<User> managers = new ArrayList<>();
+            managers.addAll(userDAO.findActiveUsersByRole("manager"));
+            managers.addAll(userDAO.findActiveUsersByRole("sale"));
+            request.setAttribute("customers", customers);
+            request.setAttribute("managers", managers);
+            request.setAttribute("machines", machineDAO.findAll());
+
+            request.getRequestDispatcher("/view/dashboard/contract/contract-create.jsp")
+                    .forward(request, response);
+            return;
+        }
+
+        // If machine validation failed, return to form
+        if (!errors.isEmpty()) {
+            request.setAttribute("errors", errors);
+            request.setAttribute("contractCode", contractCode);
+            request.setAttribute("customerName", customerName);
+            request.setAttribute("customerPhone", customerPhone);
+            request.setAttribute("customerAddress", customerAddress);
+            request.setAttribute("selectedCustomerId", customerIdStr);
+            request.setAttribute("selectedManagerId", managerIdStr);
+            request.setAttribute("machineId", machineIdStr);
+            request.setAttribute("quantity", quantityStr);
+            request.setAttribute("startDate", startDateStr);
+            request.setAttribute("endDate", endDateStr);
+            request.setAttribute("totalCost", totalCostStr);
+            request.setAttribute("serviceDescription", serviceDescription);
+
+            List<User> customers = userDAO.findActiveUsersByRole("customer");
+            List<User> managers = new ArrayList<>();
+            managers.addAll(userDAO.findActiveUsersByRole("manager"));
+            managers.addAll(userDAO.findActiveUsersByRole("sale"));
+            request.setAttribute("customers", customers);
+            request.setAttribute("managers", managers);
+            request.setAttribute("machines", machineDAO.findAll());
+
+            request.getRequestDispatcher("/view/dashboard/contract/contract-create.jsp")
+                    .forward(request, response);
+            return;
         }
         
         // Tạo Contract object với các trường mới
@@ -409,15 +542,48 @@ public class ContractController extends HttpServlet {
                 .startDate(startDate)
                 .endDate(endDate)
                 // Sau khi manager tạo hợp đồng -> ACTIVE (không để DRAFT)
-                .status("ACTIVE")
-                .note(note != null ? note.trim() : null)
+                .status("APPROVED")
+                .serviceDescription(serviceDescription != null ? serviceDescription.trim() : null)
+                .note(serviceDescription != null ? serviceDescription.trim() : (note != null ? note.trim() : null))
                 .customerName(customerName != null ? customerName.trim() : null)
                 .customerPhone(customerPhone != null ? customerPhone.trim() : null)
                 .customerAddress(customerAddress != null ? customerAddress.trim() : null)
+                .machineId(machineId)
                 .machineTypeId(machineTypeId)
                 .quantity(quantity)
                 .totalCost(totalCost)
                 .build();
+
+        // Defensive: prevent duplicate contract code
+        Integer existedId = contractDAO.findIdByContractCode(contract.getContractCode());
+        if (existedId != null) {
+            errors.add("Contract code already exists. Please reload page to get a new code.");
+            request.setAttribute("errors", errors);
+            request.setAttribute("contractCode", contractCode);
+            request.setAttribute("customerName", customerName);
+            request.setAttribute("customerPhone", customerPhone);
+            request.setAttribute("customerAddress", customerAddress);
+            request.setAttribute("selectedCustomerId", customerIdStr);
+            request.setAttribute("selectedManagerId", managerIdStr);
+            request.setAttribute("machineId", machineIdStr);
+            request.setAttribute("quantity", quantityStr);
+            request.setAttribute("startDate", startDateStr);
+            request.setAttribute("endDate", endDateStr);
+            request.setAttribute("totalCost", totalCostStr);
+            request.setAttribute("serviceDescription", serviceDescription);
+
+            List<User> customers = userDAO.findActiveUsersByRole("customer");
+            List<User> managers = new ArrayList<>();
+            managers.addAll(userDAO.findActiveUsersByRole("manager"));
+            managers.addAll(userDAO.findActiveUsersByRole("sale"));
+            request.setAttribute("customers", customers);
+            request.setAttribute("managers", managers);
+            request.setAttribute("machines", machineDAO.findAll());
+
+            request.getRequestDispatcher("/view/dashboard/contract/contract-create.jsp")
+                    .forward(request, response);
+            return;
+        }
         
         // Lưu vào database
         int contractId = contractDAO.insert(contract);
@@ -437,6 +603,11 @@ public class ContractController extends HttpServlet {
         } else {
             // Lỗi khi lưu
             errors.add("Failed to create contract. Please try again.");
+            String daoErr = contractDAO.getLastError();
+            if (daoErr != null && !daoErr.trim().isEmpty()) {
+                LOGGER.warning("[CreateContract][FAILED] " + daoErr);
+                errors.add("DB error: " + daoErr);
+            }
             request.setAttribute("errors", errors);
             request.setAttribute("contractCode", contractCode);
             request.setAttribute("customerName", customerName);
@@ -444,7 +615,7 @@ public class ContractController extends HttpServlet {
             request.setAttribute("customerAddress", customerAddress);
             request.setAttribute("selectedCustomerId", customerIdStr);
             request.setAttribute("selectedManagerId", managerIdStr);
-            request.setAttribute("machineTypeId", machineTypeIdStr);
+            request.setAttribute("machineId", machineIdStr);
             request.setAttribute("quantity", quantityStr);
             request.setAttribute("startDate", startDateStr);
             request.setAttribute("endDate", endDateStr);
@@ -455,10 +626,9 @@ public class ContractController extends HttpServlet {
             List<User> managers = new ArrayList<>();
             managers.addAll(userDAO.findActiveUsersByRole("manager"));
             managers.addAll(userDAO.findActiveUsersByRole("sale"));
-            List<MachineType> machineTypes = machineTypeDAO.findAll();
             request.setAttribute("customers", customers);
             request.setAttribute("managers", managers);
-            request.setAttribute("machineTypes", machineTypes);
+            request.setAttribute("machines", machineDAO.findAll());
             
             request.getRequestDispatcher("/view/dashboard/contract/contract-create.jsp")
                     .forward(request, response);

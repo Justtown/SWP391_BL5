@@ -11,6 +11,26 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
   <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background-color: #f8f9fa;
+    }
+
+    .page-header {
+      background: white;
+      border-bottom: 1px solid #dee2e6;
+      padding: 1rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .content-card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
     .badge-pending { background-color: #ffc107; }
     .badge-approved { background-color: #28a745; }
     .badge-rejected { background-color: #dc3545; }
@@ -22,10 +42,36 @@
 <body>
 <jsp:include page="/view/common/dashboard/sideBar.jsp" />
 <div class="main-content">
-<div class="container-fluid mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3><i class="bi bi-cart-check"></i> Quản lý Order</h3>
+  <!-- Page Header -->
+  <div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+      <h4 class="mb-1"><i class="bi bi-cart-check me-2"></i>Quản lý đơn hàng</h4>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/manager/dashboard">Dashboard</a></li>
+          <li class="breadcrumb-item active">Orders</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="d-flex align-items-center">
+      <span class="me-3">
+        <i class="fas fa-user-circle me-1"></i> ${sessionScope.fullName}
+      </span>
+      <a href="#" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#logoutModal">
+        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+      </a>
+    </div>
   </div>
+
+<div class="container-fluid">
+  <div class="content-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h5 class="mb-0">Danh sách đơn hàng</h5>
+      <!-- Manager thường không tạo order; giữ nút để đồng bộ form -->
+      <button type="button" class="btn btn-primary" disabled title="Chỉ Sale/Admin có thể tạo đơn hàng">
+        <i class="bi bi-plus-circle"></i> Thêm đơn hàng mới
+      </button>
+    </div>
 
   <!-- Success/Error Messages -->
   <c:if test="${param.success != null}">
@@ -92,9 +138,9 @@
 
   <div class="table-responsive">
     <table class="table table-striped table-bordered table-hover">
-      <thead class="table-dark">
+      <thead class="table-light">
       <tr>
-        <th>Order Code</th>
+        <th>Mã order</th>
         <th>Mã hợp đồng</th>
         <th>Customer Name</th>
         <th>Sale Name</th>
@@ -106,7 +152,7 @@
       <tbody>
       <c:forEach var="o" items="${orders}" varStatus="status">
         <tr>
-          <td><strong>${status.index + 1}</strong></td>
+          <td><strong>${o.id}</strong></td>
           <td><span class="text-muted">${o.contractCode}</span></td>
           <td>${o.customerName}</td>
           <td><small>${o.createdByName != null ? o.createdByName : '-'}</small></td>
@@ -158,6 +204,7 @@
       </tbody>
     </table>
   </div>
+</div>
 </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

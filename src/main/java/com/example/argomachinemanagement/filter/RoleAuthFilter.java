@@ -23,16 +23,21 @@ public class RoleAuthFilter implements Filter {
      * Map các URL mới -> URL cũ để tương thích permission đã lưu trong DB.
      * Ví dụ: DB đang có /contracts nhưng UI/route mới là /manager/contracts.
      */
-    private static final Map<String, String> LEGACY_PERMISSION_ALIASES = Map.of(
-            "/admin/manage-account", "/manage-account",
-            "/admin/add-user", "/add-user",
-            "/admin/pending-users", "/pending-users",
-            "/manager/contracts", "/contracts",
-            "/sale/contracts", "/contracts",
-            "/customer/contracts", "/contracts",
+    private static final Map<String, String> LEGACY_PERMISSION_ALIASES = Map.ofEntries(
+            Map.entry("/admin/manage-account", "/manage-account"),
+            Map.entry("/admin/add-user", "/add-user"),
+            Map.entry("/admin/pending-users", "/pending-users"),
+            Map.entry("/manager/contracts", "/contracts"),
+            Map.entry("/sale/contracts", "/contracts"),
+            Map.entry("/customer/contracts", "/contracts"),
             // Manager routes mới nhưng permission DB có thể đang lưu route cũ
-            "/manager/machine-types", "/machine-types",
-            "/manager/maintenances", "/maintenances"
+            Map.entry("/manager/machine-types", "/machine-types"),
+            Map.entry("/manager/maintenances", "/maintenances"),
+            // Orders/Products: route mới theo namespace /manager/*
+            Map.entry("/manager/orders", "/orders"),
+            Map.entry("/sale/orders", "/orders"),
+            Map.entry("/manager/products", "/products"),
+            Map.entry("/sale/products", "/products")
     );
 
     @Override
@@ -177,8 +182,20 @@ public class RoleAuthFilter implements Filter {
             case "manager":
                 // Manager mặc định được vào các trang nghiệp vụ cốt lõi để tránh 403
                 // khi DB chưa kịp cấu hình permission cho route mới
-                return requestPath.startsWith("/manager/machine-types")
-                        || requestPath.startsWith("/manager/maintenances");
+                return requestPath.startsWith("/manager/dashboard")
+                        || requestPath.startsWith("/manager/machines")
+                        || requestPath.startsWith("/manager/machine-types")
+                        || requestPath.startsWith("/manager/maintenances")
+                        || requestPath.startsWith("/manager/contracts")
+                        || requestPath.startsWith("/manager/orders")
+                        || requestPath.startsWith("/manager/products")
+                        || requestPath.startsWith("/manager/statistics");
+            case "sale":
+                // Sale mặc định được vào các trang nghiệp vụ của sale để tránh 403
+                return requestPath.startsWith("/sale/dashboard")
+                        || requestPath.startsWith("/sale/contracts")
+                        || requestPath.startsWith("/sale/orders")
+                        || requestPath.startsWith("/sale/products");
                 // Admin luôn được vào một số trang quản trị quan trọng
             case "customer":
                 // Customer luôn được xem hợp đồng của mình

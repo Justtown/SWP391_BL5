@@ -1,5 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <c:set var="contractsPath" value="/contracts" />
 <c:if test="${sessionScope.roleName == 'manager'}"><c:set var="contractsPath" value="/manager/contracts" /></c:if>
 <c:if test="${sessionScope.roleName == 'sale'}"><c:set var="contractsPath" value="/sale/contracts" /></c:if>
@@ -101,11 +102,23 @@
             background-color: #28a745;
             color: #fff;
         }
+        .status-APPROVED {
+            background-color: #28a745;
+            color: #fff;
+        }
         .status-FINISHED {
             background-color: #6c757d;
             color: #fff;
         }
+        .status-PENDING {
+            background-color: #ffc107;
+            color: #000;
+        }
         .status-CANCELLED {
+            background-color: #dc3545;
+            color: #fff;
+        }
+        .status-REJECTED {
             background-color: #dc3545;
             color: #fff;
         }
@@ -213,6 +226,11 @@
             <div class="filter-section">
                 <select class="form-select filter-dropdown" id="statusFilter">
                     <option value="All Status" ${statusFilter == 'All Status' ? 'selected' : ''}>All Status</option>
+                    <!-- Order-like statuses -->
+                    <option value="PENDING" ${statusFilter == 'PENDING' ? 'selected' : ''}>PENDING</option>
+                    <option value="APPROVED" ${statusFilter == 'APPROVED' ? 'selected' : ''}>APPROVED</option>
+                    <option value="REJECTED" ${statusFilter == 'REJECTED' ? 'selected' : ''}>REJECTED</option>
+                    <!-- Legacy contract statuses (backward compatibility) -->
                     <option value="DRAFT" ${statusFilter == 'DRAFT' ? 'selected' : ''}>DRAFT</option>
                     <option value="ACTIVE" ${statusFilter == 'ACTIVE' ? 'selected' : ''}>ACTIVE</option>
                     <option value="FINISHED" ${statusFilter == 'FINISHED' ? 'selected' : ''}>FINISHED</option>
@@ -222,7 +240,7 @@
                 <div class="search-container">
                     <i class="fas fa-search search-icon"></i>
                     <input type="text" class="form-control search-input" id="keyword" 
-                           placeholder="Search by contract code, customer, manager..." 
+                           placeholder="Tìm theo mã HĐ, khách hàng, sđt, mã máy..." 
                            value="${keyword != null ? keyword : ''}">
                     <i class="fas fa-times clear-search" id="clearSearch"></i>
                 </div>
@@ -241,13 +259,18 @@
                     <thead class="table-light">
                         <tr>
                             <th>STT</th>
-                            <th>Contract Code</th>
-                            <th>Customer</th>
-                            <th>Manager</th>
-                            <th>Start Date</th>
-                            <th>End Date</th>
-                            <th>Status</th>
-                            <th>Action</th>
+                            <th>Mã hợp đồng</th>
+                            <th>Khách hàng</th>
+                            <th>SĐT</th>
+                            <th>Địa chỉ</th>
+                            <th>Mã máy</th>
+                            <th>Tên máy</th>
+                            <th>Số lượng</th>
+                            <th>Ngày bắt đầu</th>
+                            <th>Ngày kết thúc</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -258,12 +281,28 @@
                                         <td>${startIndex + loop.index + 1}</td>
                                         <td><strong>${contract.contractCode}</strong></td>
                                         <td>${contract.customerName != null ? contract.customerName : 'N/A'}</td>
-                                        <td>${contract.managerName != null ? contract.managerName : 'N/A'}</td>
+                                        <td>${contract.customerPhone != null ? contract.customerPhone : '-'}</td>
+                                        <td>${contract.customerAddress != null ? contract.customerAddress : '-'}</td>
+                                        <td>${contract.machineCode != null ? contract.machineCode : '-'}</td>
+                                        <td>${contract.machineName != null ? contract.machineName : '-'}</td>
+                                        <td>${contract.quantity != null ? contract.quantity : '-'}</td>
                                         <td>${contract.startDate}</td>
                                         <td>${contract.endDate}</td>
                                         <td>
-                                            <span class="status-badge status-${contract.status}">
-                                                ${contract.status}
+                                            <c:choose>
+                                                <c:when test="${not empty contract.totalCost}">
+                                                    <fmt:formatNumber value="${contract.totalCost}" type="currency" currencySymbol="đ" groupingUsed="true"/>
+                                                </c:when>
+                                                <c:otherwise>-</c:otherwise>
+                                            </c:choose>
+                                        </td>
+                                        <td>
+                                            <c:set var="displayStatus" value="${contract.status}" />
+                                            <c:if test="${displayStatus == 'ACTIVE'}"><c:set var="displayStatus" value="APPROVED" /></c:if>
+                                            <c:if test="${displayStatus == 'DRAFT'}"><c:set var="displayStatus" value="PENDING" /></c:if>
+                                            <c:if test="${displayStatus == 'CANCELLED'}"><c:set var="displayStatus" value="REJECTED" /></c:if>
+                                            <span class="status-badge status-${displayStatus}">
+                                                ${displayStatus}
                                             </span>
                                         </td>
                                         <td>
@@ -277,7 +316,7 @@
                             </c:when>
                             <c:otherwise>
                                 <tr>
-                                    <td colspan="8" class="text-center">No contracts found</td>
+                                    <td colspan="13" class="text-center">No contracts found</td>
                                 </tr>
                             </c:otherwise>
                         </c:choose>

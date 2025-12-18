@@ -499,6 +499,29 @@ public class UserDAO extends DBContext implements I_DAO<User> {
         return user;
     }
 
+    public User findByFullName(String fullName) {
+        if (fullName == null || fullName.trim().isEmpty()) {
+            return null;
+        }
+        User user = null;
+        String sql = "SELECT * FROM users WHERE full_name IS NOT NULL AND TRIM(LOWER(full_name)) = TRIM(LOWER(?)) LIMIT 1";
+
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, fullName.trim());
+            resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                user = getFromResultSet(resultSet);
+            }
+        } catch (SQLException ex) {
+            System.out.println("Error in findByFullName: " + ex.getMessage());
+        } finally {
+            closeResources();
+        }
+        return user;
+    }
+
     @Override
     public User getFromResultSet(ResultSet resultSet) throws SQLException {
         User user = User.builder()
