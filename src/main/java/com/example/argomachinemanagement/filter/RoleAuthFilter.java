@@ -58,7 +58,18 @@ public class RoleAuthFilter implements Filter {
             httpResponse.sendRedirect(httpRequest.getContextPath() + "/login");
             return;
         }
-        
+
+        // ====== CHẶN ROLE BỊ DEACTIVE ======
+        Integer roleStatus = (Integer) session.getAttribute("roleStatus");
+        if (roleStatus != null && roleStatus == 0) {
+            session.invalidate();
+            httpResponse.sendRedirect(
+                    httpRequest.getContextPath()
+                            + "/login?error=role_inactive"
+            );
+            return;
+        }
+
         // Lấy request path
         String requestURI = httpRequest.getRequestURI();
         String contextPath = httpRequest.getContextPath();
@@ -136,7 +147,8 @@ public class RoleAuthFilter implements Filter {
                 // Admin luôn được vào một số trang quản trị quan trọng
                 return requestPath.startsWith("/admin/pending-users")
                         || requestPath.startsWith("/admin/manage-account")
-                        || requestPath.startsWith("/admin/add-user");
+                        || requestPath.startsWith("/admin/add-user")
+                        || requestPath.startsWith("/admin/role-management");
             case "customer":
                 // Customer luôn được xem hợp đồng của mình
                 return requestPath.startsWith("/customer/contracts");

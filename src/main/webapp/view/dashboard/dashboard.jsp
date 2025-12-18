@@ -146,6 +146,12 @@
                                         <i class="fas fa-user-shield"></i> Quản lý phân quyền
                                     </a>
                                 </div>
+                                <div class="col-md-6">
+                                    <a href="${pageContext.request.contextPath}/admin/role-management"
+                                       class="quick-action">
+                                        <i class="fas fa-user-shield"></i> Quản lý Role
+                                    </a>
+                                </div>
                             </c:if>
                             
                             <!-- Manager Quick Actions -->
