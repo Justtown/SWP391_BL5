@@ -165,7 +165,7 @@
                 </div>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-white ${currentUri != null && currentUri.contains('/profile') ? 'active' : ''}" href="${ctx}/profile">
+                <a class="nav-link text-white ${currentUri != null && currentUri.contains('/my-profile') ? 'active' : ''}" href="${ctx}/my-profile">
                     <i class="fas fa-user me-2"></i>Hồ sơ cá nhân
                 </a>
             </li>

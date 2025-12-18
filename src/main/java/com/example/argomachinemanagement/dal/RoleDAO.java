@@ -29,6 +29,11 @@ public class RoleDAO extends DBContext {
         return list;
     }
 
+    // Alias method for consistency with other DAOs
+    public List<Role> findAll() {
+        return getAllRoles();
+    }
+
     public Role getRoleById(int id) {
         String sql = "SELECT * FROM roles WHERE id = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
