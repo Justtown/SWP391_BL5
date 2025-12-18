@@ -15,10 +15,7 @@ import java.util.List;
  * Controller xử lý việc thêm user mới
  * URL: /add-user
  */
-@WebServlet(
-        name = "AddUserController",
-        urlPatterns = { "/add-user", "/admin/add-user" }
-)
+@WebServlet(name = "AddUserController", urlPatterns = { "/add-user", "/admin/add-user" })
 
 public class AddUserController extends HttpServlet {
     
