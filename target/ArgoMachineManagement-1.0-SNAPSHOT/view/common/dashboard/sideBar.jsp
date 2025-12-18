@@ -2,6 +2,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
+<c:set var="currentUri" value="${pageContext.request.requestURI}" />
 
 <div class="sidebar bg-dark text-white" id="sidebar">
     <div class="sidebar-header p-3 border-bottom border-secondary">
@@ -14,7 +15,7 @@
         <ul class="nav flex-column">
 
             <li class="nav-item">
-                <a class="nav-link text-white" href="${ctx}/${sessionScope.roleName}/dashboard">
+                <a class="nav-link text-white ${currentUri != null && currentUri.endsWith('/dashboard') ? 'active' : ''}" href="${ctx}/${sessionScope.roleName}/dashboard">
                     <i class="fas fa-tachometer-alt me-2"></i>Dashboard
                 </a>
             </li>
@@ -26,27 +27,27 @@
                     </div>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/admin/statistics">
+                    <a class="nav-link text-white ${currentUri != null && currentUri.contains('/admin/statistics') ? 'active' : ''}" href="${ctx}/admin/statistics">
                         <i class="fas fa-chart-bar me-2"></i>Thống kê
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/admin/manage-account">
+                    <a class="nav-link text-white ${currentUri != null && currentUri.contains('/admin/manage-account') ? 'active' : ''}" href="${ctx}/admin/manage-account">
                         <i class="fas fa-users me-2"></i>Quản lý User
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/admin/password-reset-requests">
+                    <a class="nav-link text-white ${currentUri != null && currentUri.contains('/admin/password-reset-requests') ? 'active' : ''}" href="${ctx}/admin/password-reset-requests">
                         <i class="fas fa-key me-2"></i>Yêu cầu đặt lại MK
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/admin/roles">
+                    <a class="nav-link text-white ${currentUri != null && currentUri.contains('/admin/roles') ? 'active' : ''}" href="${ctx}/admin/roles">
                         <i class="fas fa-user-shield me-2"></i>Quản lý Permission
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/admin/pending-users">
+                    <a class="nav-link text-white ${currentUri != null && currentUri.contains('/admin/pending-users') ? 'active' : ''}" href="${ctx}/admin/pending-users">
                         <i class="fas fa-user-clock me-2"></i>User chờ duyệt
                     </a>
                 </li>
@@ -59,27 +60,27 @@
                     </div>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/manager/machines">
+                    <a class="nav-link text-white ${currentUri != null && currentUri.contains('/manager/machines') ? 'active' : ''}" href="${ctx}/manager/machines">
                         <i class="fas fa-cogs me-2"></i>Quản lý Machine
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/manager/machine-types">
+                    <a class="nav-link text-white ${currentUri != null && currentUri.contains('/manager/machine-types') ? 'active' : ''}" href="${ctx}/manager/machine-types">
                         <i class="fas fa-layer-group me-2"></i>Quản lý Loại Máy
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/manager/maintenances">
+                    <a class="nav-link text-white ${currentUri != null && currentUri.contains('/manager/maintenances') ? 'active' : ''}" href="${ctx}/manager/maintenances">
                         <i class="fas fa-tools me-2"></i>Bảo Trì Máy Trong Kho
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/manager/contracts">
+                    <a class="nav-link text-white ${currentUri != null && currentUri.contains('/manager/contracts') ? 'active' : ''}" href="${ctx}/manager/contracts">
                         <i class="fas fa-file-contract me-2"></i>Quản lý Contract
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/manager/products">
+                    <a class="nav-link text-white ${currentUri != null && currentUri.contains('/manager/products') ? 'active' : ''}" href="${ctx}/manager/products">
                         <i class="fas fa-box me-2"></i>Quản lý Product
                     </a>
                 </li>
@@ -92,22 +93,22 @@
                     </div>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/sale/contracts">
+                    <a class="nav-link text-white ${currentUri != null && currentUri.contains('/sale/contracts') ? 'active' : ''}" href="${ctx}/sale/contracts">
                         <i class="fas fa-file-contract me-2"></i>Xem Contract
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/sale/products">
+                    <a class="nav-link text-white ${currentUri != null && currentUri.contains('/sale/products') ? 'active' : ''}" href="${ctx}/sale/products">
                         <i class="fas fa-box me-2"></i>Xem Product
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/sale/orders?action=list">
+                    <a class="nav-link text-white ${currentUri != null && currentUri.contains('/sale/orders') ? 'active' : ''}" href="${ctx}/sale/orders?action=list">
                         <i class="fas fa-shopping-cart me-2"></i>Quản lý đơn hàng
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/requests">
+                    <a class="nav-link text-white ${currentUri != null && currentUri.contains('/requests') ? 'active' : ''}" href="${ctx}/requests">
                         <i class="fas fa-clipboard-check me-2"></i>Quản lý Request
                     </a>
                 </li>
@@ -120,20 +121,26 @@
                     </div>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/customer/products">
+                    <a class="nav-link text-white ${currentUri != null && currentUri.contains('/customer/products') ? 'active' : ''}" href="${ctx}/customer/products">
                         <i class="fas fa-box me-2"></i>Xem Product
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/customer/contracts">
+                    <a class="nav-link text-white ${currentUri != null && currentUri.contains('/customer/contracts') ? 'active' : ''}" href="${ctx}/customer/contracts">
                         <i class="fas fa-file-contract me-2"></i>Contract của tôi
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/requests">
+                    <a class="nav-link text-white ${currentUri != null && currentUri.contains('/requests') ? 'active' : ''}" href="${ctx}/requests">
                         <i class="fas fa-paper-plane me-2"></i>Request của tôi
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="${ctx}/customer/machines">
+                        <i class="fas fa-cogs me-2"></i>Danh sách Machine
+                    </a>
+                </li>
+
             </c:if>
 
             <li class="nav-item">
@@ -142,12 +149,12 @@
                 </div>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-white" href="${ctx}/profile">
+                <a class="nav-link text-white ${currentUri != null && currentUri.contains('/profile') ? 'active' : ''}" href="${ctx}/profile">
                     <i class="fas fa-user me-2"></i>Hồ sơ cá nhân
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-white" href="${ctx}/change-password">
+                <a class="nav-link text-white ${currentUri != null && currentUri.contains('/change-password') ? 'active' : ''}" href="${ctx}/change-password">
                     <i class="fas fa-key me-2"></i>Đổi mật khẩu
                 </a>
             </li>
