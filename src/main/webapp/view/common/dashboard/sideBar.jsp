@@ -135,6 +135,12 @@
                         <i class="fas fa-paper-plane me-2"></i>Request của tôi
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="${ctx}/customer/machines">
+                        <i class="fas fa-cogs me-2"></i>Danh sách Machine
+                    </a>
+                </li>
+
             </c:if>
 
             <li class="nav-item">
