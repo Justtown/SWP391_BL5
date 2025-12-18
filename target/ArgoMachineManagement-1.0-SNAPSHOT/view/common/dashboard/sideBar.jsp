@@ -42,7 +42,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white ${currentUri != null && currentUri.contains('/admin/permissions') ? 'active' : ''}" href="${ctx}/admin/permissions?action=matrix">
+                    <a class="nav-link text-white ${currentUri != null && currentUri.contains('/admin/roles') ? 'active' : ''}" href="${ctx}/admin/roles">
                         <i class="fas fa-user-shield me-2"></i>Quản lý Permission
                     </a>
                 </li>
@@ -75,11 +75,6 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white ${currentUri != null && currentUri.contains('/manager/orders') ? 'active' : ''}" href="${ctx}/manager/orders?action=list">
-                        <i class="fas fa-shopping-cart me-2"></i>Quản lý Order
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link text-white ${currentUri != null && currentUri.contains('/manager/contracts') ? 'active' : ''}" href="${ctx}/manager/contracts">
                         <i class="fas fa-file-contract me-2"></i>Quản lý Contract
                     </a>
@@ -91,7 +86,7 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-white ${currentUri != null && currentUri.contains('/manager/statistics') ? 'active' : ''}" href="${ctx}/manager/statistics">
-                        <i class="fas fa-chart-bar me-2"></i>Thống kê
+                        <i class="fas fa-box me-2"></i>Thống kê
                     </a>
                 </li>
             </c:if>
