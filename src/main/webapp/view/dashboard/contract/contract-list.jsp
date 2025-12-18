@@ -1,5 +1,10 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<c:set var="contractsPath" value="/contracts" />
+<c:if test="${sessionScope.roleName == 'manager'}"><c:set var="contractsPath" value="/manager/contracts" /></c:if>
+<c:if test="${sessionScope.roleName == 'sale'}"><c:set var="contractsPath" value="/sale/contracts" /></c:if>
+<c:if test="${sessionScope.roleName == 'customer'}"><c:set var="contractsPath" value="/customer/contracts" /></c:if>
+<c:set var="contractsBase" value="${pageContext.request.contextPath}${contractsPath}" />
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,10 +14,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            background-color: #f5f5f5;
-            padding: 20px;
-        }
         .contract-management-container {
             background: white;
             border-radius: 10px;
@@ -152,14 +153,36 @@
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
+    <!-- Sidebar + layout -->
     <jsp:include page="/view/common/dashboard/sideBar.jsp" />
 
-    <!-- Main Content -->
     <div class="main-content">
         <div class="container-fluid" style="max-width: 100%; overflow-x: hidden;">
-            <div class="contract-management-container">
-                <h1 class="page-title">Contract Management</h1>
+        <div class="contract-management-container">
+            <h1 class="page-title">
+                <c:choose>
+                    <c:when test="${sessionScope.roleName == 'customer'}">
+                        My Contracts
+                    </c:when>
+                    <c:otherwise>
+                        Contract Management
+                    </c:otherwise>
+                </c:choose>
+            </h1>
+            
+            <!-- Success/Error Messages -->
+            <c:if test="${not empty param.success}">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>${param.success}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </c:if>
+            <c:if test="${not empty param.error}">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>${param.error}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </c:if>
             
             <!-- Filter & Search Section -->
             <div class="filter-section">
@@ -179,9 +202,11 @@
                     <i class="fas fa-times clear-search" id="clearSearch"></i>
                 </div>
                 
-                <a href="${pageContext.request.contextPath}/contracts?action=create" class="add-contract-link">
-                    <i class="fas fa-plus"></i> Create New Contract
-                </a>
+                <c:if test="${sessionScope.roleName != 'customer'}">
+                    <a href="${contractsBase}?action=create" class="add-contract-link">
+                        <i class="fas fa-plus"></i> Create New Contract
+                    </a>
+                </c:if>
             </div>
             
             <!-- Pagination Info -->
@@ -223,7 +248,7 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <a href="${pageContext.request.contextPath}/contracts?action=detail&id=${contract.id}" 
+                                            <a href="${contractsBase}?action=detail&id=${contract.id}" 
                                                class="btn btn-sm btn-info">
                                                 <i class="fas fa-eye"></i> View
                                             </a>
@@ -289,8 +314,8 @@
                 </div>
             </c:if>
         </div>
+        </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -340,7 +365,7 @@
                 params.append('page', '1');
                 
                 const queryString = params.toString();
-                const url = '${pageContext.request.contextPath}/contracts' + 
+                const url = '${contractsBase}' + 
                            (queryString ? '?' + queryString : '');
                 window.location.href = url;
             }
@@ -359,14 +384,12 @@
                 params.append('page', page);
                 
                 const queryString = params.toString();
-                const url = '${pageContext.request.contextPath}/contracts' + 
+                const url = '${contractsBase}' + 
                            (queryString ? '?' + queryString : '');
                 window.location.href = url;
             }
         });
     </script>
-
-    </div> <!-- end main-content -->
 </body>
 </html>
 

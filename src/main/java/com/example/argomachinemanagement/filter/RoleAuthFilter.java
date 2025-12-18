@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -18,6 +19,18 @@ import java.util.Set;
 public class RoleAuthFilter implements Filter {
     
     private PermissionDAO permissionDAO;
+    /**
+     * Map các URL mới -> URL cũ để tương thích permission đã lưu trong DB.
+     * Ví dụ: DB đang có /contracts nhưng UI/route mới là /manager/contracts.
+     */
+    private static final Map<String, String> LEGACY_PERMISSION_ALIASES = Map.of(
+            "/admin/manage-account", "/manage-account",
+            "/admin/add-user", "/add-user",
+            "/admin/pending-users", "/pending-users",
+            "/manager/contracts", "/contracts",
+            "/sale/contracts", "/contracts",
+            "/customer/contracts", "/contracts"
+    );
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -39,17 +52,10 @@ public class RoleAuthFilter implements Filter {
             return;
         }
         
-        // Lấy userId và roleName từ session
+        // Lấy userId từ session
         Integer userId = (Integer) session.getAttribute("userId");
-        String roleName = (String) session.getAttribute("roleName");
         if (userId == null) {
             httpResponse.sendRedirect(httpRequest.getContextPath() + "/login");
-            return;
-        }
-        
-        // Nếu là admin thì cho phép truy cập tất cả các URL /admin/* (bỏ qua kiểm tra permission chi tiết)
-        if (roleName != null && roleName.equalsIgnoreCase("admin")) {
-            chain.doFilter(request, response);
             return;
         }
         
@@ -65,19 +71,15 @@ public class RoleAuthFilter implements Filter {
         // Nếu chưa có trong session, load từ database
         if (allowedUrls == null) {
             allowedUrls = permissionDAO.getAllowedUrlPatternsByUserId(userId);
+            session.setAttribute("allowedUrls", allowedUrls);
         }
-
-        // Bổ sung một số URL mặc định theo role (không cần sửa DB)
-        if (roleName != null && roleName.equalsIgnoreCase("customer") && allowedUrls != null) {
-            // Cho phép customer truy cập trang danh sách hợp đồng riêng
-            allowedUrls.add("/customer/contracts");
-        }
-
-        // Lưu lại vào session (phòng khi có thay đổi ở trên)
-        session.setAttribute("allowedUrls", allowedUrls);
+        
+        String roleName = (String) session.getAttribute("roleName");
         
         // Kiểm tra quyền truy cập
-        if (!hasPermission(path, allowedUrls)) {
+        if (!hasPermission(path, allowedUrls)
+                && !hasLegacyAliasPermission(path, allowedUrls)
+                && !hasRoleBasedDefaultPermission(path, roleName)) {
             // Không có quyền truy cập
             httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, 
                 "Bạn không có quyền truy cập trang này: " + path);
@@ -106,6 +108,41 @@ public class RoleAuthFilter implements Filter {
         }
         
         return false;
+    }
+
+    /**
+     * Kiểm tra quyền thông qua alias (URL mới -> URL cũ).
+     * Chỉ áp dụng cho một số URL đã được map cố định trong LEGACY_PERMISSION_ALIASES.
+     */
+    private boolean hasLegacyAliasPermission(String requestPath, Set<String> allowedUrls) {
+        String legacy = LEGACY_PERMISSION_ALIASES.get(requestPath);
+        if (legacy == null) {
+            return false;
+        }
+        return hasPermission(legacy, allowedUrls);
+    }
+
+    /**
+     * Một số URL quan trọng được cho phép mặc định theo role
+     * để tránh lỗi 403 nếu chưa cấu hình permission trong DB.
+     */
+    private boolean hasRoleBasedDefaultPermission(String requestPath, String roleName) {
+        if (roleName == null || requestPath == null) {
+            return false;
+        }
+
+        switch (roleName) {
+            case "admin":
+                // Admin luôn được vào một số trang quản trị quan trọng
+                return requestPath.startsWith("/admin/pending-users")
+                        || requestPath.startsWith("/admin/manage-account")
+                        || requestPath.startsWith("/admin/add-user");
+            case "customer":
+                // Customer luôn được xem hợp đồng của mình
+                return requestPath.startsWith("/customer/contracts");
+            default:
+                return false;
+        }
     }
     
     /**
