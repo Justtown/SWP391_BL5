@@ -20,12 +20,16 @@ public class UserDAO extends DBContext implements I_DAO<User> {
      */
     public User login(String username, String password) {
         User user = null;
-        String sql = "SELECT u.*, r.role_name " +
-                     "FROM users u " +
-                     "LEFT JOIN user_role ur ON u.id = ur.user_id " +
-                     "LEFT JOIN roles r ON ur.role_id = r.id " +
-                     "WHERE u.username = ? AND u.password = ?";
-        
+        String sql = """
+    SELECT u.*, 
+           r.role_name,
+           r.status AS role_status
+    FROM users u
+    LEFT JOIN user_role ur ON u.id = ur.user_id
+    LEFT JOIN roles r ON ur.role_id = r.id
+    WHERE u.username = ? AND u.password = ?
+""";
+
         try {
             connection = getConnection();
             statement = connection.prepareStatement(sql);
@@ -518,7 +522,12 @@ public class UserDAO extends DBContext implements I_DAO<User> {
             // role_name column might not exist in some queries
             user.setRoleName(null);
         }
-        
+        try {
+            user.setRoleStatus(resultSet.getInt("role_status"));
+        } catch (SQLException e) {
+            user.setRoleStatus(1); // mặc định active nếu query không có
+        }
+
         return user;
     }
 

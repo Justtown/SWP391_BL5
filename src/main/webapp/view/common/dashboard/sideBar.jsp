@@ -51,6 +51,12 @@
                         <i class="fas fa-user-clock me-2"></i>User chờ duyệt
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white ${currentUri != null && currentUri.contains('/admin/role-management') ? 'active' : ''}"
+                       href="${ctx}/admin/role-management">
+                        <i class="fas fa-key me-2"></i>Quản lý Role
+                    </a>
+                </li>
             </c:if>
 
             <c:if test="${sessionScope.roleName == 'manager'}">

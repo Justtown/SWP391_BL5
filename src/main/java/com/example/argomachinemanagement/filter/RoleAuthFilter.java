@@ -61,7 +61,18 @@ public class RoleAuthFilter implements Filter {
             httpResponse.sendRedirect(httpRequest.getContextPath() + "/login");
             return;
         }
-        
+
+        // ====== CHẶN ROLE BỊ DEACTIVE ======
+        Integer roleStatus = (Integer) session.getAttribute("roleStatus");
+        if (roleStatus != null && roleStatus == 0) {
+            session.invalidate();
+            httpResponse.sendRedirect(
+                    httpRequest.getContextPath()
+                            + "/login?error=role_inactive"
+            );
+            return;
+        }
+
         // Lấy request path
         String requestURI = httpRequest.getRequestURI();
         String contextPath = httpRequest.getContextPath();
@@ -158,12 +169,17 @@ public class RoleAuthFilter implements Filter {
             case "admin":
                 // Admin mặc định được phép truy cập toàn bộ khu vực /admin/*
                 // để tránh lỗi 403 nếu permission trong DB chưa cấu hình đầy đủ.
-                return requestPath.startsWith("/admin/");
+                return requestPath.startsWith("/admin/")
+                        || requestPath.startsWith("/admin/pending-users")
+                        || requestPath.startsWith("/admin/manage-account")
+                        || requestPath.startsWith("/admin/add-user")
+                        || requestPath.startsWith("/admin/role-management");
             case "manager":
                 // Manager mặc định được vào các trang nghiệp vụ cốt lõi để tránh 403
                 // khi DB chưa kịp cấu hình permission cho route mới
                 return requestPath.startsWith("/manager/machine-types")
                         || requestPath.startsWith("/manager/maintenances");
+                // Admin luôn được vào một số trang quản trị quan trọng
             case "customer":
                 // Customer luôn được xem hợp đồng của mình
                 return requestPath.startsWith("/customer/contracts");
@@ -203,13 +219,13 @@ public class RoleAuthFilter implements Filter {
         if (normalizedRequest.equals(normalizedPattern) || normalizedRequest.equals(basePattern)) {
             return true;
         }
-
+        
         // StartsWith match (cho phép sub-paths và query params)
         // VD: /manager/machines/add được phép nếu có quyền /manager/machines
-        if (normalizedRequest.startsWith(basePattern + "/") || normalizedRequest.startsWith(basePattern + "?")) {
+        if (requestPath.startsWith(pattern + "/") || requestPath.startsWith(pattern + "?")) {
             return true;
         }
-
+        
         return false;
     }
 
