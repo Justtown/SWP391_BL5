@@ -5,6 +5,7 @@ import com.example.argomachinemanagement.dal.MachineDAO;
 import com.example.argomachinemanagement.entity.Maintenance;
 import com.example.argomachinemanagement.entity.Machine;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -21,7 +22,7 @@ import java.util.Map;
 @WebServlet(name = "MaintenanceController", urlPatterns = {"/manager/maintenances"})
 public class MaintenanceController extends HttpServlet {
     
-    private static final int PAGE_SIZE = 10;
+    private static final int PAGE_SIZE = 4;
     
     private MaintenanceDAO maintenanceDAO;
     private MachineDAO machineDAO;
@@ -31,7 +32,7 @@ public class MaintenanceController extends HttpServlet {
     public void init() throws ServletException {
         maintenanceDAO = new MaintenanceDAO();
         machineDAO = new MachineDAO();
-        gson = new Gson();
+        gson = new GsonBuilder().setDateFormat("yyyy-MM-dd").create();
     }
     
     @Override
@@ -136,7 +137,7 @@ public class MaintenanceController extends HttpServlet {
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalRecords", totalRecords);
         request.setAttribute("startIndex", startIndex);
-        
+        request.setAttribute("pageSize", PAGE_SIZE);
         // Preserve filters
         request.setAttribute("filterMachineId", machineId);
         request.setAttribute("filterType", maintenanceType);
@@ -214,12 +215,19 @@ public class MaintenanceController extends HttpServlet {
                     .maintenanceDate(Date.valueOf(maintenanceDateStr))
                     .performedBy(performedBy != null ? performedBy.trim() : null)
                     .description(description != null ? description.trim() : null)
-                    .status(status != null && !status.isEmpty() ? status : "COMPLETED")
+                    // Default: đang chờ
+                    .status(status != null && !status.isEmpty() ? status : "PENDING")
                     .build();
             
             int newId = maintenanceDAO.insert(m);
             if (newId > 0) {
-                request.getSession().setAttribute("successMsg", "Thêm bảo trì thành công");
+                // Đồng bộ trạng thái máy theo trạng thái bảo trì
+                boolean machineUpdated = syncMachineStatusWithMaintenance(m.getMachineId(), m.getStatus());
+                if (machineUpdated) {
+                    request.getSession().setAttribute("successMsg", "Thêm bảo trì thành công.");
+                } else {
+                    request.getSession().setAttribute("successMsg", "Thêm bảo trì thành công. (Cảnh báo: không thể cập nhật trạng thái máy)");
+                }
             } else {
                 request.getSession().setAttribute("errorMsg", "Không thể thêm bảo trì");
             }
@@ -248,6 +256,14 @@ public class MaintenanceController extends HttpServlet {
         }
         
         try {
+            // Không cho sửa nếu bảo trì đã hoàn thành (chặn cả backend để không lách UI)
+            Maintenance existing = maintenanceDAO.findById(Integer.parseInt(idStr));
+            if (existing != null && "COMPLETED".equalsIgnoreCase(existing.getStatus())) {
+                request.getSession().setAttribute("errorMsg", "Bảo trì đã hoàn thành nên không thể chỉnh sửa nữa.");
+                response.sendRedirect(request.getContextPath() + "/manager/maintenances");
+                return;
+            }
+
             Maintenance m = Maintenance.builder()
                     .id(Integer.parseInt(idStr))
                     .machineId(Integer.parseInt(machineIdStr))
@@ -259,7 +275,13 @@ public class MaintenanceController extends HttpServlet {
                     .build();
             
             if (maintenanceDAO.update(m)) {
-                request.getSession().setAttribute("successMsg", "Cập nhật thành công");
+                // Đồng bộ trạng thái máy theo trạng thái bảo trì
+                boolean machineUpdated = syncMachineStatusWithMaintenance(m.getMachineId(), m.getStatus());
+                if (machineUpdated) {
+                    request.getSession().setAttribute("successMsg", "Cập nhật thành công.");
+                } else {
+                    request.getSession().setAttribute("successMsg", "Cập nhật thành công. (Cảnh báo: không thể cập nhật trạng thái máy)");
+                }
             } else {
                 request.getSession().setAttribute("errorMsg", "Không thể cập nhật");
             }
@@ -268,6 +290,21 @@ public class MaintenanceController extends HttpServlet {
         }
         
         response.sendRedirect(request.getContextPath() + "/manager/maintenances");
+    }
+
+    /**
+     * PENDING (đang bảo trì) -> INACTIVE
+     * COMPLETED (hoàn thành) -> ACTIVE
+     * Other statuses -> keep machine INACTIVE by default (safe)
+     */
+    private boolean syncMachineStatusWithMaintenance(Integer machineId, String maintenanceStatus) {
+        if (machineId == null) return false;
+        String st = maintenanceStatus != null ? maintenanceStatus.trim().toUpperCase() : "PENDING";
+        if ("COMPLETED".equals(st)) {
+            return machineDAO.updateStatus(machineId, "ACTIVE");
+        }
+        // PENDING/CANCELLED/other -> mark inactive (not rentable)
+        return machineDAO.deactivate(machineId);
     }
     
     private void handleDelete(HttpServletRequest request, HttpServletResponse response)

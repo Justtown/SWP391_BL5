@@ -1,5 +1,6 @@
 package com.example.argomachinemanagement.dal;
 
+import com.example.argomachinemanagement.entity.Machine;
 import com.example.argomachinemanagement.entity.Request;
 import java.sql.*;
 import java.util.ArrayList;

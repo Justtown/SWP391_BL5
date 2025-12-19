@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 // vào đường link => lọc cái link xem nó có được truy câp ko trước  => servlet
 /**
@@ -18,6 +19,26 @@ import java.util.Set;
 public class RoleAuthFilter implements Filter {
     
     private PermissionDAO permissionDAO;
+    /**
+     * Map các URL mới -> URL cũ để tương thích permission đã lưu trong DB.
+     * Ví dụ: DB đang có /contracts nhưng UI/route mới là /manager/contracts.
+     */
+    private static final Map<String, String> LEGACY_PERMISSION_ALIASES = Map.ofEntries(
+            Map.entry("/admin/manage-account", "/manage-account"),
+            Map.entry("/admin/add-user", "/add-user"),
+            Map.entry("/admin/pending-users", "/pending-users"),
+            Map.entry("/manager/contracts", "/contracts"),
+            Map.entry("/sale/contracts", "/contracts"),
+            Map.entry("/customer/contracts", "/contracts"),
+            // Manager routes mới nhưng permission DB có thể đang lưu route cũ
+            Map.entry("/manager/machine-types", "/machine-types"),
+            Map.entry("/manager/maintenances", "/maintenances"),
+            // Orders/Products: route mới theo namespace /manager/*
+            Map.entry("/manager/orders", "/orders"),
+            Map.entry("/sale/orders", "/orders"),
+            Map.entry("/manager/products", "/products"),
+            Map.entry("/sale/products", "/products")
+    );
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -39,20 +60,24 @@ public class RoleAuthFilter implements Filter {
             return;
         }
         
-        // Lấy userId và roleName từ session
+        // Lấy userId từ session
         Integer userId = (Integer) session.getAttribute("userId");
-        String roleName = (String) session.getAttribute("roleName");
         if (userId == null) {
             httpResponse.sendRedirect(httpRequest.getContextPath() + "/login");
             return;
         }
-        
-        // Nếu là admin thì cho phép truy cập tất cả các URL /admin/* (bỏ qua kiểm tra permission chi tiết)
-        if (roleName != null && roleName.equalsIgnoreCase("admin")) {
-            chain.doFilter(request, response);
+
+        // ====== CHẶN ROLE BỊ DEACTIVE ======
+        Integer roleStatus = (Integer) session.getAttribute("roleStatus");
+        if (roleStatus != null && roleStatus == 0) {
+            session.invalidate();
+            httpResponse.sendRedirect(
+                    httpRequest.getContextPath()
+                            + "/login?error=role_inactive"
+            );
             return;
         }
-        
+
         // Lấy request path
         String requestURI = httpRequest.getRequestURI();
         String contextPath = httpRequest.getContextPath();
@@ -65,19 +90,15 @@ public class RoleAuthFilter implements Filter {
         // Nếu chưa có trong session, load từ database
         if (allowedUrls == null) {
             allowedUrls = permissionDAO.getAllowedUrlPatternsByUserId(userId);
+            session.setAttribute("allowedUrls", allowedUrls);
         }
-
-        // Bổ sung một số URL mặc định theo role (không cần sửa DB)
-        if (roleName != null && roleName.equalsIgnoreCase("customer") && allowedUrls != null) {
-            // Cho phép customer truy cập trang danh sách hợp đồng riêng
-            allowedUrls.add("/customer/contracts");
-        }
-
-        // Lưu lại vào session (phòng khi có thay đổi ở trên)
-        session.setAttribute("allowedUrls", allowedUrls);
+        
+        String roleName = (String) session.getAttribute("roleName");
         
         // Kiểm tra quyền truy cập
-        if (!hasPermission(path, allowedUrls)) {
+        if (!hasPermission(path, allowedUrls)
+                && !hasLegacyAliasPermission(path, allowedUrls)
+                && !hasRoleBasedDefaultPermission(path, roleName)) {
             // Không có quyền truy cập
             httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, 
                 "Bạn không có quyền truy cập trang này: " + path);
@@ -107,6 +128,82 @@ public class RoleAuthFilter implements Filter {
         
         return false;
     }
+
+    /**
+     * Kiểm tra quyền thông qua alias (URL mới -> URL cũ).
+     * Chỉ áp dụng cho một số URL đã được map cố định trong LEGACY_PERMISSION_ALIASES.
+     */
+    private boolean hasLegacyAliasPermission(String requestPath, Set<String> allowedUrls) {
+        if (requestPath == null || allowedUrls == null || allowedUrls.isEmpty()) {
+            return false;
+        }
+
+        // Hỗ trợ cả trường hợp sub-path: /new/foo/bar -> /legacy/foo/bar
+        for (Map.Entry<String, String> entry : LEGACY_PERMISSION_ALIASES.entrySet()) {
+            String newBase = entry.getKey();
+            String legacyBase = entry.getValue();
+
+            if (matchesUrl(requestPath, newBase)) {
+                // replace prefix nếu có phần đuôi path
+                String legacyPath = requestPath;
+                if (legacyPath.startsWith(newBase)) {
+                    legacyPath = legacyBase + legacyPath.substring(newBase.length());
+                } else {
+                    // fallback nếu matchUrl do normalize/wildcard
+                    legacyPath = legacyBase;
+                }
+                if (hasPermission(legacyPath, allowedUrls)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Một số URL quan trọng được cho phép mặc định theo role
+     * để tránh lỗi 403 nếu chưa cấu hình permission trong DB.
+     */
+    private boolean hasRoleBasedDefaultPermission(String requestPath, String roleName) {
+        if (roleName == null || requestPath == null) {
+            return false;
+        }
+
+        switch (roleName.toLowerCase()) {
+            case "admin":
+                // Admin mặc định được phép truy cập toàn bộ khu vực /admin/*
+                // để tránh lỗi 403 nếu permission trong DB chưa cấu hình đầy đủ.
+                return requestPath.startsWith("/admin/")
+                        || requestPath.startsWith("/admin/pending-users")
+                        || requestPath.startsWith("/admin/manage-account")
+                        || requestPath.startsWith("/admin/add-user")
+                        || requestPath.startsWith("/admin/role-management");
+            case "manager":
+                // Manager mặc định được vào các trang nghiệp vụ cốt lõi để tránh 403
+                // khi DB chưa kịp cấu hình permission cho route mới
+                return requestPath.startsWith("/manager/dashboard")
+                        || requestPath.startsWith("/manager/machines")
+                        || requestPath.startsWith("/manager/machine-types")
+                        || requestPath.startsWith("/manager/maintenances")
+                        || requestPath.startsWith("/manager/contracts")
+                        || requestPath.startsWith("/manager/orders")
+                        || requestPath.startsWith("/manager/products")
+                        || requestPath.startsWith("/manager/statistics");
+            case "sale":
+                // Sale mặc định được vào các trang nghiệp vụ của sale để tránh 403
+                return requestPath.startsWith("/sale/dashboard")
+                        || requestPath.startsWith("/sale/contracts")
+                        || requestPath.startsWith("/sale/orders")
+                        || requestPath.startsWith("/sale/products");
+                // Admin luôn được vào một số trang quản trị quan trọng
+            case "customer":
+                // Customer luôn được xem hợp đồng của mình
+                return requestPath.startsWith("/customer/contracts");
+            default:
+                return false;
+        }
+    }
     
     /**
      * Kiểm tra URL có khớp với pattern không
@@ -116,9 +213,27 @@ public class RoleAuthFilter implements Filter {
         if (pattern == null || requestPath == null) {
             return false;
         }
-        
-        // Exact match
-        if (requestPath.equals(pattern)) {
+
+        // Normalize: ensure leading slash & remove trailing slash (except root)
+        String normalizedRequest = requestPath.startsWith("/") ? requestPath : "/" + requestPath;
+        String normalizedPattern = pattern.startsWith("/") ? pattern : "/" + pattern;
+        if (normalizedPattern.length() > 1 && normalizedPattern.endsWith("/")) {
+            normalizedPattern = normalizedPattern.substring(0, normalizedPattern.length() - 1);
+        }
+
+        // Support wildcard patterns commonly stored in DB: "/foo/*" or "/foo*"
+        String basePattern = normalizedPattern;
+        if (normalizedPattern.endsWith("/*")) {
+            basePattern = normalizedPattern.substring(0, normalizedPattern.length() - 2);
+        } else if (normalizedPattern.endsWith("*")) {
+            basePattern = normalizedPattern.substring(0, normalizedPattern.length() - 1);
+        }
+        if (basePattern.length() > 1 && basePattern.endsWith("/")) {
+            basePattern = basePattern.substring(0, basePattern.length() - 1);
+        }
+
+        // Exact match (also allow wildcard base match)
+        if (normalizedRequest.equals(normalizedPattern) || normalizedRequest.equals(basePattern)) {
             return true;
         }
         

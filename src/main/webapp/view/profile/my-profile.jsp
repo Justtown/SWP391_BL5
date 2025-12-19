@@ -134,6 +134,8 @@
     </style>
 </head>
 <body>
+<jsp:include page="/view/common/dashboard/sideBar.jsp" />
+<div class="main-content">
     <div class="container">
         <div class="profile-card">
             <!-- isEditMode được set từ controller (mặc định là false - view mode) -->
@@ -193,8 +195,9 @@
                                 <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="name" name="name" 
                                        value="${profile.name}" required minlength="2" maxlength="100"
-                                       title="Tên phải có từ 2-100 ký tự">
-                                <div class="invalid-feedback">Tên phải có từ 2-100 ký tự!</div>
+                                       pattern="[a-zA-ZÀ-ỹ\s]+"
+                                       title="Tên chỉ được chứa chữ cái và khoảng trắng">
+                                <div class="invalid-feedback">Tên chỉ được chứa chữ cái và khoảng trắng!</div>
                             </div>
 
                             <!-- Email -->
@@ -299,7 +302,7 @@
 
                     <!-- Buttons -->
                     <div class="btn-group-custom">
-                        <button type="button" class="btn btn-secondary" onclick="window.location.href='${pageContext.request.contextPath}/home'">
+                        <button type="button" class="btn btn-secondary" onclick="window.location.href='${pageContext.request.contextPath}/${sessionScope.roleName}/dashboard'">
                             <i class="fas fa-arrow-left"></i> Back
                         </button>
                     </div>
@@ -381,6 +384,13 @@
                         errorMessage = 'Tên phải có từ 2-100 ký tự!';
                     }
                     
+                    // Validate Name - Only letters and spaces
+                    const nameRegex = /^[a-zA-ZÀ-ỹ\s]+$/;
+                    if (!nameRegex.test(name)) {
+                        isValid = false;
+                        errorMessage = 'Tên chỉ được chứa chữ cái và khoảng trắng!';
+                    }
+                    
                     // Validate Email
                     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
                     if (!emailRegex.test(email)) {
@@ -460,6 +470,7 @@
         });
         </c:if>
     </script>
+</div>
 </body>
 </html>
 

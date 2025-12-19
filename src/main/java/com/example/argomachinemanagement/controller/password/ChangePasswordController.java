@@ -38,6 +38,12 @@ public class ChangePasswordController extends HttpServlet {
         }
         
         Integer userId = (Integer) session.getAttribute("userId");
+
+        String message = (String) session.getAttribute("message");
+        if (message != null) {
+            request.setAttribute("message", message);
+            session.removeAttribute("message");
+        }
         
         // Check if user needs to change password (login với password mới từ admin)
         boolean mustChangePassword = session.getAttribute("mustChangePassword") != null 
@@ -190,7 +196,7 @@ public class ChangePasswordController extends HttpServlet {
                 }
                 
                 session.setAttribute("message", "Đổi mật khẩu thành công!");
-                response.sendRedirect(request.getContextPath() + redirectUrl);
+                response.sendRedirect(request.getContextPath() + "/change-password");
                 return;
             } else {
                 request.setAttribute("error", "Không thể cập nhật mật khẩu. Vui lòng thử lại.");

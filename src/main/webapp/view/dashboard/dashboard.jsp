@@ -142,8 +142,14 @@
                                     </a>
                                 </div>
                                 <div class="col-md-6">
-                                    <a href="${pageContext.request.contextPath}/admin/roles" class="quick-action">
+                                    <a href="${pageContext.request.contextPath}/admin/permissions" class="quick-action">
                                         <i class="fas fa-user-shield"></i> Quản lý phân quyền
+                                    </a>
+                                </div>
+                                <div class="col-md-6">
+                                    <a href="${pageContext.request.contextPath}/admin/role-management"
+                                       class="quick-action">
+                                        <i class="fas fa-user-shield"></i> Quản lý Role
                                     </a>
                                 </div>
                             </c:if>
@@ -213,11 +219,17 @@
                                         <i class="fas fa-list"></i> Yêu cầu của tôi
                                     </a>
                                 </div>
+                                <div class="col-md-6">
+                                    <a href="${pageContext.request.contextPath}/customer/machines" class="quick-action">
+                                        <i class="fas fa-cogs"></i> Xem danh sách Machine
+                                    </a>
+                                </div>
+
                             </c:if>
                             
                             <!-- Common Actions -->
                             <div class="col-md-6">
-                                <a href="${pageContext.request.contextPath}/profile" class="quick-action">
+                                <a href="${pageContext.request.contextPath}/my-profile" class="quick-action">
                                     <i class="fas fa-user"></i> Xem hồ sơ cá nhân
                                 </a>
                             </div>
@@ -249,7 +261,7 @@
                             </div>
                         </div>
                         <hr>
-                        <a href="${pageContext.request.contextPath}/profile" class="btn btn-outline-primary btn-sm w-100">
+                        <a href="${pageContext.request.contextPath}/my-profile?mode=edit" class="btn btn-outline-primary btn-sm w-100">
                             <i class="fas fa-edit me-1"></i> Chỉnh sửa hồ sơ
                         </a>
                     </div>
