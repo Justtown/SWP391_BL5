@@ -108,16 +108,7 @@
                         <span>Kinh doanh</span>
                     </div>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white ${currentUri != null && currentUri.contains('/sale/contracts') ? 'active' : ''}" href="${ctx}/sale/contracts">
-                        <i class="fas fa-file-contract me-2"></i>Xem Contract
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white ${currentUri != null && currentUri.contains('/sale/products') ? 'active' : ''}" href="${ctx}/sale/products">
-                        <i class="fas fa-box me-2"></i>Xem Product
-                    </a>
-                </li>
+
                 <li class="nav-item">
                     <a class="nav-link text-white ${currentUri != null && currentUri.contains('/sale/orders') ? 'active' : ''}" href="${ctx}/sale/orders?action=list">
                         <i class="fas fa-shopping-cart me-2"></i>Quản lý đơn hàng
@@ -135,11 +126,6 @@
                     <div class="nav-link text-secondary small text-uppercase mt-3">
                         <span>Dịch vụ</span>
                     </div>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white ${currentUri != null && currentUri.contains('/customer/products') ? 'active' : ''}" href="${ctx}/customer/products">
-                        <i class="fas fa-box me-2"></i>Xem Product
-                    </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-white ${currentUri != null && currentUri.contains('/customer/contracts') ? 'active' : ''}" href="${ctx}/customer/contracts">
