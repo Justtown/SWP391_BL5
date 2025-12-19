@@ -21,7 +21,7 @@ import java.util.Map;
 @WebServlet(name = "MachineController", urlPatterns = {"/manager/machines"})
 public class MachineController extends HttpServlet {
     
-    private static final int PAGE_SIZE = 10;
+    private static final int PAGE_SIZE = 5;
     
     private MachineDAO machineDAO;
     private MachineTypeDAO machineTypeDAO;

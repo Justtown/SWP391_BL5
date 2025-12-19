@@ -8,7 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.Set;
-
+// vào đường link => lọc cái link xem nó có được truy câp ko trước  => servlet
 /**
  * Filter kiểm tra quyền truy cập URL dựa trên permissions trong database
  * - Lấy danh sách URL patterns được phép từ session (đã load khi login)
