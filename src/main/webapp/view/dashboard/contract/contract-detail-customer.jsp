@@ -57,22 +57,15 @@
                         <p class="mb-1 fw-semibold">${contract.managerName != null ? contract.managerName : 'N/A'}</p>
                     </div>
                     <div class="col-md-6">
-                        <h6 class="text-muted">Loại máy</h6>
+                        <h6 class="text-muted">Máy</h6>
                         <p class="mb-1">
-                            <c:choose>
-                                <c:when test="${not empty contract.machineTypeId}">
-                                    <c:forEach var="mt" items="${machineTypes}">
-                                        <c:if test="${mt.id == contract.machineTypeId}">
-                                            ${mt.typeName}
-                                        </c:if>
-                                    </c:forEach>
-                                    <c:if test="${empty machineTypes}">
-                                        Machine Type ID: ${contract.machineTypeId}
-                                    </c:if>
-                                </c:when>
-                                <c:otherwise>N/A</c:otherwise>
-                            </c:choose>
+                            <strong>${contract.machineCode != null ? contract.machineCode : '-'}</strong>
+                            <span class="text-muted">-</span>
+                            ${contract.machineName != null ? contract.machineName : '-'}
                         </p>
+                        <small class="text-muted">
+                            Loại: ${contract.machineTypeName != null ? contract.machineTypeName : (contract.machineTypeId != null ? contract.machineTypeId : 'N/A')}
+                        </small>
                     </div>
                 </div>
                 
@@ -120,14 +113,17 @@
                 </div>
 
                 <div class="mb-3">
-                    <h6 class="text-muted">Ghi chú</h6>
+                    <h6 class="text-muted">Mô tả dịch vụ</h6>
                     <p class="mb-1">
                         <c:choose>
+                            <c:when test="${not empty contract.serviceDescription}">
+                                ${contract.serviceDescription}
+                            </c:when>
                             <c:when test="${not empty contract.note}">
                                 ${contract.note}
                             </c:when>
                             <c:otherwise>
-                                <span class="text-muted">No note</span>
+                                <span class="text-muted">-</span>
                             </c:otherwise>
                         </c:choose>
                     </p>

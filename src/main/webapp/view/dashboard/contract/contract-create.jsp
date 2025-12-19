@@ -151,71 +151,95 @@
                 <!-- Customer Name -->
                 <div class="mb-3">
                     <label for="customerName" class="form-label">Tên khách hàng <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="customerName" name="customerName" 
-                           value="${customerName != null ? customerName : ''}" required>
+                    <input type="text" class="form-control" id="customerInput" name="customerName"
+                           placeholder="Nhập username khách hàng..."
+                           list="customerList"
+                           value="${customerName != null ? customerName : ''}" required autocomplete="off">
+                    <datalist id="customerList">
+                        <c:forEach var="customer" items="${customers}">
+                            <option value="${customer.username}"
+                                    data-id="${customer.id}"
+                                    data-phone="${customer.phoneNumber}"
+                                    data-address="${customer.address}">
+                                ${customer.fullName}
+                            </option>
+                        </c:forEach>
+                    </datalist>
+                    <input type="hidden" id="customerId" name="customerId" value="${selectedCustomerId != null ? selectedCustomerId : ''}">
                 </div>
                 
                 <!-- Customer Phone -->
                 <div class="mb-3">
                     <label for="customerPhone" class="form-label">Số điện thoại</label>
                     <input type="tel" class="form-control" id="customerPhone" name="customerPhone" 
-                           value="${customerPhone != null ? customerPhone : ''}">
+                           value="${customerPhone != null ? customerPhone : ''}" readonly>
                 </div>
                 
                 <!-- Customer Address -->
                 <div class="mb-3">
                     <label for="customerAddress" class="form-label">Địa chỉ</label>
                     <textarea class="form-control" id="customerAddress" name="customerAddress" rows="2"
-                              placeholder="Enter customer address...">${customerAddress != null ? customerAddress : ''}</textarea>
+                              placeholder="Địa chỉ khách hàng..." readonly>${customerAddress != null ? customerAddress : ''}</textarea>
                 </div>
-                
-                <!-- Customer ID (hidden dropdown for linking to user account) -->
-                <div class="mb-3">
-                    <label for="customerId" class="form-label">Customer Account <span class="text-danger">*</span></label>
-                    <select class="form-select" id="customerId" name="customerId" required>
-                        <option value="">Select Customer Account</option>
-                        <c:forEach var="customer" items="${customers}">
-                            <option value="${customer.id}" ${selectedCustomerId != null && selectedCustomerId == customer.id ? 'selected' : ''}>
-                                ${customer.fullName != null ? customer.fullName : customer.username} (${customer.email})
-                            </option>
-                        </c:forEach>
-                    </select>
-                    <small class="form-text text-muted">Select the customer account to link this contract</small>
-                </div>
-                
-                <!-- Machine Type -->
-                <div class="mb-3">
-                    <label for="machineTypeId" class="form-label">Loại máy</label>
-                    <select class="form-select" id="machineTypeId" name="machineTypeId">
-                        <option value="">-- Select Machine Type --</option>
-                        <c:forEach var="machineType" items="${machineTypes}">
-                            <option value="${machineType.id}" ${machineTypeId != null && machineTypeId == machineType.id ? 'selected' : ''}>
-                                ${machineType.typeName}
-                            </option>
-                        </c:forEach>
-                    </select>
+
+                <!-- Machine -->
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Mã máy <span class="text-danger">*</span></label>
+                        <select name="machineId" class="form-select" required id="machineSelect">
+                            <option value="">-- Chọn mã máy --</option>
+                            <c:forEach var="machine" items="${machines}">
+                                <option value="${machine.id}"
+                                        ${machineId != null && machineId == machine.id ? 'selected' : ''}
+                                        data-name="${machine.machineName}"
+                                        data-type="${machine.machineTypeName}"
+                                        data-status="${machine.status}"
+                                        data-rentable="${machine.isRentable}"
+                                        ${(machine.status ne 'ACTIVE' || machine.isRentable ne true) ? 'disabled' : ''}>
+                                    ${machine.machineCode} (${machine.status})
+                                </option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Tên máy</label>
+                        <input type="text" id="machineNameDisplay" class="form-control" readonly
+                               placeholder="Tự động điền khi chọn mã máy">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Loại máy</label>
+                        <input type="text" id="machineTypeDisplay" class="form-control" readonly
+                               placeholder="Tự động điền khi chọn mã máy">
+                    </div>
                 </div>
                 
                 <!-- Quantity -->
                 <div class="mb-3">
                     <label for="quantity" class="form-label">Số lượng</label>
                     <input type="number" class="form-control" id="quantity" name="quantity" 
-                           value="${quantity != null ? quantity : ''}" min="1" step="1">
+                           value="${quantity != null ? quantity : '1'}" min="1" step="1" required>
                 </div>
-                
-                <!-- Manager -->
-                <div class="mb-3">
-                    <label for="managerId" class="form-label">Manager <span class="text-danger">*</span></label>
-                    <select class="form-select" id="managerId" name="managerId" required>
-                        <option value="">Select Manager</option>
-                        <c:forEach var="manager" items="${managers}">
-                            <option value="${manager.id}" 
-                                    ${(selectedManagerId != null && selectedManagerId == manager.id) || (defaultManagerId != null && defaultManagerId == manager.id) ? 'selected' : ''}>
-                                ${manager.fullName != null ? manager.fullName : manager.username} (${manager.email}) - ${manager.roleName}
-                            </option>
-                        </c:forEach>
-                    </select>
-                </div>
+
+                <!-- ManagerId (auto for manager/sale; admin can choose) -->
+                <c:choose>
+                    <c:when test="${sessionScope.roleName == 'admin'}">
+                        <div class="mb-3">
+                            <label for="managerId" class="form-label">Manager <span class="text-danger">*</span></label>
+                            <select class="form-select" id="managerId" name="managerId" required>
+                                <option value="">Select Manager</option>
+                                <c:forEach var="manager" items="${managers}">
+                                    <option value="${manager.id}"
+                                            ${(selectedManagerId != null && selectedManagerId == manager.id) || (defaultManagerId != null && defaultManagerId == manager.id) ? 'selected' : ''}>
+                                        ${manager.fullName != null ? manager.fullName : manager.username} (${manager.email}) - ${manager.roleName}
+                                    </option>
+                                </c:forEach>
+                            </select>
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <input type="hidden" name="managerId" value="${sessionScope.userId}">
+                    </c:otherwise>
+                </c:choose>
                 
                 <!-- Start Date & End Date -->
                 <div class="row">
@@ -236,14 +260,15 @@
                 <div class="mb-3">
                     <label for="totalCost" class="form-label">Tổng giá trị</label>
                     <input type="number" class="form-control" id="totalCost" name="totalCost" 
-                           value="${totalCost != null ? totalCost : ''}" min="0" step="0.01" placeholder="0.00">
+                           value="${totalCost != null ? totalCost : ''}" min="1000000" step="1000" placeholder="VD: 5000000" required>
+                    <div class="form-text text-danger">* Giá trị phải từ 1,000,000 VNĐ trở lên</div>
                 </div>
                 
-                <!-- Note -->
+                <!-- Service Description -->
                 <div class="mb-3">
-                    <label for="note" class="form-label">Ghi chú</label>
-                    <textarea class="form-control" id="note" name="note" rows="3" 
-                              placeholder="Enter any additional notes...">${note != null ? note : ''}</textarea>
+                    <label for="serviceDescription" class="form-label">Mô tả dịch vụ <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="serviceDescription" name="serviceDescription" rows="4" required
+                              placeholder="Mô tả chi tiết về dịch vụ...">${serviceDescription != null ? serviceDescription : (note != null ? note : '')}</textarea>
                 </div>
                 
                 <div class="btn-group-custom">
@@ -261,50 +286,190 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        const customerSelect = document.getElementById('customerId');
-        const managerSelect = document.getElementById('managerId');
-        
-        // Validate date range
+        // ===== Customer auto-fill (match Order create) =====
+        const customerData = new Map();
+        <c:forEach var="customer" items="${customers}">
+        customerData.set('${customer.username}', {
+            id: '${customer.id}',
+            phone: '${customer.phoneNumber}' || '',
+            address: '${customer.address}' || ''
+        });
+        </c:forEach>
+
+        const customerInput = document.getElementById('customerInput');
+        const customerIdHidden = document.getElementById('customerId');
+        const phoneInput = document.getElementById('customerPhone');
+        const addressInput = document.getElementById('customerAddress');
+
+        function fillCustomer() {
+            const username = (customerInput.value || '').trim();
+            if (customerData.has(username)) {
+                const c = customerData.get(username);
+                customerIdHidden.value = c.id;
+                phoneInput.value = c.phone || '';
+                addressInput.value = c.address || '';
+            } else {
+                customerIdHidden.value = '';
+                phoneInput.value = '';
+                addressInput.value = '';
+            }
+        }
+
+        customerInput.addEventListener('input', fillCustomer);
+        customerInput.addEventListener('blur', fillCustomer);
+        fillCustomer();
+
+        // ===== Machine auto-fill =====
+        const machineSelect = document.getElementById('machineSelect');
+        const machineNameDisplay = document.getElementById('machineNameDisplay');
+        const machineTypeDisplay = document.getElementById('machineTypeDisplay');
+
+        function fillMachine() {
+            const opt = machineSelect.options[machineSelect.selectedIndex];
+            if (opt && opt.value) {
+                machineNameDisplay.value = opt.getAttribute('data-name') || '';
+                machineTypeDisplay.value = opt.getAttribute('data-type') || '';
+            } else {
+                machineNameDisplay.value = '';
+                machineTypeDisplay.value = '';
+            }
+        }
+        machineSelect.addEventListener('change', fillMachine);
+        fillMachine();
+
+        // ===== Validations =====
+        const managerSelect = document.getElementById('managerId'); // only exists for admin
+
         document.getElementById('startDate').addEventListener('change', validateDates);
         document.getElementById('endDate').addEventListener('change', validateDates);
-        
+        machineSelect.addEventListener('change', validateMachineSelection);
+
+        // Start date must be today or later
+        (function initDateMins() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            const todayStr = `${yyyy}-${mm}-${dd}`;
+            const startEl = document.getElementById('startDate');
+            const endEl = document.getElementById('endDate');
+            startEl.min = todayStr;
+            if (endEl) {
+                // endDate min will be adjusted inside validateDates() too
+                endEl.min = startEl.value || todayStr;
+            }
+        })();
+
         function validateDates() {
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
-            
+            const endEl = document.getElementById('endDate');
+
+            // enforce startDate >= today
+            if (startDate) {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const s = new Date(startDate + 'T00:00:00');
+                if (s < today) {
+                    alert('Ngày bắt đầu thuê phải từ hôm nay trở đi!');
+                    document.getElementById('startDate').value = '';
+                    if (endEl) endEl.value = '';
+                    return;
+                }
+                if (endEl) endEl.min = startDate;
+            }
+
             if (startDate && endDate && startDate > endDate) {
                 alert('Ngày kết thúc phải sau hoặc bằng ngày bắt đầu!');
                 document.getElementById('endDate').value = '';
             }
         }
-        
-        // Form validation on submit
+
+        function validateMachineSelection() {
+            const opt = machineSelect.options[machineSelect.selectedIndex];
+            if (!opt || !opt.value) {
+                machineSelect.setCustomValidity('');
+                return true;
+            }
+            const status = (opt.getAttribute('data-status') || '').toUpperCase();
+            const rentableRaw = (opt.getAttribute('data-rentable') || '').toLowerCase();
+            const rentable = rentableRaw === 'true';
+            if (status !== 'ACTIVE' || !rentable) {
+                const msg = `Máy đang ở trạng thái ${status || 'UNKNOWN'} (rentable=${rentable}) nên không thể tạo hợp đồng!`;
+                alert(msg);
+                machineSelect.value = '';
+                fillMachine();
+                machineSelect.setCustomValidity(msg);
+                return false;
+            }
+            machineSelect.setCustomValidity('');
+            return true;
+        }
+
+        const totalCostInput = document.getElementById('totalCost');
+        if (totalCostInput) {
+            totalCostInput.addEventListener('input', function() {
+                const value = parseFloat(this.value);
+                if (isNaN(value) || value < 1000000) {
+                    this.setCustomValidity('Giá trị hợp đồng phải từ 1,000,000 VNĐ trở lên!');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+        }
+
         document.getElementById('createContractForm').addEventListener('submit', function(e) {
             const contractCode = document.getElementById('contractCode').value.trim();
-            const customerName = document.getElementById('customerName').value.trim();
-            const customerId = customerSelect.value;
-            const managerId = managerSelect.value;
+            const customerUsername = customerInput.value.trim();
+            const customerId = customerIdHidden.value;
+            const managerId = managerSelect ? managerSelect.value : '${sessionScope.userId}';
+            const machineId = machineSelect.value;
+            const quantity = document.getElementById('quantity').value;
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
-            
-            // Check required fields
-            if (!contractCode || !customerName || !customerId || !managerId || !startDate || !endDate) {
+            const serviceDescription = document.getElementById('serviceDescription').value.trim();
+            const totalCost = parseFloat(totalCostInput.value);
+
+            if (!contractCode || !customerUsername || !customerId || !managerId || !machineId || !quantity || !startDate || !endDate || !serviceDescription) {
                 e.preventDefault();
                 alert('Vui lòng điền đầy đủ các trường bắt buộc!');
                 return false;
             }
-            
-            // Check customer and manager are different
+
             if (customerId && managerId && customerId === managerId) {
                 e.preventDefault();
                 alert('Customer và Manager không được là cùng một người!');
                 return false;
             }
-            
-            // Check date range
+
             if (startDate > endDate) {
                 e.preventDefault();
                 alert('Ngày kết thúc phải sau hoặc bằng ngày bắt đầu!');
+                return false;
+            }
+
+            // enforce startDate >= today
+            if (startDate) {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const s = new Date(startDate + 'T00:00:00');
+                if (s < today) {
+                    e.preventDefault();
+                    alert('Ngày bắt đầu thuê phải từ hôm nay trở đi!');
+                    return false;
+                }
+            }
+
+            if (!validateMachineSelection()) {
+                e.preventDefault();
+                return false;
+            }
+
+            if (isNaN(totalCost) || totalCost < 1000000) {
+                e.preventDefault();
+                alert('Giá trị hợp đồng phải từ 1,000,000 VNĐ trở lên!');
+                totalCostInput.focus();
                 return false;
             }
         });

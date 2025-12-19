@@ -35,11 +35,23 @@
             background-color: #28a745;
             color: #fff;
         }
+        .status-APPROVED {
+            background-color: #28a745;
+            color: #fff;
+        }
         .status-FINISHED {
             background-color: #6c757d;
             color: #fff;
         }
+        .status-PENDING {
+            background-color: #ffc107;
+            color: #000;
+        }
         .status-CANCELLED {
+            background-color: #dc3545;
+            color: #fff;
+        }
+        .status-REJECTED {
             background-color: #dc3545;
             color: #fff;
         }
@@ -112,21 +124,21 @@
                     </div>
                     <div class="col-md-6">
                         <div class="info-row">
+                            <div class="info-label">Mã máy</div>
+                            <div class="info-value">
+                                ${contract.machineCode != null ? contract.machineCode : '-'}
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Tên máy</div>
+                            <div class="info-value">
+                                ${contract.machineName != null ? contract.machineName : '-'}
+                            </div>
+                        </div>
+                        <div class="info-row">
                             <div class="info-label">Loại máy</div>
                             <div class="info-value">
-                                <c:choose>
-                                    <c:when test="${not empty contract.machineTypeId}">
-                                        <c:forEach var="mt" items="${machineTypes}">
-                                            <c:if test="${mt.id == contract.machineTypeId}">
-                                                ${mt.typeName}
-                                            </c:if>
-                                        </c:forEach>
-                                        <c:if test="${empty machineTypes}">
-                                            Machine Type ID: ${contract.machineTypeId}
-                                        </c:if>
-                                    </c:when>
-                                    <c:otherwise>N/A</c:otherwise>
-                                </c:choose>
+                                ${contract.machineTypeName != null ? contract.machineTypeName : (contract.machineTypeId != null ? contract.machineTypeId : 'N/A')}
                             </div>
                         </div>
                         <div class="info-row">
@@ -172,11 +184,18 @@
                     </div>
                 </div>
 
-                <c:if test="${not empty contract.note}">
+                <c:if test="${not empty contract.serviceDescription || not empty contract.note}">
                     <div class="mt-4">
-                        <div class="info-label">Note</div>
+                        <div class="info-label">Mô tả dịch vụ</div>
                         <div class="info-value p-3 bg-light rounded">
-                            ${contract.note}
+                            <c:choose>
+                                <c:when test="${not empty contract.serviceDescription}">
+                                    ${contract.serviceDescription}
+                                </c:when>
+                                <c:otherwise>
+                                    ${contract.note}
+                                </c:otherwise>
+                            </c:choose>
                         </div>
                     </div>
                 </c:if>

@@ -11,6 +11,26 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .page-header {
+            background: white;
+            border-bottom: 1px solid #dee2e6;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
         .status-badge-lg {
             font-size: 1.2rem;
             padding: 0.5rem 1rem;
@@ -28,8 +48,30 @@
 <body>
 <jsp:include page="/view/common/dashboard/sideBar.jsp" />
 <div class="main-content">
+    <!-- Page Header -->
+    <div class="page-header d-flex justify-content-between align-items-center">
+        <div>
+            <h4 class="mb-1"><i class="bi bi-file-text me-2"></i>Chi tiết đơn hàng</h4>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/manager/dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/manager/orders?action=list">Orders</a></li>
+                    <li class="breadcrumb-item active">Detail</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center">
+            <span class="me-3">
+                <i class="fas fa-user-circle me-1"></i> ${sessionScope.fullName}
+            </span>
+            <a href="#" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                <i class="fas fa-sign-out-alt"></i> Đăng xuất
+            </a>
+        </div>
+    </div>
+
 <div class="container-fluid">
-<div class="container mt-4">
+<div class="content-card">
     <div class="card shadow-sm">
         <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
             <h4 class="mb-0"><i class="bi bi-file-text"></i> Chi tiết đơn hàng #${order.id}</h4>
@@ -185,46 +227,27 @@
 
             <!-- Action Buttons -->
             <div class="mt-4 d-flex justify-content-between">
-                <a href="${pageContext.request.contextPath}/sale/orders?action=list" class="btn btn-secondary">
+                <a href="${pageContext.request.contextPath}/manager/orders?action=list" class="btn btn-secondary">
                     <i class="bi bi-arrow-left"></i> Quay lại danh sách
                 </a>
                 
                 <div class="btn-group">
-                    <!-- Sale can edit only PENDING orders -->
-                    <c:if test="${sessionScope.userRole == 'sale' && order.status == 'PENDING'}">
-                        <a href="${pageContext.request.contextPath}/sale/orders?action=edit&id=${order.id}" 
-                           class="btn btn-warning">
-                            <i class="bi bi-pencil"></i> Chỉnh sửa
-                        </a>
-                    </c:if>
-                    
                     <!-- Manager can approve/reject PENDING orders -->
-                    <c:if test="${sessionScope.userRole == 'manager' && order.status == 'PENDING'}">
+                    <c:if test="${order.status == 'PENDING'}">
                         <button type="button" class="btn btn-success" 
                                 onclick="if(confirm('Bạn có chắc muốn duyệt đơn hàng này?')) { 
-                                    document.getElementById('approveForm').submit(); }">
+                                    location.href='${pageContext.request.contextPath}/manager/orders?action=approve&id=${order.id}'; }">
                             <i class="bi bi-check-circle"></i> Duyệt đơn
                         </button>
                         <button type="button" class="btn btn-danger" 
                                 onclick="if(confirm('Bạn có chắc muốn từ chối đơn hàng này?')) { 
-                                    document.getElementById('rejectForm').submit(); }">
+                                    location.href='${pageContext.request.contextPath}/manager/orders?action=reject&id=${order.id}'; }">
                             <i class="bi bi-x-circle"></i> Từ chối
                         </button>
                     </c:if>
                 </div>
             </div>
-
-            <!-- Hidden forms for approve/reject -->
-            <form id="approveForm" action="${pageContext.request.contextPath}/sale/orders" method="post" style="display: none;">
-                <input type="hidden" name="action" value="approve"/>
-                <input type="hidden" name="id" value="${order.id}"/>
-            </form>
-            <form id="rejectForm" action="${pageContext.request.contextPath}/sale/orders" method="post" style="display: none;">
-                <input type="hidden" name="action" value="reject"/>
-                <input type="hidden" name="id" value="${order.id}"/>
-            </form>
         </div>
-    </div>
 </div>
 </div>
 </div>

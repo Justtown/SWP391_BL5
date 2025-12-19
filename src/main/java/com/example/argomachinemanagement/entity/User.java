@@ -36,5 +36,7 @@ public class User {
     
     // Thông tin từ bảng roles (để hiển thị)
     private String roleName;
+    private Integer roleStatus; // 1: active, 0: inactive
+
 }
 

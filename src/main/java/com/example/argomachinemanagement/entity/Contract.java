@@ -31,12 +31,19 @@ public class Contract {
     private String customerName;
     private String customerPhone;
     private String customerAddress;
+    private Integer machineId; // Machine (mã máy) - từ Order
     private Integer machineTypeId; // Loại máy
     private Integer quantity; // Số lượng
     private Double totalCost; // Tổng giá trị
+    private String serviceDescription; // Mô tả dịch vụ (từ Order)
     
     // Thông tin từ bảng users (để hiển thị)
     private String managerName;
+
+    // Thông tin máy (để hiển thị)
+    private String machineCode;
+    private String machineName;
+    private String machineTypeName;
     
     // Danh sách máy trong hợp đồng
     private List<ContractItem> items;
