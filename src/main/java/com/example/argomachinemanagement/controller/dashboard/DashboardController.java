@@ -13,10 +13,10 @@ import java.io.IOException;
  * URL patterns: /admin/dashboard, /manager/dashboard, /sale/dashboard, /customer/dashboard
  */
 @WebServlet(name = "DashboardController", urlPatterns = {
-    "/admin/dashboard",
-    "/sale/dashboard",
-    "/customer/dashboard",
-    "/manager/dashboard",
+    "/admin/dashboard", 
+    "/manager/dashboard", 
+    "/sale/dashboard", 
+    "/customer/dashboard"
 })
 public class DashboardController extends HttpServlet {
     

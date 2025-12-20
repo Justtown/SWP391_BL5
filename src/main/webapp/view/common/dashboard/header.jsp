@@ -16,6 +16,11 @@
         
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="${ctx}/home">
+                        <i class="fas fa-home"></i> Trang chủ
+                    </a>
+                </li>
             </ul>
             
             <ul class="navbar-nav">
@@ -28,7 +33,7 @@
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                         <li>
-                            <a class="dropdown-item" href="${ctx}/my-profile">
+                            <a class="dropdown-item" href="${ctx}/profile">
                                 <i class="fas fa-user me-2"></i> Hồ sơ cá nhân
                             </a>
                         </li>

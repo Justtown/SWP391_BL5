@@ -146,36 +146,18 @@ public class PermissionDAO extends DBContext {
         if (pattern == null || requestPath == null) {
             return false;
         }
-
-        // Normalize: ensure leading slash & remove trailing slash (except root)
-        String normalizedRequest = requestPath.startsWith("/") ? requestPath : "/" + requestPath;
-        String normalizedPattern = pattern.startsWith("/") ? pattern : "/" + pattern;
-        if (normalizedPattern.length() > 1 && normalizedPattern.endsWith("/")) {
-            normalizedPattern = normalizedPattern.substring(0, normalizedPattern.length() - 1);
-        }
-
-        // Support wildcard patterns: "/foo/*" or "/foo*"
-        String basePattern = normalizedPattern;
-        if (normalizedPattern.endsWith("/*")) {
-            basePattern = normalizedPattern.substring(0, normalizedPattern.length() - 2);
-        } else if (normalizedPattern.endsWith("*")) {
-            basePattern = normalizedPattern.substring(0, normalizedPattern.length() - 1);
-        }
-        if (basePattern.length() > 1 && basePattern.endsWith("/")) {
-            basePattern = basePattern.substring(0, basePattern.length() - 1);
-        }
-
-        // Exact match (also allow wildcard base match)
-        if (normalizedRequest.equals(normalizedPattern) || normalizedRequest.equals(basePattern)) {
+        
+        // Exact match
+        if (requestPath.equals(pattern)) {
             return true;
         }
-
+        
         // StartsWith match (cho phép sub-paths)
         // VD: /manager/machines/add được phép nếu có quyền /manager/machines
-        if (normalizedRequest.startsWith(basePattern + "/") || normalizedRequest.startsWith(basePattern + "?")) {
+        if (requestPath.startsWith(pattern + "/") || requestPath.startsWith(pattern + "?")) {
             return true;
         }
-
+        
         return false;
     }
 
@@ -209,149 +191,5 @@ public class PermissionDAO extends DBContext {
         }
         
         return permissions;
-    }
-
-    public Permission findById(int id) {
-        String sql = "SELECT * FROM permissions WHERE id = ?";
-        try {
-            connection = getConnection();
-            statement = connection.prepareStatement(sql);
-            statement.setInt(1, id);
-            resultSet = statement.executeQuery();
-            
-            if (resultSet.next()) {
-                return Permission.builder()
-                        .id(resultSet.getInt("id"))
-                        .permissionName(resultSet.getString("permission_name"))
-                        .description(resultSet.getString("description"))
-                        .urlPattern(resultSet.getString("url_pattern"))
-                        .createdAt(resultSet.getTimestamp("created_at"))
-                        .build();
-            }
-        } catch (SQLException ex) {
-            System.out.println("Error in findById: " + ex.getMessage());
-        } finally {
-            closeResources();
-        }
-        return null;
-    }
-
-    public boolean create(String permissionName, String description, String urlPattern) {
-        String sql = "INSERT INTO permissions (permission_name, description, url_pattern) VALUES (?, ?, ?)";
-        try {
-            connection = getConnection();
-            statement = connection.prepareStatement(sql);
-            statement.setString(1, permissionName);
-            statement.setString(2, description);
-            statement.setString(3, urlPattern);
-            return statement.executeUpdate() > 0;
-        } catch (SQLException ex) {
-            System.out.println("Error in create: " + ex.getMessage());
-            return false;
-        } finally {
-            closeResources();
-        }
-    }
-
-    public boolean update(int id, String permissionName, String description, String urlPattern) {
-        String sql = "UPDATE permissions SET permission_name = ?, description = ?, url_pattern = ? WHERE id = ?";
-        try {
-            connection = getConnection();
-            statement = connection.prepareStatement(sql);
-            statement.setString(1, permissionName);
-            statement.setString(2, description);
-            statement.setString(3, urlPattern);
-            statement.setInt(4, id);
-            return statement.executeUpdate() > 0;
-        } catch (SQLException ex) {
-            System.out.println("Error in update: " + ex.getMessage());
-            return false;
-        } finally {
-            closeResources();
-        }
-    }
-
-    public boolean delete(int id) {
-        try {
-            connection = getConnection();
-            connection.setAutoCommit(false);
-            
-            statement = connection.prepareStatement("DELETE FROM role_permission WHERE permission_id = ?");
-            statement.setInt(1, id);
-            statement.executeUpdate();
-            statement.close();
-            
-            statement = connection.prepareStatement("DELETE FROM permissions WHERE id = ?");
-            statement.setInt(1, id);
-            int rows = statement.executeUpdate();
-            
-            connection.commit();
-            return rows > 0;
-        } catch (SQLException ex) {
-            try { if (connection != null) connection.rollback(); } catch (SQLException e) {}
-            System.out.println("Error in delete: " + ex.getMessage());
-            return false;
-        } finally {
-            try { if (connection != null) connection.setAutoCommit(true); } catch (SQLException e) {}
-            closeResources();
-        }
-    }
-
-    public List<Permission> getPermissionsByRoleId(int roleId) {
-        List<Permission> permissions = new ArrayList<>();
-        String sql = "SELECT p.* FROM permissions p INNER JOIN role_permission rp ON p.id = rp.permission_id WHERE rp.role_id = ? ORDER BY p.permission_name";
-        try {
-            connection = getConnection();
-            statement = connection.prepareStatement(sql);
-            statement.setInt(1, roleId);
-            resultSet = statement.executeQuery();
-            
-            while (resultSet.next()) {
-                permissions.add(Permission.builder()
-                        .id(resultSet.getInt("id"))
-                        .permissionName(resultSet.getString("permission_name"))
-                        .description(resultSet.getString("description"))
-                        .urlPattern(resultSet.getString("url_pattern"))
-                        .createdAt(resultSet.getTimestamp("created_at"))
-                        .build());
-            }
-        } catch (SQLException ex) {
-            System.out.println("Error in getPermissionsByRoleId: " + ex.getMessage());
-        } finally {
-            closeResources();
-        }
-        return permissions;
-    }
-
-    public boolean assignPermissionToRole(int roleId, int permissionId) {
-        String sql = "INSERT IGNORE INTO role_permission (role_id, permission_id) VALUES (?, ?)";
-        try {
-            connection = getConnection();
-            statement = connection.prepareStatement(sql);
-            statement.setInt(1, roleId);
-            statement.setInt(2, permissionId);
-            return statement.executeUpdate() > 0;
-        } catch (SQLException ex) {
-            System.out.println("Error in assignPermissionToRole: " + ex.getMessage());
-            return false;
-        } finally {
-            closeResources();
-        }
-    }
-
-    public boolean removePermissionFromRole(int roleId, int permissionId) {
-        String sql = "DELETE FROM role_permission WHERE role_id = ? AND permission_id = ?";
-        try {
-            connection = getConnection();
-            statement = connection.prepareStatement(sql);
-            statement.setInt(1, roleId);
-            statement.setInt(2, permissionId);
-            return statement.executeUpdate() > 0;
-        } catch (SQLException ex) {
-            System.out.println("Error in removePermissionFromRole: " + ex.getMessage());
-            return false;
-        } finally {
-            closeResources();
-        }
     }
 }

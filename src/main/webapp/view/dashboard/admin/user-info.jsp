@@ -10,28 +10,23 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background-color: #f8f9fa;
+            background-color: #f5f5f5;
+            padding: 20px;
         }
-
-        .page-header {
-            background: white;
-            border-bottom: 1px solid #dee2e6;
-            padding: 1rem 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .content-card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
         .user-info-container {
-            max-width: 900px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            max-width: 800px;
             margin: 0 auto;
+        }
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+            text-align: center;
+            color: #333;
         }
         .info-section {
             margin-bottom: 30px;
@@ -149,38 +144,9 @@
     </style>
 </head>
 <body>
-    <!-- Sidebar + layout -->
-    <jsp:include page="/view/common/dashboard/sideBar.jsp" />
-
-    <div class="main-content">
-        <!-- Page Header (match other management pages) -->
-        <div class="page-header d-flex justify-content-between align-items-center">
-            <div>
-                <h4 class="mb-1"><i class="fas fa-user me-2"></i>Thông tin user</h4>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item">
-                            <a href="${pageContext.request.contextPath}/${sessionScope.roleName}/dashboard">Dashboard</a>
-                        </li>
-                        <li class="breadcrumb-item">
-                            <a href="${pageContext.request.contextPath}/admin/manage-account">Users</a>
-                        </li>
-                        <li class="breadcrumb-item active">Detail</li>
-                    </ol>
-                </nav>
-            </div>
-            <div class="d-flex align-items-center">
-                <span class="me-3">
-                    <i class="fas fa-user-circle me-1"></i> ${sessionScope.fullName}
-                </span>
-                <a href="#" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#logoutModal">
-                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                </a>
-            </div>
-        </div>
-
-        <div class="container-fluid">
-        <div class="content-card user-info-container">
+    <div class="container">
+        <div class="user-info-container">
+            <h2 class="page-title">User Information</h2>
             
             <!-- Success/Error Messages -->
             <c:if test="${not empty param.success}">
@@ -271,14 +237,14 @@
                                 </button>
                                 <button type="button" class="status-btn ${user.status == 0 ? 'active' : ''}" 
                                         onclick="setStatus('0', this)">
-                                    Deactive
+                                    Inactive
                                 </button>
                             </div>
                         </div>
                         
                         <!-- Buttons -->
                         <div class="btn-group-custom">
-                            <a href="${pageContext.request.contextPath}/admin/manage-account" class="btn btn-back">
+                            <a href="${pageContext.request.contextPath}/manage-account" class="btn btn-back">
                                 <i class="fas fa-arrow-left"></i> Back
                             </a>
                             <button type="submit" class="btn btn-update">
@@ -288,7 +254,6 @@
                     </form>
                 </div>
             </c:if>
-        </div>
         </div>
     </div>
 

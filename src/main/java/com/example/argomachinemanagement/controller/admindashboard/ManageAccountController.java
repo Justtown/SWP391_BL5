@@ -17,7 +17,7 @@ import java.util.List;
 
 
 
-@WebServlet(name = "ManageAccountController", urlPatterns = { "/manage-account", "/admin/manage-account" })
+@WebServlet(name = "ManageAccountController", urlPatterns = { "/manage-account" })
 public class ManageAccountController extends HttpServlet {
     
     private static final int PAGE_SIZE = 5;
@@ -32,14 +32,6 @@ public class ManageAccountController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Backward compatibility: old URL (/manage-account) -> new namespaced URL (/admin/manage-account)
-        String servletPath = request.getServletPath();
-        if ("/manage-account".equals(servletPath)) {
-            String qs = request.getQueryString();
-            response.sendRedirect(request.getContextPath() + "/admin/manage-account" + (qs != null ? ("?" + qs) : ""));
-            return;
-        }
-
         String action = request.getParameter("action");
         if (action == null || action.equals("list")) {
             handleListWithFilters(request, response);
@@ -79,7 +71,7 @@ public class ManageAccountController extends HttpServlet {
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
      
-        response.sendRedirect(request.getContextPath() + "/admin/manage-account");
+        response.sendRedirect(request.getContextPath() + "/manage-account");
     }
 
     private void handleListWithFilters(HttpServletRequest request, HttpServletResponse response)

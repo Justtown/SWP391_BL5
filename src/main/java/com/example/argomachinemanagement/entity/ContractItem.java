@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.math.BigDecimal;
 
 /**
  * Entity ContractItem theo bảng contract_items trong database
@@ -15,13 +16,16 @@ import lombok.NoArgsConstructor;
 public class ContractItem {
     private Integer id;
     private Integer contractId;
-    private Integer machineId;
-    private String machineNameSnapshot;
+    private Integer assetId;
+    private BigDecimal price;
     private String note;
-    
-    // Thông tin từ bảng machines (để hiển thị)
-    private String machineCode;
-    private String machineName;
-    private String machineStatus;
-}
 
+    // Display fields (từ JOIN với machine_assets, machine_models, machine_types)
+    private String serialNumber;
+    private String modelCode;
+    private String modelName;
+    private String brand;
+    private String typeName;
+    private String assetStatus;
+    private String rentalStatus;
+}

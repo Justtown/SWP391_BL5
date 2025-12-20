@@ -1,40 +1,45 @@
 package com.example.argomachinemanagement.entity;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.util.List;
 
-@ToString
-@Builder
+/**
+ * Entity đại diện cho bảng orders
+ * Đơn hàng do Sale tạo, cần Manager duyệt
+ */
 @Data
-@AllArgsConstructor
+@Builder
 @NoArgsConstructor
-@Getter
-@Setter
-
+@AllArgsConstructor
 public class Order {
-    private int id;
-    private String contractCode;
-    private String customerName;
-    private String customerPhone;
-    private String customerAddress;
-    private Integer machineId;  // Lưu machine_type_id
-    private Integer quantity;
-    private String serviceDescription;
+    private Integer id;
+    private String orderCode;
+    private Integer customerId;
+    private Integer saleId;
+    private Integer managerId;
     private Date startDate;
     private Date endDate;
-    private String status;
-    private Double totalCost;
-    private Integer createdBy;
-    private Integer approvedBy;
+    private String status;          // PENDING, APPROVED, REJECTED, CONVERTED
+    private String rejectReason;
+    private Integer contractId;
+    private String note;
     private Timestamp createdAt;
-    private Timestamp updatedAt;
-    
-    // Additional fields for display
-    private String createdByName;
-    private String approvedByName;
-    private String machineCode;      // Mã máy từ machines
-    private String machineName;      // Tên máy từ machines
-    private String machineTypeName;  // Tên loại máy từ machine_types
+    private Timestamp approvedAt;
+
+    // Display fields (from JOIN with users)
+    private String customerName;
+    private String customerPhone;
+    private String customerEmail;
+    private String saleName;
+    private String managerName;
+    private String contractCode;
+
+    // Order items
+    private List<OrderItem> items;
 }

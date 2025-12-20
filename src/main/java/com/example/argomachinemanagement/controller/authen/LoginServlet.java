@@ -80,14 +80,6 @@ public class LoginServlet extends HttpServlet {
                 request.getRequestDispatcher("/view/authen/login.jsp").forward(request, response);
                 return;
             }
-            // ====== CHẶN ROLE BỊ INACTIVE ======
-            if (user.getRoleStatus() != null && user.getRoleStatus() == 0) {
-                request.setAttribute("error", "Vai trò của bạn hiện đang bị vô hiệu hóa!");
-                request.setAttribute("username", username);
-                request.getRequestDispatcher("/view/authen/login.jsp").forward(request, response);
-                return;
-            }
-
 
             // status = 1: Active - cho phép đăng nhập
             HttpSession session = request.getSession(true);
@@ -96,20 +88,19 @@ public class LoginServlet extends HttpServlet {
             session.setAttribute("username", user.getUsername());
             session.setAttribute("fullName", user.getFullName());
             session.setAttribute("roleName", user.getRoleName());
-            session.setAttribute("roleStatus", user.getRoleStatus());
 
             // Load danh sách URL patterns được phép từ database và lưu vào session
             Set<String> allowedUrls = permissionDAO.getAllowedUrlPatternsByUserId(user.getId());
             session.setAttribute("allowedUrls", allowedUrls);
 
             // Kiểm tra xem user có login bằng password mới từ admin chưa (chưa đổi mật khẩu)
-            PasswordResetRequest pendingChange = passwordResetRequestDAO.findUnchangedApprovedRequest(user.getId());
-            if (pendingChange != null) {
-                // Bắt user phải đổi mật khẩu (đã login bằng mật khẩu reset)
-                session.setAttribute("mustChangePassword", true);
-                response.sendRedirect(request.getContextPath() + "/change-password");
-                return;
-            }
+//            PasswordResetRequest pendingChange = passwordResetRequestDAO.findUnchangedApprovedRequest(user.getId());
+//            if (pendingChange != null) {
+//                // Bắt user phải đổi mật khẩu
+//                session.setAttribute("mustChangePassword", true);
+//                response.sendRedirect(request.getContextPath() + "/change-password");
+//                return;
+//            }
 
             if ("on".equals(rememberMe)) {
                 session.setMaxInactiveInterval(7 * 24 * 60 * 60); // 7 days

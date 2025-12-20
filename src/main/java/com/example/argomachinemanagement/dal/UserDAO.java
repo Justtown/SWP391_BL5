@@ -6,12 +6,9 @@ import java.sql.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 public class UserDAO extends DBContext implements I_DAO<User> {
-    private static final Logger LOGGER = Logger.getLogger(UserDAO.class.getName());
 
    
     /**
@@ -20,16 +17,12 @@ public class UserDAO extends DBContext implements I_DAO<User> {
      */
     public User login(String username, String password) {
         User user = null;
-        String sql = """
-    SELECT u.*, 
-           r.role_name,
-           r.status AS role_status
-    FROM users u
-    LEFT JOIN user_role ur ON u.id = ur.user_id
-    LEFT JOIN roles r ON ur.role_id = r.id
-    WHERE u.username = ? AND u.password = ?
-""";
-
+        String sql = "SELECT u.*, r.role_name " +
+                     "FROM users u " +
+                     "LEFT JOIN user_role ur ON u.id = ur.user_id " +
+                     "LEFT JOIN roles r ON ur.role_id = r.id " +
+                     "WHERE u.username = ? AND u.password = ?";
+        
         try {
             connection = getConnection();
             statement = connection.prepareStatement(sql);
@@ -186,38 +179,6 @@ public class UserDAO extends DBContext implements I_DAO<User> {
         
         return roles;
     }
-
-    /**
-     * Lấy danh sách user đang active theo role
-     * (dùng cho tạo Contract: lấy customer, manager, sale đang hoạt động)
-     */
-    public List<User> findActiveUsersByRole(String roleName) {
-        List<User> users = new ArrayList<>();
-        String sql = "SELECT u.*, r.role_name " +
-                     "FROM users u " +
-                     "INNER JOIN user_role ur ON u.id = ur.user_id " +
-                     "INNER JOIN roles r ON ur.role_id = r.id " +
-                     "WHERE u.status = 1 AND r.role_name = ? " +
-                     "ORDER BY u.full_name";
-
-        try {
-            connection = getConnection();
-            statement = connection.prepareStatement(sql);
-            statement.setString(1, roleName);
-            resultSet = statement.executeQuery();
-
-            while (resultSet.next()) {
-                User user = getFromResultSet(resultSet);
-                users.add(user);
-            }
-        } catch (SQLException ex) {
-            System.out.println("Error in findActiveUsersByRole: " + ex.getMessage());
-        } finally {
-            closeResources();
-        }
-
-        return users;
-    }
     
     /**
      * Lấy role_id từ role_name
@@ -267,7 +228,7 @@ public class UserDAO extends DBContext implements I_DAO<User> {
      */
     private boolean isUsernameExists(String username) {
         boolean exists = false;
-        String sql = "SELECT COUNT(*) FROM users WHERE username IS NOT NULL AND TRIM(LOWER(username)) = TRIM(LOWER(?))";
+        String sql = "SELECT COUNT(*) FROM users WHERE username = ?";
         
         try {
             connection = getConnection();
@@ -284,77 +245,6 @@ public class UserDAO extends DBContext implements I_DAO<User> {
             closeResources();
         }
         
-        return exists;
-    }
-
-    /**
-     * Kiểm tra email đã tồn tại chưa (không phân biệt hoa/thường)
-     */
-    public boolean isEmailExists(String email) {
-        if (email == null) {
-            return false;
-        }
-        boolean exists = false;
-        String sql = "SELECT COUNT(*) FROM users WHERE email IS NOT NULL AND TRIM(LOWER(email)) = TRIM(LOWER(?))";
-
-        try {
-            connection = getConnection();
-            statement = connection.prepareStatement(sql);
-            statement.setString(1, email);
-            resultSet = statement.executeQuery();
-
-            if (resultSet.next()) {
-                exists = resultSet.getInt(1) > 0;
-            }
-        } catch (SQLException ex) {
-            System.out.println("Error in isEmailExists: " + ex.getMessage());
-        } finally {
-            closeResources();
-        }
-
-        return exists;
-    }
-
-    /**
-     * Kiểm tra username đã tồn tại chưa (không phân biệt hoa/thường)
-     */
-    public boolean isUsernameExistsPublic(String username) {
-        if (username == null) {
-            return false;
-        }
-        return isUsernameExists(username);
-    }
-
-    /**
-     * Kiểm tra phone đã tồn tại chưa (normalize: bỏ space, '-', '.', '(', ')', '+')
-     */
-    public boolean isPhoneExists(String phone) {
-        if (phone == null) {
-            return false;
-        }
-        boolean exists = false;
-        // Normalize in SQL for common separators; keep digits/leading 0s
-        String sql =
-                "SELECT COUNT(*) FROM users " +
-                "WHERE phone_number IS NOT NULL " +
-                "AND REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(TRIM(phone_number),' ',''),'-',''),'.',''),'(',''),')',''),'+','') = " +
-                "    REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(TRIM(?),' ',''),'-',''),'.',''),'(',''),')',''),'+','')";
-
-        try {
-            connection = getConnection();
-            statement = connection.prepareStatement(sql);
-            statement.setString(1, phone);
-            resultSet = statement.executeQuery();
-
-            if (resultSet.next()) {
-                exists = resultSet.getInt(1) > 0;
-            }
-        } catch (SQLException ex) {
-            LOGGER.log(Level.SEVERE, "Error in isPhoneExists: " + ex.getMessage(), ex);
-        } finally {
-            closeResources();
-        }
-
         return exists;
     }
     
@@ -380,27 +270,6 @@ public class UserDAO extends DBContext implements I_DAO<User> {
     @Override
     public int insert(User user) {
         int userId = 0;
-
-        // Final safety net: block duplicates even if caller forgot to check
-        try {
-            if (user != null) {
-                if (user.getEmail() != null && isEmailExists(user.getEmail())) {
-                    LOGGER.warning("[AddUser][BLOCKED] Duplicate email: " + user.getEmail());
-                    return 0;
-                }
-                if (user.getUsername() != null && isUsernameExists(user.getUsername())) {
-                    LOGGER.warning("[AddUser][BLOCKED] Duplicate username: " + user.getUsername());
-                    return 0;
-                }
-                if (user.getPhoneNumber() != null && isPhoneExists(user.getPhoneNumber())) {
-                    LOGGER.warning("[AddUser][BLOCKED] Duplicate phone: " + user.getPhoneNumber());
-                    return 0;
-                }
-            }
-        } catch (Exception e) {
-            // Do not block insert due to check failure, but log loudly
-            LOGGER.log(Level.SEVERE, "[AddUser] Duplicate-check failed before insert", e);
-        }
         
         // Tạo username nếu chưa có
         if (user.getUsername() == null || user.getUsername().isEmpty()) {
@@ -457,7 +326,7 @@ public class UserDAO extends DBContext implements I_DAO<User> {
     
     public User findByUsername(String username) {
         User user = null;
-        String sql = "SELECT * FROM users WHERE LOWER(username) = LOWER(?)";
+        String sql = "SELECT * FROM users WHERE username = ?";
         
         try {
             connection = getConnection();
@@ -479,7 +348,7 @@ public class UserDAO extends DBContext implements I_DAO<User> {
     
     public User findByEmail(String email) {
         User user = null;
-        String sql = "SELECT * FROM users WHERE LOWER(email) = LOWER(?)";
+        String sql = "SELECT * FROM users WHERE email = ?";
         
         try {
             connection = getConnection();
@@ -496,29 +365,6 @@ public class UserDAO extends DBContext implements I_DAO<User> {
             closeResources();
         }
         
-        return user;
-    }
-
-    public User findByFullName(String fullName) {
-        if (fullName == null || fullName.trim().isEmpty()) {
-            return null;
-        }
-        User user = null;
-        String sql = "SELECT * FROM users WHERE full_name IS NOT NULL AND TRIM(LOWER(full_name)) = TRIM(LOWER(?)) LIMIT 1";
-
-        try {
-            connection = getConnection();
-            statement = connection.prepareStatement(sql);
-            statement.setString(1, fullName.trim());
-            resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                user = getFromResultSet(resultSet);
-            }
-        } catch (SQLException ex) {
-            System.out.println("Error in findByFullName: " + ex.getMessage());
-        } finally {
-            closeResources();
-        }
         return user;
     }
 
@@ -545,12 +391,7 @@ public class UserDAO extends DBContext implements I_DAO<User> {
             // role_name column might not exist in some queries
             user.setRoleName(null);
         }
-        try {
-            user.setRoleStatus(resultSet.getInt("role_status"));
-        } catch (SQLException e) {
-            user.setRoleStatus(1); // mặc định active nếu query không có
-        }
-
+        
         return user;
     }
 
@@ -675,66 +516,36 @@ public class UserDAO extends DBContext implements I_DAO<User> {
     }
 
     /**
-     * Lấy danh sách customers (users có role customer)
-     * @return List of customers
+     * Lấy danh sách users theo role (chỉ lấy active users)
+     * @param roleName Tên role (admin, manager, sale, customer)
+     * @return List of users with specified role
      */
-    public List<User> findCustomers() {
-        List<User> customers = new ArrayList<>();
+    public List<User> findByRole(String roleName) {
+        List<User> users = new ArrayList<>();
         String sql = "SELECT u.*, r.role_name " +
                      "FROM users u " +
                      "INNER JOIN user_role ur ON u.id = ur.user_id " +
                      "INNER JOIN roles r ON ur.role_id = r.id " +
-                     "WHERE r.role_name = 'customer' AND u.status = 1 " +
-                     "ORDER BY u.username";
-        
+                     "WHERE r.role_name = ? AND u.status = 1 " +
+                     "ORDER BY u.full_name";
+
         try {
             connection = getConnection();
             statement = connection.prepareStatement(sql);
+            statement.setString(1, roleName);
             resultSet = statement.executeQuery();
-            
+
             while (resultSet.next()) {
                 User user = getFromResultSet(resultSet);
-                user.setRoleName(resultSet.getString("role_name"));
-                customers.add(user);
+                users.add(user);
             }
         } catch (SQLException ex) {
-            System.out.println("Error in findCustomers: " + ex.getMessage());
+            System.out.println("Error in findByRole: " + ex.getMessage());
         } finally {
             closeResources();
         }
-        
-        return customers;
-    }
 
-    /**
-     * Kiểm tra username có phải là customer hợp lệ không
-     * @param username Username to check
-     * @return true nếu là customer hợp lệ, false nếu không
-     */
-    public boolean isValidCustomer(String username) {
-        boolean isValid = false;
-        String sql = "SELECT COUNT(*) " +
-                     "FROM users u " +
-                     "INNER JOIN user_role ur ON u.id = ur.user_id " +
-                     "INNER JOIN roles r ON ur.role_id = r.id " +
-                     "WHERE u.username = ? AND r.role_name = 'customer' AND u.status = 1";
-        
-        try {
-            connection = getConnection();
-            statement = connection.prepareStatement(sql);
-            statement.setString(1, username);
-            resultSet = statement.executeQuery();
-            
-            if (resultSet.next()) {
-                isValid = resultSet.getInt(1) > 0;
-            }
-        } catch (SQLException ex) {
-            System.out.println("Error in isValidCustomer: " + ex.getMessage());
-        } finally {
-            closeResources();
-        }
-        
-        return isValid;
+        return users;
     }
 
 }

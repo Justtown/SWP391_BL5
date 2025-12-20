@@ -1,15 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<c:set var="contractsPath" value="/contracts" />
-<c:if test="${sessionScope.roleName == 'manager'}"><c:set var="contractsPath" value="/manager/contracts" /></c:if>
-<c:if test="${sessionScope.roleName == 'sale'}"><c:set var="contractsPath" value="/sale/contracts" /></c:if>
-<c:if test="${sessionScope.roleName == 'customer'}"><c:set var="contractsPath" value="/customer/contracts" /></c:if>
-<c:set var="contractsBase" value="${pageContext.request.contextPath}${contractsPath}" />
-<c:set var="pageTitleText" value="Contract Management" />
-<c:if test="${sessionScope.roleName == 'customer'}">
-    <c:set var="pageTitleText" value="My Contracts" />
-</c:if>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,30 +10,30 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background-color: #f8f9fa;
+            background-color: #f5f5f5;
+            padding: 20px;
         }
-
-        .page-header {
+        .contract-management-container {
             background: white;
-            border-bottom: 1px solid #dee2e6;
-            padding: 1rem 1.5rem;
-            margin-bottom: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            max-width: 100%;
+            box-sizing: border-box;
         }
-
-        .content-card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+        .page-title {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+            text-align: center;
         }
         .filter-section {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
+            margin-bottom: 30px;
+            flex-wrap: nowrap;
             align-items: center;
+            width: 100%;
         }
         .filter-dropdown {
             width: 150px;
@@ -52,7 +42,7 @@
         .search-container {
             flex: 1 1 auto;
             position: relative;
-            min-width: 200px;
+            min-width: 0;
         }
         .search-input {
             padding-left: 40px;
@@ -76,6 +66,16 @@
         }
         .clear-search:hover {
             color: #dc3545;
+        }
+        .add-contract-link {
+            color: #0d6efd;
+            text-decoration: none;
+            font-weight: 500;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .add-contract-link:hover {
+            text-decoration: underline;
         }
         .table-container {
             overflow-x: auto;
@@ -102,23 +102,11 @@
             background-color: #28a745;
             color: #fff;
         }
-        .status-APPROVED {
-            background-color: #28a745;
-            color: #fff;
-        }
         .status-FINISHED {
             background-color: #6c757d;
             color: #fff;
         }
-        .status-PENDING {
-            background-color: #ffc107;
-            color: #000;
-        }
         .status-CANCELLED {
-            background-color: #dc3545;
-            color: #fff;
-        }
-        .status-REJECTED {
             background-color: #dc3545;
             color: #fff;
         }
@@ -164,73 +152,14 @@
     </style>
 </head>
 <body>
-    <!-- Sidebar + layout -->
-    <jsp:include page="/view/common/dashboard/sideBar.jsp" />
-
-    <div class="main-content">
-        <!-- Page Header (match other management pages) -->
-        <div class="page-header d-flex justify-content-between align-items-center">
-            <div>
-                <h4 class="mb-1"><i class="fas fa-file-contract me-2"></i>${pageTitleText}</h4>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item">
-                            <a href="${pageContext.request.contextPath}/${sessionScope.roleName}/dashboard">Dashboard</a>
-                        </li>
-                        <li class="breadcrumb-item active">Contracts</li>
-                    </ol>
-                </nav>
-            </div>
-            <div class="d-flex align-items-center">
-                <span class="me-3">
-                    <i class="fas fa-user-circle me-1"></i> ${sessionScope.fullName}
-                </span>
-                <a href="#" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#logoutModal">
-                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                </a>
-            </div>
-        </div>
-
-        <div class="container-fluid" style="max-width: 100%; overflow-x: hidden;">
-        <div class="content-card">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="mb-0">
-                    <c:choose>
-                        <c:when test="${sessionScope.roleName == 'customer'}">Danh sách hợp đồng</c:when>
-                        <c:otherwise>Danh sách hợp đồng</c:otherwise>
-                    </c:choose>
-                </h5>
-                <c:if test="${sessionScope.roleName != 'customer'}">
-                    <button type="button" class="btn btn-primary"
-                            onclick="window.location.href='${contractsBase}?action=create'">
-                        <i class="fas fa-plus"></i> Thêm contract mới
-                    </button>
-                </c:if>
-            </div>
-            
-            <!-- Success/Error Messages -->
-            <c:if test="${not empty param.success}">
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="fas fa-check-circle me-2"></i>${param.success}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            </c:if>
-            <c:if test="${not empty param.error}">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="fas fa-exclamation-circle me-2"></i>${param.error}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            </c:if>
+    <div class="container-fluid" style="max-width: 100%; overflow-x: hidden;">
+        <div class="contract-management-container">
+            <h1 class="page-title">Contract Management</h1>
             
             <!-- Filter & Search Section -->
             <div class="filter-section">
                 <select class="form-select filter-dropdown" id="statusFilter">
                     <option value="All Status" ${statusFilter == 'All Status' ? 'selected' : ''}>All Status</option>
-                    <!-- Order-like statuses -->
-                    <option value="PENDING" ${statusFilter == 'PENDING' ? 'selected' : ''}>PENDING</option>
-                    <option value="APPROVED" ${statusFilter == 'APPROVED' ? 'selected' : ''}>APPROVED</option>
-                    <option value="REJECTED" ${statusFilter == 'REJECTED' ? 'selected' : ''}>REJECTED</option>
-                    <!-- Legacy contract statuses (backward compatibility) -->
                     <option value="DRAFT" ${statusFilter == 'DRAFT' ? 'selected' : ''}>DRAFT</option>
                     <option value="ACTIVE" ${statusFilter == 'ACTIVE' ? 'selected' : ''}>ACTIVE</option>
                     <option value="FINISHED" ${statusFilter == 'FINISHED' ? 'selected' : ''}>FINISHED</option>
@@ -240,10 +169,14 @@
                 <div class="search-container">
                     <i class="fas fa-search search-icon"></i>
                     <input type="text" class="form-control search-input" id="keyword" 
-                           placeholder="Tìm theo mã HĐ, khách hàng, sđt, mã máy..." 
+                           placeholder="Search by contract code, customer, manager..." 
                            value="${keyword != null ? keyword : ''}">
                     <i class="fas fa-times clear-search" id="clearSearch"></i>
                 </div>
+                
+                <a href="${pageContext.request.contextPath}/contracts?action=create" class="add-contract-link">
+                    <i class="fas fa-plus"></i> Create New Contract
+                </a>
             </div>
             
             <!-- Pagination Info -->
@@ -255,22 +188,17 @@
             
             <!-- Contract Table -->
             <div class="table-container">
-                <table class="table table-bordered table-hover">
-                    <thead class="table-light">
+                <table class="table table-striped table-hover">
+                    <thead>
                         <tr>
                             <th>STT</th>
-                            <th>Mã hợp đồng</th>
-                            <th>Khách hàng</th>
-                            <th>SĐT</th>
-                            <th>Địa chỉ</th>
-                            <th>Mã máy</th>
-                            <th>Tên máy</th>
-                            <th>Số lượng</th>
-                            <th>Ngày bắt đầu</th>
-                            <th>Ngày kết thúc</th>
-                            <th>Tổng tiền</th>
-                            <th>Trạng thái</th>
-                            <th>Thao tác</th>
+                            <th>Contract Code</th>
+                            <th>Customer</th>
+                            <th>Manager</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -281,32 +209,16 @@
                                         <td>${startIndex + loop.index + 1}</td>
                                         <td><strong>${contract.contractCode}</strong></td>
                                         <td>${contract.customerName != null ? contract.customerName : 'N/A'}</td>
-                                        <td>${contract.customerPhone != null ? contract.customerPhone : '-'}</td>
-                                        <td>${contract.customerAddress != null ? contract.customerAddress : '-'}</td>
-                                        <td>${contract.machineCode != null ? contract.machineCode : '-'}</td>
-                                        <td>${contract.machineName != null ? contract.machineName : '-'}</td>
-                                        <td>${contract.quantity != null ? contract.quantity : '-'}</td>
+                                        <td>${contract.managerName != null ? contract.managerName : 'N/A'}</td>
                                         <td>${contract.startDate}</td>
                                         <td>${contract.endDate}</td>
                                         <td>
-                                            <c:choose>
-                                                <c:when test="${not empty contract.totalCost}">
-                                                    <fmt:formatNumber value="${contract.totalCost}" type="currency" currencySymbol="đ" groupingUsed="true"/>
-                                                </c:when>
-                                                <c:otherwise>-</c:otherwise>
-                                            </c:choose>
-                                        </td>
-                                        <td>
-                                            <c:set var="displayStatus" value="${contract.status}" />
-                                            <c:if test="${displayStatus == 'ACTIVE'}"><c:set var="displayStatus" value="APPROVED" /></c:if>
-                                            <c:if test="${displayStatus == 'DRAFT'}"><c:set var="displayStatus" value="PENDING" /></c:if>
-                                            <c:if test="${displayStatus == 'CANCELLED'}"><c:set var="displayStatus" value="REJECTED" /></c:if>
-                                            <span class="status-badge status-${displayStatus}">
-                                                ${displayStatus}
+                                            <span class="status-badge status-${contract.status}">
+                                                ${contract.status}
                                             </span>
                                         </td>
                                         <td>
-                                            <a href="${contractsBase}?action=detail&id=${contract.id}" 
+                                            <a href="${pageContext.request.contextPath}/contracts?action=detail&id=${contract.id}" 
                                                class="btn btn-sm btn-info">
                                                 <i class="fas fa-eye"></i> View
                                             </a>
@@ -316,7 +228,7 @@
                             </c:when>
                             <c:otherwise>
                                 <tr>
-                                    <td colspan="13" class="text-center">No contracts found</td>
+                                    <td colspan="8" class="text-center">No contracts found</td>
                                 </tr>
                             </c:otherwise>
                         </c:choose>
@@ -372,8 +284,8 @@
                 </div>
             </c:if>
         </div>
-        </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -396,7 +308,6 @@
             statusFilter.addEventListener('change', applyFilters);
             keywordInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
-                    e.preventDefault();
                     applyFilters();
                 }
             });
@@ -424,7 +335,7 @@
                 params.append('page', '1');
                 
                 const queryString = params.toString();
-                const url = '${contractsBase}' + 
+                const url = '${pageContext.request.contextPath}/contracts' + 
                            (queryString ? '?' + queryString : '');
                 window.location.href = url;
             }
@@ -443,13 +354,10 @@
                 params.append('page', page);
                 
                 const queryString = params.toString();
-                const url = '${contractsBase}' + 
+                const url = '${pageContext.request.contextPath}/contracts' + 
                            (queryString ? '?' + queryString : '');
                 window.location.href = url;
             }
-
-            // Initial clear button state
-            clearSearch.style.display = keywordInput.value.trim() ? 'block' : 'none';
         });
     </script>
 </body>

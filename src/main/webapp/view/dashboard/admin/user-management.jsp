@@ -10,30 +10,30 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background-color: #f8f9fa;
+            background-color: #f5f5f5;
+            padding: 20px;
         }
-
-        .page-header {
+        .user-management-container {
             background: white;
-            border-bottom: 1px solid #dee2e6;
-            padding: 1rem 1.5rem;
-            margin-bottom: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            max-width: 100%;
+            box-sizing: border-box;
         }
-
-        .content-card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+        .page-title {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+            text-align: center;
         }
         .filter-section {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
+            margin-bottom: 30px;
+            flex-wrap: nowrap;
             align-items: center;
+            width: 100%;
         }
         .filter-dropdown {
             width: 120px;
@@ -42,7 +42,7 @@
         .search-container {
             flex: 1 1 auto;
             position: relative;
-            min-width: 200px;
+            min-width: 0;
         }
         .search-input {
             padding-left: 40px;
@@ -67,6 +67,16 @@
         .clear-search:hover {
             color: #dc3545;
         }
+        .add-user-link {
+            color: #0d6efd;
+            text-decoration: none;
+            font-weight: 500;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .add-user-link:hover {
+            text-decoration: underline;
+        }
         .table-container {
             overflow-x: auto;
         }
@@ -85,6 +95,18 @@
         .status-deactive {
             color: #dc3545;
             font-weight: 500;
+        }
+        .btn-update {
+            background-color: #20c997;
+            border-color: #20c997;
+            color: white;
+            padding: 5px 15px;
+            font-size: 0.875rem;
+        }
+        .btn-update:hover {
+            background-color: #1aa179;
+            border-color: #1aa179;
+            color: white;
         }
         .no-users-message {
             text-align: center;
@@ -133,56 +155,9 @@
     </style>
 </head>
 <body>
-    <!-- Sidebar + layout -->
-    <jsp:include page="/view/common/dashboard/sideBar.jsp" />
-
-    <div class="main-content">
-        <!-- Page Header (match other management pages) -->
-        <div class="page-header d-flex justify-content-between align-items-center">
-            <div>
-                <h4 class="mb-1"><i class="fas fa-users me-2"></i>Quản lý User</h4>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item">
-                            <a href="${pageContext.request.contextPath}/${sessionScope.roleName}/dashboard">Dashboard</a>
-                        </li>
-                        <li class="breadcrumb-item active">Users</li>
-                    </ol>
-                </nav>
-            </div>
-            <div class="d-flex align-items-center">
-                <span class="me-3">
-                    <i class="fas fa-user-circle me-1"></i> ${sessionScope.fullName}
-                </span>
-                <a href="#" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#logoutModal">
-                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                </a>
-            </div>
-        </div>
-
-        <div class="container-fluid" style="max-width: 100%; overflow-x: hidden;">
-        <div class="content-card">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="mb-0">Danh sách user</h5>
-                <button type="button" class="btn btn-primary"
-                        onclick="window.location.href='${pageContext.request.contextPath}/admin/add-user'">
-                    <i class="fas fa-plus"></i> Thêm user mới
-                </button>
-            </div>
-            
-            <!-- Success/Error Messages -->
-            <c:if test="${not empty param.success}">
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="fas fa-check-circle me-2"></i>${param.success}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            </c:if>
-            <c:if test="${not empty param.error}">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="fas fa-exclamation-circle me-2"></i>${param.error}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            </c:if>
+    <div class="container-fluid" style="max-width: 100%; overflow-x: hidden;">
+        <div class="user-management-container">
+            <h1 class="page-title">User Management</h1>
             
             <!-- Filter and Search Section -->
             <div class="filter-section">
@@ -207,6 +182,10 @@
                            value="${keyword != null ? keyword : ''}">
                     <i class="fas fa-times clear-search" id="clearSearch"></i>
                 </div>
+                
+                <a href="${pageContext.request.contextPath}/add-user" class="add-user-link">
+                    <i class="fas fa-plus"></i> Add new user
+                </a>
             </div>
             
             <!-- Pagination Info -->
@@ -218,8 +197,8 @@
             
             <!-- User Table -->
             <div class="table-container">
-                <table class="table table-bordered table-hover">
-                    <thead class="table-light">
+                <table class="table table-hover">
+                    <thead>
                         <tr>
                             <th>STT</th>
                             <th>Name</th>
@@ -244,9 +223,9 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <button type="button" class="btn btn-sm btn-warning"
+                                            <button type="button" class="btn btn-update btn-sm" 
                                                     data-user-id="${user.id}">
-                                                <i class="fas fa-edit"></i> Update
+                                                Update
                                             </button>
                                         </td>
                                     </tr>
@@ -312,8 +291,8 @@
                 </div>
             </c:if>
         </div>
-        </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Filter and search functionality
@@ -351,7 +330,6 @@
             // Apply filters on Enter key in search
             keywordInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
-                    e.preventDefault();
                     applyFilters();
                 }
             });
@@ -384,7 +362,7 @@
                 params.append('page', '1');
                 
                 const queryString = params.toString();
-                const url = '${pageContext.request.contextPath}/admin/manage-account' + 
+                const url = '${pageContext.request.contextPath}/manage-account' + 
                            (queryString ? '?' + queryString : '');
                 window.location.href = url;
             }
@@ -408,14 +386,14 @@
                 params.append('page', page);
                 
                 const queryString = params.toString();
-                const url = '${pageContext.request.contextPath}/admin/manage-account' + 
+                const url = '${pageContext.request.contextPath}/manage-account' + 
                            (queryString ? '?' + queryString : '');
                 window.location.href = url;
             }
         });
         
         // Update user button click handlers
-        document.querySelectorAll('button[data-user-id]').forEach(function(btn) {
+        document.querySelectorAll('.btn-update[data-user-id]').forEach(function(btn) {
             btn.addEventListener('click', function() {
                 const userId = this.getAttribute('data-user-id');
                 window.location.href = '${pageContext.request.contextPath}/user-info?id=' + userId;
