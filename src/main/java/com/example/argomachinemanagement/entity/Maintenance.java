@@ -16,7 +16,7 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 public class Maintenance {
     private Integer id;
-    private Integer machineId;
+    private Integer assetId;              // Tham chiếu đến machine_assets.id (thay vì machine_id)
     private String maintenanceType;       // Loại bảo trì
     private Date maintenanceDate;         // Ngày thực hiện
     private String performedBy;           // Người thực hiện
@@ -24,10 +24,12 @@ public class Maintenance {
     private String status;                // PENDING, COMPLETED, CANCELLED
     private Timestamp createdAt;
     
-    // Display fields (từ JOIN với machines)
-    private String machineCode;
-    private String machineName;
-    private String machineTypeName;
+    // Display fields (từ JOIN với machine_assets, machine_models, machine_types)
+    private String serialNumber;          // Serial number của asset
+    private String modelCode;
+    private String modelName;
+    private String brand;
+    private String typeName;
     
     /**
      * Danh sách loại bảo trì cố định
