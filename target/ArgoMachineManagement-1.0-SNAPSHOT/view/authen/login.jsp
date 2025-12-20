@@ -111,7 +111,7 @@
                                             Remember me
                                         </label>
                                     </div>
-                                    <a href="${pageContext.request.contextPath}/forgot-password" class="text-decoration-none">
+                                    <a class="text-decoration-none">
                                         forgot password
                                     </a>
                                 </div>

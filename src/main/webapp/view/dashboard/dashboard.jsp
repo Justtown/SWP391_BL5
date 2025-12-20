@@ -137,30 +137,19 @@
                             <!-- Admin Quick Actions -->
                             <c:if test="${sessionScope.roleName == 'admin'}">
                                 <div class="col-md-6">
-                                    <a href="${pageContext.request.contextPath}/admin/manage-account" class="quick-action">
+                                    <a href="${pageContext.request.contextPath}/manage-account" class="quick-action">
                                         <i class="fas fa-users"></i> Quản lý người dùng
                                     </a>
                                 </div>
                                 <div class="col-md-6">
-                                    <a href="${pageContext.request.contextPath}/admin/permissions" class="quick-action">
+                                    <a href="${pageContext.request.contextPath}/admin/roles" class="quick-action">
                                         <i class="fas fa-user-shield"></i> Quản lý phân quyền
-                                    </a>
-                                </div>
-                                <div class="col-md-6">
-                                    <a href="${pageContext.request.contextPath}/admin/role-management"
-                                       class="quick-action">
-                                        <i class="fas fa-user-shield"></i> Quản lý Role
                                     </a>
                                 </div>
                             </c:if>
                             
                             <!-- Manager Quick Actions -->
                             <c:if test="${sessionScope.roleName == 'manager'}">
-                                <div class="col-md-6">
-                                    <a href="${pageContext.request.contextPath}/manager/statistics" class="quick-action">
-                                        <i class="fas fa-chart-bar"></i> Thống kê
-                                    </a>
-                                </div>
                                 <div class="col-md-6">
                                     <a href="${pageContext.request.contextPath}/manager/machines" class="quick-action">
                                         <i class="fas fa-cogs"></i> Quản lý Machine
@@ -195,11 +184,6 @@
                                         <i class="fas fa-shopping-cart"></i> Tạo đơn hàng mới
                                     </a>
                                 </div>
-                                <div class="col-md-6">
-                                    <a href="${pageContext.request.contextPath}/requests" class="quick-action">
-                                        <i class="fas fa-list-check"></i> Danh sách yêu cầu
-                                    </a>
-                                </div>
                             </c:if>
                             
                             <!-- Customer Quick Actions -->
@@ -210,26 +194,15 @@
                                     </a>
                                 </div>
                                 <div class="col-md-6">
-                                    <a href="${pageContext.request.contextPath}/customer/contracts" class="quick-action">
+                                    <a href="${pageContext.request.contextPath}/customer/my-contracts" class="quick-action">
                                         <i class="fas fa-file-contract"></i> Hợp đồng của tôi
                                     </a>
                                 </div>
-                                <div class="col-md-6">
-                                    <a href="${pageContext.request.contextPath}/requests" class="quick-action">
-                                        <i class="fas fa-list"></i> Yêu cầu của tôi
-                                    </a>
-                                </div>
-                                <div class="col-md-6">
-                                    <a href="${pageContext.request.contextPath}/customer/machines" class="quick-action">
-                                        <i class="fas fa-cogs"></i> Xem danh sách Machine
-                                    </a>
-                                </div>
-
                             </c:if>
                             
                             <!-- Common Actions -->
                             <div class="col-md-6">
-                                <a href="${pageContext.request.contextPath}/my-profile" class="quick-action">
+                                <a href="${pageContext.request.contextPath}/profile" class="quick-action">
                                     <i class="fas fa-user"></i> Xem hồ sơ cá nhân
                                 </a>
                             </div>
@@ -261,7 +234,7 @@
                             </div>
                         </div>
                         <hr>
-                        <a href="${pageContext.request.contextPath}/my-profile?mode=edit" class="btn btn-outline-primary btn-sm w-100">
+                        <a href="${pageContext.request.contextPath}/profile" class="btn btn-outline-primary btn-sm w-100">
                             <i class="fas fa-edit me-1"></i> Chỉnh sửa hồ sơ
                         </a>
                     </div>

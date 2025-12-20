@@ -38,12 +38,6 @@ public class ChangePasswordController extends HttpServlet {
         }
         
         Integer userId = (Integer) session.getAttribute("userId");
-
-        String message = (String) session.getAttribute("message");
-        if (message != null) {
-            request.setAttribute("message", message);
-            session.removeAttribute("message");
-        }
         
         // Check if user needs to change password (login với password mới từ admin)
         boolean mustChangePassword = session.getAttribute("mustChangePassword") != null 
@@ -174,30 +168,13 @@ public class ChangePasswordController extends HttpServlet {
                     session.removeAttribute("mustChangePassword");
                 }
                 
-                // Lấy role để redirect về đúng dashboard
-                String roleName = (String) session.getAttribute("roleName");
-                String redirectUrl = "/dashboard";
+                request.setAttribute("message", "Đổi mật khẩu thành công!");
                 
-                if (roleName != null) {
-                    switch (roleName.toLowerCase()) {
-                        case "admin":
-                            redirectUrl = "/admin/dashboard";
-                            break;
-                        case "manager":
-                            redirectUrl = "/manager/dashboard";
-                            break;
-                        case "sale":
-                            redirectUrl = "/sale/dashboard";
-                            break;
-                        case "customer":
-                            redirectUrl = "/customer/dashboard";
-                            break;
-                    }
+                // Nếu bắt buộc đổi mật khẩu, redirect về home sau 2 giây
+                if (mustChangePassword) {
+                    response.sendRedirect(request.getContextPath() + "/home?passwordChanged=true");
+                    return;
                 }
-                
-                session.setAttribute("message", "Đổi mật khẩu thành công!");
-                response.sendRedirect(request.getContextPath() + "/change-password");
-                return;
             } else {
                 request.setAttribute("error", "Không thể cập nhật mật khẩu. Vui lòng thử lại.");
             }

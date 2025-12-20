@@ -196,11 +196,7 @@ public class PasswordResetRequestDAO extends DBContext {
      */
     public PasswordResetRequest findUnchangedApprovedRequest(Integer userId) {
         PasswordResetRequest request = null;
-        String sql = "SELECT * FROM password_reset_requests " +
-                     "WHERE user_id = ? " +
-                     "AND LOWER(status) = 'approved' " +
-                     "AND password_changed = 0 " +
-                     "ORDER BY request_time DESC LIMIT 1";
+        String sql = "SELECT * FROM password_reset_requests WHERE user_id = ? AND status = 'approved' AND password_changed = FALSE ORDER BY request_time DESC LIMIT 1";
         
         try {
             connection = getConnection();
