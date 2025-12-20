@@ -254,7 +254,7 @@
     
     .main-content {
         margin-left: 250px;
-        padding: 20px;
+        padding: 80px 20px 20px 20px;
         min-height: 100vh;
         background-color: #f8f9fa;
     }

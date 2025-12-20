@@ -42,6 +42,8 @@ public class ContractDAO extends DBContext implements I_DAO<Contract> {
         Contract contract = null;
         String sql = "SELECT c.*, " +
                      "cu.full_name AS customer_name, " +
+                     "cu.phone_number AS customer_phone, " +
+                     "cu.address AS customer_address, " +
                      "m.full_name AS manager_name " +
                      "FROM contracts c " +
                      "LEFT JOIN users cu ON c.customer_id = cu.id " +
@@ -49,6 +51,7 @@ public class ContractDAO extends DBContext implements I_DAO<Contract> {
                      "WHERE c.id = ?";
         
         try {
+            System.out.println("[ContractDAO] Finding contract by id: " + id);
             connection = getConnection();
             statement = connection.prepareStatement(sql);
             statement.setInt(1, id);
@@ -56,9 +59,16 @@ public class ContractDAO extends DBContext implements I_DAO<Contract> {
             
             if (resultSet.next()) {
                 contract = getFromResultSet(resultSet);
+                System.out.println("[ContractDAO] Contract found: " + (contract != null ? contract.getContractCode() : "null"));
+            } else {
+                System.out.println("[ContractDAO] No contract found with id: " + id);
             }
         } catch (SQLException ex) {
-            System.out.println("Error in findById: " + ex.getMessage());
+            System.out.println("[ContractDAO] Error in findById: " + ex.getMessage());
+            ex.printStackTrace();
+        } catch (Exception ex) {
+            System.out.println("[ContractDAO] Unexpected error in findById: " + ex.getMessage());
+            ex.printStackTrace();
         } finally {
             closeResources();
         }
@@ -153,15 +163,25 @@ public class ContractDAO extends DBContext implements I_DAO<Contract> {
                 .status(rs.getString("status"))
                 .note(rs.getString("note"))
                 .createdAt(rs.getTimestamp("created_at"))
-                .updatedAt(rs.getTimestamp("updated_at"))
                 .build();
         
-        // Set display names
+        // Try to get updated_at if it exists
+        try {
+            contract.setUpdatedAt(rs.getTimestamp("updated_at"));
+        } catch (SQLException e) {
+            // Column doesn't exist, set to null
+            contract.setUpdatedAt(null);
+        }
+        
+        // Set display names and customer info
         try {
             contract.setCustomerName(rs.getString("customer_name"));
+            contract.setCustomerPhone(rs.getString("customer_phone"));
+            contract.setCustomerAddress(rs.getString("customer_address"));
             contract.setManagerName(rs.getString("manager_name"));
         } catch (SQLException e) {
             // Ignore if columns don't exist
+            System.out.println("Warning: Could not set customer/manager info: " + e.getMessage());
         }
         
         return contract;

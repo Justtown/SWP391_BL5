@@ -184,18 +184,11 @@
                     </div>
                 </div>
 
-                <c:if test="${not empty contract.serviceDescription || not empty contract.note}">
+                <c:if test="${not empty contract.note}">
                     <div class="mt-4">
-                        <div class="info-label">Mô tả dịch vụ</div>
+                        <div class="info-label">Ghi chú</div>
                         <div class="info-value p-3 bg-light rounded">
-                            <c:choose>
-                                <c:when test="${not empty contract.serviceDescription}">
-                                    ${contract.serviceDescription}
-                                </c:when>
-                                <c:otherwise>
-                                    ${contract.note}
-                                </c:otherwise>
-                            </c:choose>
+                            ${contract.note}
                         </div>
                     </div>
                 </c:if>

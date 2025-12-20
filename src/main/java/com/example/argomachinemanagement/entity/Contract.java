@@ -29,6 +29,8 @@ public class Contract {
     
     // Thông tin từ bảng users (để hiển thị)
     private String customerName;
+    private String customerPhone;
+    private String customerAddress;
     private String managerName;
     
     // Danh sách máy trong hợp đồng
