@@ -1,478 +1,470 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<c:set var="contractsPath" value="/contracts" />
-<c:if test="${sessionScope.roleName == 'manager'}"><c:set var="contractsPath" value="/manager/contracts" /></c:if>
-<c:if test="${sessionScope.roleName == 'sale'}"><c:set var="contractsPath" value="/sale/contracts" /></c:if>
-<c:if test="${sessionScope.roleName == 'customer'}"><c:set var="contractsPath" value="/customer/contracts" /></c:if>
-<c:set var="contractsBase" value="${pageContext.request.contextPath}${contractsPath}" />
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Contract - Argo Machine Management</title>
+    <title>${editMode ? 'Sửa' : 'Tạo'} Hợp đồng - Argo Machine Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .contract-form-container {
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .page-header {
             background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            max-width: 900px;
-            margin: 0 auto;
+            border-bottom: 1px solid #dee2e6;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
         }
-        .page-title {
-            font-size: 2rem;
+
+        .content-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .item-row {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .item-row:hover {
+            background-color: #e9ecef;
+        }
+
+        .remove-item-btn {
+            cursor: pointer;
+            color: #dc3545;
+        }
+
+        .remove-item-btn:hover {
+            color: #a71d2a;
+        }
+
+        .asset-option {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+
+        .asset-option:hover {
+            background-color: #f8f9fa;
+        }
+
+        .asset-option.selected {
+            background-color: #d4edda;
+        }
+
+        .total-price {
+            font-size: 1.5rem;
             font-weight: bold;
-            margin-bottom: 30px;
-            text-align: center;
-        }
-        .form-label {
-            font-weight: 500;
-            color: #495057;
-            margin-bottom: 8px;
-        }
-        .form-control, .form-select {
-            border-radius: 5px;
-            padding: 8px 12px;
-        }
-        .error-message {
-            color: #dc3545;
-            font-size: 0.875rem;
-            margin-top: 5px;
-        }
-        .is-invalid {
-            border-color: #dc3545;
-        }
-        .invalid-feedback {
-            display: block;
-            width: 100%;
-            margin-top: 0.25rem;
-            font-size: 0.875rem;
-            color: #dc3545;
-        }
-        .btn-group-custom {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            margin-top: 30px;
-        }
-        .btn-back {
-            background-color: #6c757d;
-            border-color: #6c757d;
-            color: white;
-            padding: 10px 20px;
-            font-weight: 500;
-            border-radius: 5px;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn-back:hover {
-            background-color: #5a6268;
-            border-color: #545b62;
-            color: white;
-            text-decoration: none;
-        }
-        .btn-add {
-            padding: 10px 30px;
-            background-color: #0d6efd;
-            border-color: #0d6efd;
-            color: white;
-            font-weight: 500;
-            border-radius: 5px;
-        }
-        .btn-add:hover {
-            background-color: #0b5ed7;
-            border-color: #0a58ca;
-            color: white;
-        }
-        .form-text {
-            font-size: 0.875rem;
-            color: #6c757d;
-        }
-        .info-badge {
-            background-color: #e7f3ff;
-            color: #0066cc;
-            padding: 8px 12px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            font-size: 0.9rem;
+            color: #28a745;
         }
     </style>
 </head>
 <body>
-    <!-- Sidebar + layout -->
-    <jsp:include page="/view/common/dashboard/sideBar.jsp" />
+<!-- Include Sidebar -->
+<jsp:include page="/view/common/dashboard/sideBar.jsp" />
 
-    <div class="main-content">
-        <div class="container-fluid">
-        <div class="contract-form-container">
-            <h1 class="page-title">Create New Contract</h1>
-            
-            <c:if test="${fromOrder == true}">
-                <div class="info-badge">
-                    <i class="fas fa-info-circle me-2"></i>
-                    This contract is being created from an Order. Fields are pre-filled from the Order.
+<!-- Main Content -->
+<div class="main-content">
+    <!-- Page Header -->
+    <div class="page-header d-flex justify-content-between align-items-center">
+        <div>
+            <h4 class="mb-1">
+                <i class="fas fa-file-contract me-2"></i>
+                ${editMode ? 'Sửa' : 'Tạo'} Hợp đồng
+            </h4>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/manager/dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/manager/contracts">Hợp đồng</a></li>
+                    <li class="breadcrumb-item active">${editMode ? 'Sửa' : 'Tạo mới'}</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a href="${pageContext.request.contextPath}/manager/contracts" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Quay lại
+            </a>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="container-fluid">
+        <!-- Cảnh báo nếu không còn máy available -->
+        <c:if test="${empty availableAssets && !editMode}">
+            <div class="alert alert-danger d-flex align-items-center" role="alert">
+                <i class="fas fa-exclamation-triangle me-3 fa-2x"></i>
+                <div>
+                    <h5 class="alert-heading mb-1">Không thể tạo hợp đồng!</h5>
+                    <p class="mb-0">Hiện tại không còn máy nào sẵn sàng cho thuê. Vui lòng bổ sung hoặc cập nhật trạng thái máy.</p>
                 </div>
-            </c:if>
-            
-            <c:if test="${not empty errors}">
-                <div class="alert alert-danger">
-                    <ul class="mb-0">
-                        <c:forEach var="error" items="${errors}">
-                            <li>${error}</li>
-                        </c:forEach>
-                    </ul>
-                </div>
-            </c:if>
-            
-            <c:if test="${not empty error}">
-                <div class="alert alert-danger">${error}</div>
-            </c:if>
-            
-            <form action="${contractsBase}" method="POST" id="createContractForm" autocomplete="off">
-                <input type="hidden" name="action" value="create">
-                <c:if test="${not empty orderId}">
-                    <input type="hidden" name="orderId" value="${orderId}">
+                <a href="${pageContext.request.contextPath}/manager/contracts" class="btn btn-outline-danger ms-auto">
+                    <i class="fas fa-arrow-left me-1"></i> Quay lại
+                </a>
+            </div>
+        </c:if>
+
+        <c:if test="${not empty availableAssets || editMode}">
+            <form method="post" action="${pageContext.request.contextPath}/manager/contracts" id="contractForm">
+                <input type="hidden" name="action" value="${editMode ? 'update' : 'create'}">
+                <c:if test="${editMode}">
+                    <input type="hidden" name="id" value="${contract.id}">
                 </c:if>
-                
-                <!-- Contract Code -->
-                <div class="mb-3">
-                    <label for="contractCode" class="form-label">Mã hợp đồng <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="contractCode" name="contractCode" 
-                           value="${contractCode != null ? contractCode : ''}" required readonly>
-                    <small class="form-text text-muted">Auto-generated contract code</small>
-                </div>
-                
-                <!-- Customer Name -->
-                <div class="mb-3">
-                    <label for="customerName" class="form-label">Tên khách hàng <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="customerInput" name="customerName"
-                           placeholder="Nhập username khách hàng..."
-                           list="customerList"
-                           value="${customerName != null ? customerName : ''}" required autocomplete="off">
-                    <datalist id="customerList">
-                        <c:forEach var="customer" items="${customers}">
-                            <option value="${customer.username}"
-                                    data-id="${customer.id}"
-                                    data-phone="${customer.phoneNumber}"
-                                    data-address="${customer.address}">
-                                ${customer.fullName}
-                            </option>
-                        </c:forEach>
-                    </datalist>
-                    <input type="hidden" id="customerId" name="customerId" value="${selectedCustomerId != null ? selectedCustomerId : ''}">
-                </div>
-                
-                <!-- Customer Phone -->
-                <div class="mb-3">
-                    <label for="customerPhone" class="form-label">Số điện thoại</label>
-                    <input type="tel" class="form-control" id="customerPhone" name="customerPhone" 
-                           value="${customerPhone != null ? customerPhone : ''}" readonly>
-                </div>
-                
-                <!-- Customer Address -->
-                <div class="mb-3">
-                    <label for="customerAddress" class="form-label">Địa chỉ</label>
-                    <textarea class="form-control" id="customerAddress" name="customerAddress" rows="2"
-                              placeholder="Địa chỉ khách hàng..." readonly>${customerAddress != null ? customerAddress : ''}</textarea>
-                </div>
 
-                <!-- Machine -->
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Mã máy <span class="text-danger">*</span></label>
-                        <select name="machineId" class="form-select" required id="machineSelect">
-                            <option value="">-- Chọn mã máy --</option>
-                            <c:forEach var="machine" items="${machines}">
-                                <option value="${machine.id}"
-                                        ${machineId != null && machineId == machine.id ? 'selected' : ''}
-                                        data-name="${machine.machineName}"
-                                        data-type="${machine.machineTypeName}"
-                                        data-status="${machine.status}"
-                                        data-rentable="${machine.isRentable}"
-                                        ${(machine.status ne 'ACTIVE' || machine.isRentable ne true) ? 'disabled' : ''}>
-                                    ${machine.machineCode} (${machine.status})
-                                </option>
-                            </c:forEach>
-                        </select>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Tên máy</label>
-                        <input type="text" id="machineNameDisplay" class="form-control" readonly
-                               placeholder="Tự động điền khi chọn mã máy">
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Loại máy</label>
-                        <input type="text" id="machineTypeDisplay" class="form-control" readonly
-                               placeholder="Tự động điền khi chọn mã máy">
-                    </div>
-                </div>
-                
-                <!-- Quantity -->
-                <div class="mb-3">
-                    <label for="quantity" class="form-label">Số lượng</label>
-                    <input type="number" class="form-control" id="quantity" name="quantity" 
-                           value="${quantity != null ? quantity : '1'}" min="1" step="1" required>
-                </div>
+                <!-- Contract Info -->
+                <div class="content-card">
+                    <h5 class="mb-4"><i class="fas fa-info-circle me-2"></i>Thông tin hợp đồng</h5>
 
-                <!-- ManagerId (auto for manager/sale; admin can choose) -->
-                <c:choose>
-                    <c:when test="${sessionScope.roleName == 'admin'}">
-                        <div class="mb-3">
-                            <label for="managerId" class="form-label">Manager <span class="text-danger">*</span></label>
-                            <select class="form-select" id="managerId" name="managerId" required>
-                                <option value="">Select Manager</option>
-                                <c:forEach var="manager" items="${managers}">
-                                    <option value="${manager.id}"
-                                            ${(selectedManagerId != null && selectedManagerId == manager.id) || (defaultManagerId != null && defaultManagerId == manager.id) ? 'selected' : ''}>
-                                        ${manager.fullName != null ? manager.fullName : manager.username} (${manager.email}) - ${manager.roleName}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Mã hợp đồng</label>
+                            <input type="text" class="form-control" name="contractCode"
+                                   value="${editMode ? contract.contractCode : contractCode}" readonly>
+                            <small class="text-muted">Mã được tạo tự động</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Khách hàng <span class="text-danger">*</span></label>
+                            <select class="form-select" name="customerId" required>
+                                <option value="">-- Chọn khách hàng --</option>
+                                <c:forEach items="${customers}" var="customer">
+                                    <option value="${customer.id}"
+                                        ${editMode && contract.customerId == customer.id ? 'selected' : ''}>
+                                            ${customer.fullName} (${customer.email})
                                     </option>
                                 </c:forEach>
                             </select>
                         </div>
-                    </c:when>
-                    <c:otherwise>
-                        <input type="hidden" name="managerId" value="${sessionScope.userId}">
-                    </c:otherwise>
-                </c:choose>
-                
-                <!-- Start Date & End Date -->
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="startDate" class="form-label">Ngày bắt đầu (thuê) <span class="text-danger">*</span></label>
-                        <input type="date" class="form-control" id="startDate" name="startDate" 
-                               value="${startDate != null ? startDate : ''}" required autocomplete="off">
                     </div>
-                    
-                    <div class="col-md-6 mb-3">
-                        <label for="endDate" class="form-label">Ngày kết thúc (thuê) <span class="text-danger">*</span></label>
-                        <input type="date" class="form-control" id="endDate" name="endDate" 
-                               value="${endDate != null ? endDate : ''}" required autocomplete="off">
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Ngày bắt đầu <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" name="startDate"
+                                   value="${editMode ? contract.startDate : ''}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Ngày kết thúc</label>
+                            <input type="date" class="form-control" name="endDate"
+                                   value="${editMode ? contract.endDate : ''}">
+                        </div>
+                    </div>
+
+                    <c:if test="${not editMode}">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Trạng thái ban đầu</label>
+                                <select class="form-select" name="status">
+                                    <option value="DRAFT">Nháp (DRAFT)</option>
+                                    <option value="ACTIVE">Kích hoạt ngay (ACTIVE)</option>
+                                </select>
+                                <small class="text-muted">Chọn ACTIVE sẽ ngay lập tức cập nhật trạng thái máy thành "Đang cho thuê"</small>
+                            </div>
+                        </div>
+                    </c:if>
+
+                    <div class="mb-3">
+                        <label class="form-label">Ghi chú</label>
+                        <textarea class="form-control" name="note" rows="3"
+                                  placeholder="Nhập ghi chú (nếu có)...">${editMode ? contract.note : ''}</textarea>
                     </div>
                 </div>
-                
-                <!-- Total Cost -->
-                <div class="mb-3">
-                    <label for="totalCost" class="form-label">Tổng giá trị</label>
-                    <input type="number" class="form-control" id="totalCost" name="totalCost" 
-                           value="${totalCost != null ? totalCost : ''}" min="1000000" step="1000" placeholder="VD: 5000000" required>
-                    <div class="form-text text-danger">* Giá trị phải từ 1,000,000 VNĐ trở lên</div>
+
+                <!-- Contract Items -->
+                <div class="content-card">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Danh sách máy thuê</h5>
+                        <button type="button" class="btn btn-success" onclick="addItem()">
+                            <i class="fas fa-plus me-1"></i> Thêm máy
+                        </button>
+                    </div>
+
+                    <div id="itemsContainer">
+                        <c:choose>
+                            <c:when test="${editMode && not empty contract.items}">
+                                <c:forEach items="${contract.items}" var="item" varStatus="loop">
+                                    <div class="item-row" id="item-${loop.index}">
+                                        <div class="row align-items-center">
+                                            <div class="col-md-5">
+                                                <label class="form-label">Máy</label>
+                                                <select class="form-select asset-select" name="assetId[]" required
+                                                        onchange="updateTotal()">
+                                                    <option value="">-- Chọn máy --</option>
+                                                    <c:forEach items="${availableAssets}" var="asset">
+                                                        <option value="${asset.id}"
+                                                            ${item.assetId == asset.id ? 'selected' : ''}>
+                                                                ${asset.serialNumber} - ${asset.modelName} (${asset.brand})
+                                                        </option>
+                                                    </c:forEach>
+                                                    <!-- Keep current item if not in available list -->
+                                                    <c:set var="found" value="false"/>
+                                                    <c:forEach items="${availableAssets}" var="asset">
+                                                        <c:if test="${asset.id == item.assetId}">
+                                                            <c:set var="found" value="true"/>
+                                                        </c:if>
+                                                    </c:forEach>
+                                                    <c:if test="${!found}">
+                                                        <option value="${item.assetId}" selected>
+                                                                ${item.serialNumber} - ${item.modelName} (${item.brand}) [Hiện tại]
+                                                        </option>
+                                                    </c:if>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label">Giá thuê (VND)</label>
+                                                <input type="number" class="form-control price-input" name="price[]"
+                                                       value="${item.price}" min="0" step="1000"
+                                                       onchange="updateTotal()" placeholder="0">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label">Ghi chú</label>
+                                                <input type="text" class="form-control" name="itemNote[]"
+                                                       value="${item.note}" placeholder="Ghi chú...">
+                                            </div>
+                                            <div class="col-md-1 text-center">
+                                                <label class="form-label">&nbsp;</label>
+                                                <div>
+                                                    <span class="remove-item-btn" onclick="removeItem('item-${loop.index}')">
+                                                        <i class="fas fa-trash-alt fa-lg"></i>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </c:forEach>
+                            </c:when>
+                            <c:otherwise>
+                                <!-- Empty item template -->
+                                <div class="item-row" id="item-0">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-5">
+                                            <label class="form-label">Máy</label>
+                                            <select class="form-select asset-select" name="assetId[]" required
+                                                    onchange="updateTotal()">
+                                                <option value="">-- Chọn máy --</option>
+                                                <c:forEach items="${availableAssets}" var="asset">
+                                                    <option value="${asset.id}">
+                                                            ${asset.serialNumber} - ${asset.modelName} (${asset.brand})
+                                                    </option>
+                                                </c:forEach>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Giá thuê (VND)</label>
+                                            <input type="number" class="form-control price-input" name="price[]"
+                                                   min="0" step="1000" onchange="updateTotal()" placeholder="0">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Ghi chú</label>
+                                            <input type="text" class="form-control" name="itemNote[]" placeholder="Ghi chú...">
+                                        </div>
+                                        <div class="col-md-1 text-center">
+                                            <label class="form-label">&nbsp;</label>
+                                            <div>
+                                                <span class="remove-item-btn" onclick="removeItem('item-0')">
+                                                    <i class="fas fa-trash-alt fa-lg"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+
+                    <div class="alert alert-info mt-3" id="noItemsAlert" style="display: none;">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Vui lòng thêm ít nhất một máy vào hợp đồng.
+                    </div>
+
+                    <!-- Total -->
+                    <div class="row mt-4">
+                        <div class="col-md-6 offset-md-6">
+                            <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                                <span class="fw-bold">Tổng giá trị:</span>
+                                <span class="total-price" id="totalPrice">0 VND</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                
-                <!-- Service Description -->
-                <div class="mb-3">
-                    <label for="serviceDescription" class="form-label">Mô tả dịch vụ <span class="text-danger">*</span></label>
-                    <textarea class="form-control" id="serviceDescription" name="serviceDescription" rows="4" required
-                              placeholder="Mô tả chi tiết về dịch vụ...">${serviceDescription != null ? serviceDescription : (note != null ? note : '')}</textarea>
-                </div>
-                
-                <div class="btn-group-custom">
-                    <a href="${contractsBase}" class="btn-back">
-                        <i class="fas fa-arrow-left"></i> Back
-                    </a>
-                    <button type="submit" class="btn btn-add">
-                        <i class="fas fa-save"></i> Create Contract
-                    </button>
+
+                <!-- Submit Buttons -->
+                <div class="content-card">
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="${pageContext.request.contextPath}/manager/contracts" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i> Hủy
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> ${editMode ? 'Cập nhật' : 'Tạo hợp đồng'}
+                        </button>
+                    </div>
                 </div>
             </form>
-        </div>
-        </div>
+        </c:if>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // ===== Customer auto-fill (match Order create) =====
-        const customerData = new Map();
-        <c:forEach var="customer" items="${customers}">
-        customerData.set('${customer.username}', {
-            id: '${customer.id}',
-            phone: '${customer.phoneNumber}' || '',
-            address: '${customer.address}' || ''
-        });
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let itemCounter = ${editMode && not empty contract.items ? contract.items.size() : 1};
+
+    // Available assets data for JavaScript
+    const availableAssets = [
+        <c:forEach items="${availableAssets}" var="asset" varStatus="loop">
+        {
+            id: ${asset.id},
+            serialNumber: '${asset.serialNumber}',
+            modelName: '${asset.modelName}',
+            brand: '${asset.brand}'
+        }${!loop.last ? ',' : ''}
         </c:forEach>
+    ];
 
-        const customerInput = document.getElementById('customerInput');
-        const customerIdHidden = document.getElementById('customerId');
-        const phoneInput = document.getElementById('customerPhone');
-        const addressInput = document.getElementById('customerAddress');
+    function addItem() {
+        const container = document.getElementById('itemsContainer');
+        const newItem = document.createElement('div');
+        newItem.className = 'item-row';
+        newItem.id = 'item-' + itemCounter;
 
-        function fillCustomer() {
-            const username = (customerInput.value || '').trim();
-            if (customerData.has(username)) {
-                const c = customerData.get(username);
-                customerIdHidden.value = c.id;
-                phoneInput.value = c.phone || '';
-                addressInput.value = c.address || '';
-            } else {
-                customerIdHidden.value = '';
-                phoneInput.value = '';
-                addressInput.value = '';
+        let optionsHtml = '<option value="">-- Chọn máy --</option>';
+        availableAssets.forEach(asset => {
+            optionsHtml += '<option value="' + asset.id + '">' +
+                asset.serialNumber + ' - ' + asset.modelName + ' (' + asset.brand + ')' +
+                '</option>';
+        });
+
+        newItem.innerHTML =
+            '<div class="row align-items-center">' +
+            '    <div class="col-md-5">' +
+            '        <label class="form-label">Máy</label>' +
+            '        <select class="form-select asset-select" name="assetId[]" required onchange="updateTotal()">' +
+            optionsHtml +
+            '        </select>' +
+            '    </div>' +
+            '    <div class="col-md-3">' +
+            '        <label class="form-label">Giá thuê (VND)</label>' +
+            '        <input type="number" class="form-control price-input" name="price[]"' +
+            '               min="0" step="1000" onchange="updateTotal()" placeholder="0">' +
+            '    </div>' +
+            '    <div class="col-md-3">' +
+            '        <label class="form-label">Ghi chú</label>' +
+            '        <input type="text" class="form-control" name="itemNote[]" placeholder="Ghi chú...">' +
+            '    </div>' +
+            '    <div class="col-md-1 text-center">' +
+            '        <label class="form-label">&nbsp;</label>' +
+            '        <div>' +
+            '            <span class="remove-item-btn" onclick="removeItem(\'item-' + itemCounter + '\')">' +
+            '                <i class="fas fa-trash-alt fa-lg"></i>' +
+            '            </span>' +
+            '        </div>' +
+            '    </div>' +
+            '</div>';
+
+        container.appendChild(newItem);
+        itemCounter++;
+        checkItemsCount();
+    }
+
+    function removeItem(itemId) {
+        const items = document.querySelectorAll('.item-row');
+        if (items.length <= 1) {
+            alert('Hợp đồng phải có ít nhất một máy!');
+            return;
+        }
+
+        const item = document.getElementById(itemId);
+        if (item) {
+            item.remove();
+            updateTotal();
+            checkItemsCount();
+        }
+    }
+
+    function updateTotal() {
+        let total = 0;
+        const priceInputs = document.querySelectorAll('.price-input');
+        priceInputs.forEach(input => {
+            const value = parseFloat(input.value) || 0;
+            total += value;
+        });
+
+        document.getElementById('totalPrice').textContent =
+            new Intl.NumberFormat('vi-VN').format(total) + ' VND';
+    }
+
+    function checkItemsCount() {
+        const items = document.querySelectorAll('.item-row');
+        const noItemsAlert = document.getElementById('noItemsAlert');
+        if (items.length === 0) {
+            noItemsAlert.style.display = 'block';
+        } else {
+            noItemsAlert.style.display = 'none';
+        }
+    }
+
+    // Form validation
+    document.getElementById('contractForm').addEventListener('submit', function(e) {
+        // Validate ngày bắt đầu < ngày kết thúc
+        const startDate = document.querySelector('input[name="startDate"]').value;
+        const endDate = document.querySelector('input[name="endDate"]').value;
+
+        if (startDate && endDate) {
+            if (new Date(startDate) >= new Date(endDate)) {
+                e.preventDefault();
+                alert('Ngày bắt đầu phải trước ngày kết thúc!');
+                return false;
             }
         }
 
-        customerInput.addEventListener('input', fillCustomer);
-        customerInput.addEventListener('blur', fillCustomer);
-        fillCustomer();
+        const assetSelects = document.querySelectorAll('.asset-select');
+        let hasAsset = false;
 
-        // ===== Machine auto-fill =====
-        const machineSelect = document.getElementById('machineSelect');
-        const machineNameDisplay = document.getElementById('machineNameDisplay');
-        const machineTypeDisplay = document.getElementById('machineTypeDisplay');
-
-        function fillMachine() {
-            const opt = machineSelect.options[machineSelect.selectedIndex];
-            if (opt && opt.value) {
-                machineNameDisplay.value = opt.getAttribute('data-name') || '';
-                machineTypeDisplay.value = opt.getAttribute('data-type') || '';
-            } else {
-                machineNameDisplay.value = '';
-                machineTypeDisplay.value = '';
-            }
-        }
-        machineSelect.addEventListener('change', fillMachine);
-        fillMachine();
-
-        // ===== Validations =====
-        const managerSelect = document.getElementById('managerId'); // only exists for admin
-
-        document.getElementById('startDate').addEventListener('change', validateDates);
-        document.getElementById('endDate').addEventListener('change', validateDates);
-        machineSelect.addEventListener('change', validateMachineSelection);
-
-        // Start date must be today or later
-        (function initDateMins() {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const dd = String(today.getDate()).padStart(2, '0');
-            const todayStr = `${yyyy}-${mm}-${dd}`;
-            const startEl = document.getElementById('startDate');
-            const endEl = document.getElementById('endDate');
-            startEl.min = todayStr;
-            if (endEl) {
-                // endDate min will be adjusted inside validateDates() too
-                endEl.min = startEl.value || todayStr;
-            }
-        })();
-
-        function validateDates() {
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-            const endEl = document.getElementById('endDate');
-
-            // enforce startDate >= today
-            if (startDate) {
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const s = new Date(startDate + 'T00:00:00');
-                if (s < today) {
-                    alert('Ngày bắt đầu thuê phải từ hôm nay trở đi!');
-                    document.getElementById('startDate').value = '';
-                    if (endEl) endEl.value = '';
-                    return;
-                }
-                if (endEl) endEl.min = startDate;
-            }
-
-            if (startDate && endDate && startDate > endDate) {
-                alert('Ngày kết thúc phải sau hoặc bằng ngày bắt đầu!');
-                document.getElementById('endDate').value = '';
-            }
-        }
-
-        function validateMachineSelection() {
-            const opt = machineSelect.options[machineSelect.selectedIndex];
-            if (!opt || !opt.value) {
-                machineSelect.setCustomValidity('');
-                return true;
-            }
-            const status = (opt.getAttribute('data-status') || '').toUpperCase();
-            const rentableRaw = (opt.getAttribute('data-rentable') || '').toLowerCase();
-            const rentable = rentableRaw === 'true';
-            if (status !== 'ACTIVE' || !rentable) {
-                const msg = `Máy đang ở trạng thái ${status || 'UNKNOWN'} (rentable=${rentable}) nên không thể tạo hợp đồng!`;
-                alert(msg);
-                machineSelect.value = '';
-                fillMachine();
-                machineSelect.setCustomValidity(msg);
-                return false;
-            }
-            machineSelect.setCustomValidity('');
-            return true;
-        }
-
-        const totalCostInput = document.getElementById('totalCost');
-        if (totalCostInput) {
-            totalCostInput.addEventListener('input', function() {
-                const value = parseFloat(this.value);
-                if (isNaN(value) || value < 1000000) {
-                    this.setCustomValidity('Giá trị hợp đồng phải từ 1,000,000 VNĐ trở lên!');
-                } else {
-                    this.setCustomValidity('');
-                }
-            });
-        }
-
-        document.getElementById('createContractForm').addEventListener('submit', function(e) {
-            const contractCode = document.getElementById('contractCode').value.trim();
-            const customerUsername = customerInput.value.trim();
-            const customerId = customerIdHidden.value;
-            const managerId = managerSelect ? managerSelect.value : '${sessionScope.userId}';
-            const machineId = machineSelect.value;
-            const quantity = document.getElementById('quantity').value;
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-            const serviceDescription = document.getElementById('serviceDescription').value.trim();
-            const totalCost = parseFloat(totalCostInput.value);
-
-            if (!contractCode || !customerUsername || !customerId || !managerId || !machineId || !quantity || !startDate || !endDate || !serviceDescription) {
-                e.preventDefault();
-                alert('Vui lòng điền đầy đủ các trường bắt buộc!');
-                return false;
-            }
-
-            if (customerId && managerId && customerId === managerId) {
-                e.preventDefault();
-                alert('Customer và Manager không được là cùng một người!');
-                return false;
-            }
-
-            if (startDate > endDate) {
-                e.preventDefault();
-                alert('Ngày kết thúc phải sau hoặc bằng ngày bắt đầu!');
-                return false;
-            }
-
-            // enforce startDate >= today
-            if (startDate) {
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const s = new Date(startDate + 'T00:00:00');
-                if (s < today) {
-                    e.preventDefault();
-                    alert('Ngày bắt đầu thuê phải từ hôm nay trở đi!');
-                    return false;
-                }
-            }
-
-            if (!validateMachineSelection()) {
-                e.preventDefault();
-                return false;
-            }
-
-            if (isNaN(totalCost) || totalCost < 1000000) {
-                e.preventDefault();
-                alert('Giá trị hợp đồng phải từ 1,000,000 VNĐ trở lên!');
-                totalCostInput.focus();
-                return false;
+        assetSelects.forEach(select => {
+            if (select.value) {
+                hasAsset = true;
             }
         });
-    </script>
+
+        if (!hasAsset) {
+            e.preventDefault();
+            alert('Vui lòng chọn ít nhất một máy cho hợp đồng!');
+            return false;
+        }
+
+        // Check for duplicate assets
+        const selectedAssets = [];
+        let hasDuplicate = false;
+
+        assetSelects.forEach(select => {
+            if (select.value) {
+                if (selectedAssets.includes(select.value)) {
+                    hasDuplicate = true;
+                } else {
+                    selectedAssets.push(select.value);
+                }
+            }
+        });
+
+        if (hasDuplicate) {
+            e.preventDefault();
+            alert('Không được chọn trùng máy trong cùng một hợp đồng!');
+            return false;
+        }
+    });
+
+    // Initial total calculation
+    updateTotal();
+    checkItemsCount();
+</script>
 </body>
 </html>
