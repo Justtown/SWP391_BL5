@@ -418,7 +418,7 @@ public class ManagerContractController extends HttpServlet {
 
                 // 1. Insert contract
                 String insertContractSql = "INSERT INTO contracts (contract_code, customer_id, manager_id, start_date, end_date, status, note) " +
-                                           "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                        "VALUES (?, ?, ?, ?, ?, ?, ?)";
                 PreparedStatement psContract = conn.prepareStatement(insertContractSql, Statement.RETURN_GENERATED_KEYS);
                 psContract.setString(1, contractCode);
                 psContract.setInt(2, Integer.parseInt(customerIdStr));
@@ -646,8 +646,8 @@ public class ManagerContractController extends HttpServlet {
             for (ContractItem item : items) {
                 MachineAsset asset = machineAssetDAO.findById(item.getAssetId());
                 if (asset == null ||
-                    !"ACTIVE".equals(asset.getStatus()) ||
-                    !"AVAILABLE".equals(asset.getRentalStatus())) {
+                        !"ACTIVE".equals(asset.getStatus()) ||
+                        !"AVAILABLE".equals(asset.getRentalStatus())) {
                     unavailableMachines.add(item.getSerialNumber() != null ?
                             item.getSerialNumber() : "ID: " + item.getAssetId());
                 }
