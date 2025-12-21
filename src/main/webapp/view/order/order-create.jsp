@@ -1,287 +1,430 @@
-<%@ page contentType="text/html; charset=UTF-8" language="java" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%
-    // Prevent caching to always get fresh contract code
-    response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-    response.setHeader("Pragma", "no-cache");
-    response.setDateHeader("Expires", 0);
-%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tạo đơn hàng mới - Argo Machine Management</title>
+    <title>${empty order ? 'Tạo đơn hàng mới' : 'Sửa đơn hàng'} - Argo Machine Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .page-header {
+            background: white;
+            border-bottom: 1px solid #dee2e6;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-section-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #0d6efd;
+            color: #0d6efd;
+        }
+
+        .item-row {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .item-row:hover {
+            border-color: #0d6efd;
+        }
+
+        .remove-item-btn {
+            color: #dc3545;
+            cursor: pointer;
+        }
+
+        .remove-item-btn:hover {
+            color: #bb2d3b;
+        }
+
+        .select2-container--bootstrap-5 .select2-selection {
+            min-height: 38px;
+        }
+
+        .asset-info {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        #itemsContainer .item-row:only-child .remove-item-btn {
+            display: none;
+        }
+    </style>
 </head>
 <body>
+<!-- Include Sidebar -->
 <jsp:include page="/view/common/dashboard/sideBar.jsp" />
+
+<!-- Main Content -->
 <div class="main-content">
-<div class="container-fluid">
-<div class="container mt-4">
-    <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white">
-            <h4 class="mb-0"><i class="bi bi-plus-square"></i> Tạo đơn hàng mới (Hợp đồng gia công)</h4>
+    <!-- Page Header -->
+    <div class="page-header d-flex justify-content-between align-items-center">
+        <div>
+            <h4 class="mb-1">
+                <i class="fas fa-clipboard-list me-2"></i>
+                ${empty order ? 'Tạo đơn hàng mới' : 'Sửa đơn hàng'}
+            </h4>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/sale/dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/sale/orders">Đơn hàng</a></li>
+                    <li class="breadcrumb-item active">${empty order ? 'Tạo mới' : 'Sửa'}</li>
+                </ol>
+            </nav>
         </div>
-        <div class="card-body">
-            <%
-                String error = (String) request.getAttribute("error");
-                if (error == null) error = request.getParameter("error");
-                if ("duplicate_contract".equals(error)) {
-            %>
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill"></i>
-                    <strong>Lỗi!</strong> Mã hợp đồng này đã tồn tại. Vui lòng sử dụng mã khác.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="d-flex align-items-center">
+                <span class="me-3">
+                    <i class="fas fa-user-circle me-1"></i> ${sessionScope.fullName}
+                </span>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="container-fluid">
+        <!-- Cảnh báo nếu không còn máy available -->
+        <c:if test="${empty availableAssets}">
+            <div class="alert alert-danger d-flex align-items-center" role="alert">
+                <i class="fas fa-exclamation-triangle me-3 fa-2x"></i>
+                <div>
+                    <h5 class="alert-heading mb-1">Không thể tạo đơn hàng!</h5>
+                    <p class="mb-0">Hiện tại không còn máy nào sẵn sàng cho thuê. Vui lòng liên hệ quản lý để bổ sung máy.</p>
                 </div>
-            <%
-                } else if ("invalid_customer".equals(error)) {
-            %>
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill"></i>
-                    <strong>Lỗi!</strong> Tên khách hàng không có trong hệ thống. Vui lòng chọn từ danh sách gợi ý.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            <%
-                }
-                // Lấy các giá trị đã nhập (nếu có)
-                String contractCode = (String) request.getAttribute("contractCode");
-                String customerName = (String) request.getAttribute("customerName");
-                String customerPhone = (String) request.getAttribute("customerPhone");
-                String customerAddress = (String) request.getAttribute("customerAddress");
-                String machineTypeId = (String) request.getAttribute("machineTypeId");
-                String quantity = (String) request.getAttribute("quantity");
-                String serviceDescription = (String) request.getAttribute("serviceDescription");
-                String startDate = (String) request.getAttribute("startDate");
-                String endDate = (String) request.getAttribute("endDate");
-                String totalCost = (String) request.getAttribute("totalCost");
-            %>
-            
-            <form action="${pageContext.request.contextPath}/sale/orders" method="post" id="orderForm">
-                <input type="hidden" name="action" value="create"/>
+                <a href="${pageContext.request.contextPath}/sale/orders" class="btn btn-outline-danger ms-auto">
+                    <i class="fas fa-arrow-left me-1"></i> Quay lại
+                </a>
+            </div>
+        </c:if>
+
+        <c:if test="${not empty availableAssets}">
+            <form method="post" action="${pageContext.request.contextPath}/sale/orders" id="orderForm">
+                <input type="hidden" name="action" value="${empty order ? 'create' : 'update'}">
+                <c:if test="${not empty order}">
+                    <input type="hidden" name="id" value="${order.id}">
+                </c:if>
 
                 <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Mã hợp đồng <span class="text-danger">*</span></label>
-                        <input type="text" name="contractCode" class="form-control" 
-                               value="${nextContractCode}" required readonly
-                               style="background-color: #e9ecef;">
-                        <div class="form-text">Mã tự động tăng dần cho hợp đồng này</div>
+                    <!-- Left Column - Order Info -->
+                    <div class="col-md-5">
+                        <div class="content-card">
+                            <h6 class="form-section-title">
+                                <i class="fas fa-info-circle me-2"></i>Thông tin đơn hàng
+                            </h6>
+
+                            <div class="mb-3">
+                                <label class="form-label">Mã đơn hàng <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="orderCode"
+                                       value="${not empty order ? order.orderCode : orderCode}"
+                                    ${not empty order ? 'readonly' : ''} required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Khách hàng <span class="text-danger">*</span></label>
+                                <select class="form-select" name="customerId" id="customerSelect" required>
+                                    <option value="">-- Chọn khách hàng --</option>
+                                    <c:forEach items="${customers}" var="customer">
+                                        <option value="${customer.id}"
+                                                data-phone="${customer.phoneNumber}"
+                                                data-email="${customer.email}"
+                                            ${order.customerId == customer.id ? 'selected' : ''}>
+                                                ${customer.fullName} (${customer.phoneNumber})
+                                        </option>
+                                    </c:forEach>
+                                </select>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Ngày bắt đầu <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" name="startDate"
+                                           value="${order.startDate}" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Ngày kết thúc</label>
+                                    <input type="date" class="form-control" name="endDate"
+                                           value="${order.endDate}">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Ghi chú</label>
+                                <textarea class="form-control" name="note" rows="3">${order.note}</textarea>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Tên khách hàng <span class="text-danger">*</span></label>
-                        <input type="text" name="customerName" class="form-control" 
-                               placeholder="Nhập tên khách hàng..." required
-                               list="customerList" id="customerInput"
-                               value="<%= customerName != null ? customerName : "" %>">
-                        <datalist id="customerList">
-                            <c:forEach var="customer" items="${customers}">
-                                <option value="${customer.username}" 
-                                        data-fullname="${customer.fullName}"
-                                        data-phone="${customer.phoneNumber}" 
-                                        data-address="${customer.address}">
-                                    ${customer.fullName}
-                                </option>
-                            </c:forEach>
-                        </datalist>
-                        <div class="form-text">Nhập để tìm kiếm khách hàng</div>
+                    <!-- Right Column - Machine Items -->
+                    <div class="col-md-7">
+                        <div class="content-card">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="form-section-title mb-0">
+                                    <i class="fas fa-cogs me-2"></i>Danh sách máy cho thuê
+                                </h6>
+                                <button type="button" class="btn btn-success btn-sm" onclick="addItemRow()">
+                                    <i class="fas fa-plus me-1"></i>Thêm máy
+                                </button>
+                            </div>
+
+                            <div id="itemsContainer">
+                                <c:choose>
+                                    <c:when test="${not empty order && not empty order.items}">
+                                        <c:forEach items="${order.items}" var="item" varStatus="loop">
+                                            <div class="item-row" data-index="${loop.index}">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <strong>Máy #<span class="item-number">${loop.index + 1}</span></strong>
+                                                    <span class="remove-item-btn" onclick="removeItemRow(this)">
+                                                        <i class="fas fa-times-circle fa-lg"></i>
+                                                    </span>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-2">
+                                                        <label class="form-label">Chọn máy <span class="text-danger">*</span></label>
+                                                        <select class="form-select asset-select" name="assetIds" required>
+                                                            <option value="">-- Chọn máy --</option>
+                                                            <c:forEach items="${availableAssets}" var="asset">
+                                                                <option value="${asset.id}"
+                                                                        data-serial="${asset.serialNumber}"
+                                                                        data-model="${asset.modelName}"
+                                                                        data-brand="${asset.brand}"
+                                                                    ${item.assetId == asset.id ? 'selected' : ''}>
+                                                                        ${asset.serialNumber} - ${asset.modelName} (${asset.brand})
+                                                                </option>
+                                                            </c:forEach>
+                                                            <!-- Keep the current selection even if not available anymore -->
+                                                            <c:if test="${not empty item.assetId}">
+                                                                <option value="${item.assetId}" selected>
+                                                                        ${item.serialNumber} - ${item.modelName} (${item.brand})
+                                                                </option>
+                                                            </c:if>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-6 mb-2">
+                                                        <label class="form-label">Giá thuê (VNĐ)</label>
+                                                        <input type="number" class="form-control" name="prices"
+                                                               value="${item.price}" min="0" step="1000">
+                                                    </div>
+                                                </div>
+                                                <div class="mb-0">
+                                                    <label class="form-label">Ghi chú</label>
+                                                    <input type="text" class="form-control" name="itemNotes"
+                                                           value="${item.note}" placeholder="Ghi chú cho máy này">
+                                                </div>
+                                            </div>
+                                        </c:forEach>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <!-- Default empty row -->
+                                        <div class="item-row" data-index="0">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <strong>Máy #<span class="item-number">1</span></strong>
+                                                <span class="remove-item-btn" onclick="removeItemRow(this)">
+                                                    <i class="fas fa-times-circle fa-lg"></i>
+                                                </span>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label">Chọn máy <span class="text-danger">*</span></label>
+                                                    <select class="form-select asset-select" name="assetIds" required>
+                                                        <option value="">-- Chọn máy --</option>
+                                                        <c:forEach items="${availableAssets}" var="asset">
+                                                            <option value="${asset.id}"
+                                                                    data-serial="${asset.serialNumber}"
+                                                                    data-model="${asset.modelName}"
+                                                                    data-brand="${asset.brand}">
+                                                                    ${asset.serialNumber} - ${asset.modelName} (${asset.brand})
+                                                            </option>
+                                                        </c:forEach>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label">Giá thuê (VNĐ)</label>
+                                                    <input type="number" class="form-control" name="prices"
+                                                           min="0" step="1000">
+                                                </div>
+                                            </div>
+                                            <div class="mb-0">
+                                                <label class="form-label">Ghi chú</label>
+                                                <input type="text" class="form-control" name="itemNotes"
+                                                       placeholder="Ghi chú cho máy này">
+                                            </div>
+                                        </div>
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
+
+                            <div class="alert alert-info mt-3 mb-0">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Chỉ hiển thị các máy đang sẵn sàng (ACTIVE + AVAILABLE).
+                                Sau khi Manager duyệt, các máy sẽ chuyển sang trạng thái "Đang cho thuê".
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Số điện thoại</label>
-                        <input type="tel" name="customerPhone" class="form-control" 
-                               placeholder="VD: 0901234567"
-                               pattern="[0-9]{10,11}"
-                               title="Số điện thoại 10-11 số"
-                               id="customerPhone"
-                               value="<%= customerPhone != null ? customerPhone : "" %>"
-                               readonly>
+                <!-- Action Buttons -->
+                <div class="content-card">
+                    <div class="d-flex justify-content-between">
+                        <a href="${pageContext.request.contextPath}/sale/orders" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Quay lại
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>${empty order ? 'Tạo đơn hàng' : 'Cập nhật'}
+                        </button>
                     </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Địa chỉ khách hàng</label>
-                        <input type="text" name="customerAddress" class="form-control" 
-                               placeholder="VD: 123 Đường ABC, Q1, HCM"
-                               id="customerAddress"
-                               value="<%= customerAddress != null ? customerAddress : "" %>"
-                               readonly>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold">Mã máy <span class="text-danger">*</span></label>
-                        <select name="machineId" class="form-control" required id="machineSelect">
-                            <option value="">-- Chọn mã máy --</option>
-                            <c:forEach var="machine" items="${machines}">
-                                <option value="${machine.id}" 
-                                        data-name="${machine.machineName}" 
-                                        data-type="${machine.machineTypeName}">
-                                    ${machine.machineCode}
-                                </option>
-                            </c:forEach>
-                        </select>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold">Tên máy</label>
-                        <input type="text" id="machineNameDisplay" class="form-control" readonly 
-                               placeholder="Tự động điền khi chọn mã máy">
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold">Loại máy</label>
-                        <input type="text" id="machineTypeDisplay" class="form-control" readonly 
-                               placeholder="Tự động điền khi chọn mã máy">
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-12 mb-3">
-                        <label class="form-label fw-bold">Số lượng <span class="text-danger">*</span></label>
-                        <input type="number" name="quantity" class="form-control" 
-                               value="<%= quantity != null ? quantity : "1" %>" min="1" required>
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Mô tả dịch vụ <span class="text-danger">*</span></label>
-                    <textarea name="serviceDescription" class="form-control" rows="4" required
-                              placeholder="Mô tả chi tiết về dịch vụ gia công, yêu cầu kỹ thuật, v.v."><%= serviceDescription != null ? serviceDescription : "" %></textarea>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Ngày bắt đầu <span class="text-danger">*</span></label>
-                        <input type="date" name="startDate" class="form-control" required 
-                               min="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()) %>"
-                               value="<%= startDate != null ? startDate : "" %>">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Ngày kết thúc dự kiến</label>
-                        <input type="date" name="endDate" class="form-control" 
-                               min="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()) %>"
-                               value="<%= endDate != null ? endDate : "" %>">
-                        <div class="form-text">Ngày dự kiến hoàn thành</div>
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Tổng giá trị hợp đồng (VNĐ)</label>
-                    <input type="number" step="1000" name="totalCost" class="form-control" 
-                           placeholder="VD: 5000000" min="1000000" required
-                           value="<%= totalCost != null ? totalCost : "" %>"
-                           id="totalCostInput">
-                    <div class="form-text text-danger">* Giá trị phải từ 1,000,000 VNĐ trở lên</div>
-                </div>
-
-                <div class="alert alert-info" role="alert">
-                    <i class="bi bi-info-circle"></i> 
-                    <strong>Lưu ý:</strong> Đơn hàng sau khi tạo sẽ ở trạng thái "Chờ duyệt" và cần được Admin phê duyệt trước khi xử lý.
-                </div>
-
-                <div class="d-flex justify-content-end gap-2">
-                    <a href="${pageContext.request.contextPath}/sale/orders?action=list" class="btn btn-secondary">
-                        <i class="bi bi-arrow-left"></i> Quay lại
-                    </a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle"></i> Tạo đơn hàng
-                    </button>
                 </div>
             </form>
-        </div>
+        </c:if>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-// Build customer data map
-const customerData = new Map();
-<c:forEach var="customer" items="${customers}">
-    customerData.set('${customer.username}', {
-        fullName: '${customer.fullName}',
-        phone: '${customer.phoneNumber}' || '',
-        address: '${customer.address}' || ''
-    });
-</c:forEach>
+    let itemIndex = ${not empty order && not empty order.items ? order.items.size() : 1};
 
-// Auto-fill customer info when typing/selecting
-const customerInput = document.getElementById('customerInput');
-const phoneInput = document.getElementById('customerPhone');
-const addressInput = document.getElementById('customerAddress');
+    // Available assets data for dynamic rows
+    const availableAssets = [
+        <c:forEach items="${availableAssets}" var="asset" varStatus="loop">
+        {
+            id: ${asset.id},
+            serial: '${asset.serialNumber}',
+            model: '${asset.modelName}',
+            brand: '${asset.brand}'
+        }${!loop.last ? ',' : ''}
+        </c:forEach>
+    ];
 
-customerInput.addEventListener('input', function() {
-    const username = this.value.trim();
-    if (customerData.has(username)) {
-        const customer = customerData.get(username);
-        phoneInput.value = customer.phone;
-        addressInput.value = customer.address;
+    function addItemRow() {
+        const container = document.getElementById('itemsContainer');
+        const newRow = document.createElement('div');
+        newRow.className = 'item-row';
+        newRow.dataset.index = itemIndex;
+
+        let optionsHtml = '<option value="">-- Chọn máy --</option>';
+        availableAssets.forEach(asset => {
+            optionsHtml += '<option value="' + asset.id + '" data-serial="' + asset.serial +
+                '" data-model="' + asset.model + '" data-brand="' + asset.brand + '">' +
+                asset.serial + ' - ' + asset.model + ' (' + asset.brand + ')</option>';
+        });
+
+        newRow.innerHTML =
+            '<div class="d-flex justify-content-between align-items-start mb-2">' +
+            '    <strong>Máy #<span class="item-number">' + (itemIndex + 1) + '</span></strong>' +
+            '    <span class="remove-item-btn" onclick="removeItemRow(this)">' +
+            '        <i class="fas fa-times-circle fa-lg"></i>' +
+            '    </span>' +
+            '</div>' +
+            '<div class="row">' +
+            '    <div class="col-md-6 mb-2">' +
+            '        <label class="form-label">Chọn máy <span class="text-danger">*</span></label>' +
+            '        <select class="form-select asset-select" name="assetIds" required>' +
+            optionsHtml +
+            '        </select>' +
+            '    </div>' +
+            '    <div class="col-md-6 mb-2">' +
+            '        <label class="form-label">Giá thuê (VNĐ)</label>' +
+            '        <input type="number" class="form-control" name="prices" min="0" step="1000">' +
+            '    </div>' +
+            '</div>' +
+            '<div class="mb-0">' +
+            '    <label class="form-label">Ghi chú</label>' +
+            '    <input type="text" class="form-control" name="itemNotes" placeholder="Ghi chú cho máy này">' +
+            '</div>';
+
+        container.appendChild(newRow);
+        itemIndex++;
+        updateItemNumbers();
     }
-});
 
-customerInput.addEventListener('blur', function() {
-    const username = this.value.trim();
-    if (customerData.has(username)) {
-        const customer = customerData.get(username);
-        phoneInput.value = customer.phone;
-        addressInput.value = customer.address;
+    function removeItemRow(btn) {
+        const row = btn.closest('.item-row');
+        const container = document.getElementById('itemsContainer');
+
+        if (container.children.length > 1) {
+            row.remove();
+            updateItemNumbers();
+        }
     }
-});
 
-// Auto-fill machine name and type when selecting machine code
-const machineSelect = document.getElementById('machineSelect');
-const machineNameDisplay = document.getElementById('machineNameDisplay');
-const machineTypeDisplay = document.getElementById('machineTypeDisplay');
-
-machineSelect.addEventListener('change', function() {
-    const selectedOption = this.options[this.selectedIndex];
-    if (selectedOption.value) {
-        machineNameDisplay.value = selectedOption.getAttribute('data-name') || '';
-        machineTypeDisplay.value = selectedOption.getAttribute('data-type') || '';
-    } else {
-        machineNameDisplay.value = '';
-        machineTypeDisplay.value = '';
+    function updateItemNumbers() {
+        const rows = document.querySelectorAll('.item-row');
+        rows.forEach((row, index) => {
+            row.querySelector('.item-number').textContent = index + 1;
+        });
     }
-});
 
-// Validation cho tổng giá trị hợp đồng
-const totalCostInput = document.getElementById('totalCostInput');
-if (totalCostInput) {
-    totalCostInput.addEventListener('input', function() {
-        const value = parseFloat(this.value);
-        if (isNaN(value) || value < 1000000) {
-            this.setCustomValidity('Giá trị hợp đồng phải từ 1,000,000 VNĐ trở lên!');
-        } else {
-            this.setCustomValidity('');
+    // Validate form before submit
+    document.getElementById('orderForm').addEventListener('submit', function(e) {
+        // Validate ngày bắt đầu < ngày kết thúc
+        const startDate = document.querySelector('input[name="startDate"]').value;
+        const endDate = document.querySelector('input[name="endDate"]').value;
+
+        if (startDate && endDate) {
+            if (new Date(startDate) >= new Date(endDate)) {
+                e.preventDefault();
+                alert('Ngày bắt đầu phải trước ngày kết thúc!');
+                return false;
+            }
+        }
+
+        const assetSelects = document.querySelectorAll('select[name="assetIds"]');
+        const selectedAssets = [];
+        let hasDuplicate = false;
+
+        assetSelects.forEach(select => {
+            if (select.value) {
+                if (selectedAssets.includes(select.value)) {
+                    hasDuplicate = true;
+                }
+                selectedAssets.push(select.value);
+            }
+        });
+
+        if (hasDuplicate) {
+            e.preventDefault();
+            alert('Không được chọn trùng máy! Vui lòng kiểm tra lại.');
+            return false;
+        }
+
+        if (selectedAssets.length === 0) {
+            e.preventDefault();
+            alert('Vui lòng chọn ít nhất 1 máy.');
+            return false;
         }
     });
-}
 
-// Validation: End date must be after start date
-document.getElementById('orderForm').addEventListener('submit', function(e) {
-    const startDate = document.querySelector('[name="startDate"]').value;
-    const endDate = document.querySelector('[name="endDate"]').value;
-    const totalCost = parseFloat(totalCostInput.value);
-    
-    if (endDate && startDate && new Date(endDate) < new Date(startDate)) {
-        e.preventDefault();
-        alert('Ngày kết thúc phải sau ngày bắt đầu!');
-        return false;
-    }
-    
-    if (isNaN(totalCost) || totalCost < 1000000) {
-        e.preventDefault();
-        alert('Giá trị hợp đồng phải từ 1,000,000 VNĐ trở lên!');
-        totalCostInput.focus();
-        return false;
-    }
-});
+    // Initialize Select2 for customer dropdown
+    $(document).ready(function() {
+        $('#customerSelect').select2({
+            theme: 'bootstrap-5',
+            placeholder: '-- Chọn khách hàng --',
+            allowClear: true
+        });
+    });
 </script>
-</div>
-</div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

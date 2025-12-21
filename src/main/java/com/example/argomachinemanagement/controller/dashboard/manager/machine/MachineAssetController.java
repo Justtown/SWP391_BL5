@@ -216,14 +216,22 @@ public class MachineAssetController extends HttpServlet {
         String serialNumber = request.getParameter("serialNumber");
         String modelIdStr = request.getParameter("modelId");
         String status = request.getParameter("status");
-        String rentalStatus = request.getParameter("rentalStatus");
         String location = request.getParameter("location");
         String purchaseDateStr = request.getParameter("purchaseDate");
         String note = request.getParameter("note");
 
+        // Tự động set rentalStatus dựa trên status
+        // ACTIVE -> AVAILABLE, INACTIVE -> MAINTENANCE
+        String rentalStatus;
+        if ("ACTIVE".equals(status)) {
+            rentalStatus = "AVAILABLE";
+        } else {
+            rentalStatus = "MAINTENANCE";
+        }
+
         // Validation
         if (serialNumber == null || serialNumber.trim().isEmpty() ||
-            modelIdStr == null || modelIdStr.isEmpty()) {
+                modelIdStr == null || modelIdStr.isEmpty()) {
             request.getSession().setAttribute("errorMsg", "Số serial và Dòng máy là bắt buộc");
             response.sendRedirect(request.getContextPath() + "/manager/machine-assets");
             return;
@@ -241,7 +249,7 @@ public class MachineAssetController extends HttpServlet {
                     .serialNumber(serialNumber.trim())
                     .modelId(Integer.parseInt(modelIdStr))
                     .status(status != null && !status.isEmpty() ? status : "ACTIVE")
-                    .rentalStatus(rentalStatus != null && !rentalStatus.isEmpty() ? rentalStatus : "AVAILABLE")
+                    .rentalStatus(rentalStatus)
                     .location(location != null ? location.trim() : null)
                     .purchaseDate(purchaseDateStr != null && !purchaseDateStr.isEmpty() ?
                             Date.valueOf(purchaseDateStr) : null)
@@ -278,8 +286,8 @@ public class MachineAssetController extends HttpServlet {
 
         // Validation
         if (idStr == null || idStr.isEmpty() ||
-            serialNumber == null || serialNumber.trim().isEmpty() ||
-            modelIdStr == null || modelIdStr.isEmpty()) {
+                serialNumber == null || serialNumber.trim().isEmpty() ||
+                modelIdStr == null || modelIdStr.isEmpty()) {
             request.getSession().setAttribute("errorMsg", "Tất cả các trường bắt buộc phải được điền");
             response.sendRedirect(request.getContextPath() + "/manager/machine-assets");
             return;
