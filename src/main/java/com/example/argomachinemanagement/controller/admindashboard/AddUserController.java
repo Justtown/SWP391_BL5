@@ -47,6 +47,7 @@ public class AddUserController extends HttpServlet {
         String address = request.getParameter("address");
         String dob = request.getParameter("dob");
         String password = request.getParameter("password");
+        String confirmPassword = request.getParameter("confirmPassword");
         String roleName = request.getParameter("role");
         String statusStr = request.getParameter("status");
         
@@ -96,6 +97,19 @@ public class AddUserController extends HttpServlet {
         
         if (password == null || password.trim().isEmpty() || password.length() < 6) {
             request.setAttribute("errorMessage", "Password must be at least 6 characters!");
+            showAddFormWithData(request, response, fullName, email, username, phone, address, dob, roleName, statusStr);
+            return;
+        }
+        
+        // Validate confirm password
+        if (confirmPassword == null || confirmPassword.trim().isEmpty()) {
+            request.setAttribute("errorMessage", "Please confirm your password!");
+            showAddFormWithData(request, response, fullName, email, username, phone, address, dob, roleName, statusStr);
+            return;
+        }
+        
+        if (!password.equals(confirmPassword)) {
+            request.setAttribute("errorMessage", "Mật khẩu xác nhận không khớp với mật khẩu!");
             showAddFormWithData(request, response, fullName, email, username, phone, address, dob, roleName, statusStr);
             return;
         }

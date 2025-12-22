@@ -1,31 +1,44 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Management - Argo Machine Management</title>
+    <title>Quản lý User - Argo Machine Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
-            background-color: #f5f5f5;
-            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: #f8f9fa;
         }
-        .user-management-container {
+        .page-header {
             background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            max-width: 100%;
-            box-sizing: border-box;
+            border-bottom: 1px solid #dee2e6;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
         }
-        .page-title {
-            font-size: 2rem;
-            font-weight: bold;
-            margin-bottom: 30px;
-            text-align: center;
+        
+        .breadcrumb {
+            margin-bottom: 0;
+        }
+        
+        .breadcrumb-item a {
+            color: #0d6efd;
+            text-decoration: none;
+        }
+        
+        .breadcrumb-item a:hover {
+            text-decoration: underline;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
         }
         .filter-section {
             display: flex;
@@ -36,7 +49,7 @@
             width: 100%;
         }
         .filter-dropdown {
-            width: 120px;
+            width: 150px;
             flex-shrink: 0;
         }
         .search-container {
@@ -108,11 +121,6 @@
             border-color: #1aa179;
             color: white;
         }
-        .no-users-message {
-            text-align: center;
-            padding: 40px;
-            color: #6c757d;
-        }
         .pagination-info {
             margin-bottom: 15px;
             color: #6c757d;
@@ -155,9 +163,40 @@
     </style>
 </head>
 <body>
-    <div class="container-fluid" style="max-width: 100%; overflow-x: hidden;">
-        <div class="user-management-container">
-            <h1 class="page-title">User Management</h1>
+    <jsp:include page="/view/common/dashboard/sideBar.jsp" />
+    
+    <div class="main-content">
+        <!-- Page Header -->
+        <div class="page-header d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="mb-1">
+                    <i class="fas fa-users me-2"></i>
+                    Quản lý User
+                </h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item">
+                            <a href="${pageContext.request.contextPath}/admin/dashboard">Dashboard</a>
+                        </li>
+                        <li class="breadcrumb-item active">
+                            Quản lý User
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <a href="${pageContext.request.contextPath}/add-user" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i> Thêm user mới
+                </a>
+                <span>
+                    <i class="fas fa-user-circle me-1"></i> ${sessionScope.fullName}
+                </span>
+            </div>
+        </div>
+        
+        <!-- Content -->
+        <div class="container-fluid">
+            <div class="content-card">
             
             <!-- Filter and Search Section -->
             <div class="filter-section">
@@ -178,20 +217,16 @@
                 <div class="search-container">
                     <i class="fas fa-search search-icon"></i>
                     <input type="text" class="form-control search-input" id="keyword" 
-                           name="keyword" placeholder="Search..." 
+                           name="keyword" placeholder="Tìm kiếm theo tên, email..." 
                            value="${keyword != null ? keyword : ''}">
                     <i class="fas fa-times clear-search" id="clearSearch"></i>
                 </div>
-                
-                <a href="${pageContext.request.contextPath}/add-user" class="add-user-link">
-                    <i class="fas fa-plus"></i> Add new user
-                </a>
             </div>
             
             <!-- Pagination Info -->
             <c:if test="${not empty totalUsers}">
                 <div class="pagination-info">
-                    Showing ${startIndex + 1} to ${startIndex + users.size()} of ${totalUsers} users
+                    Hiển thị ${startIndex + 1} đến ${startIndex + users.size()} trong tổng số ${totalUsers} users
                 </div>
             </c:if>
             
@@ -201,11 +236,11 @@
                     <thead>
                         <tr>
                             <th>STT</th>
-                            <th>Name</th>
-                            <th>Role</th>
-                            <th>Gmail</th>
-                            <th>Status</th>
-                            <th>Action</th>
+                            <th>Tên</th>
+                            <th>Vai trò</th>
+                            <th>Email</th>
+                            <th>Trạng thái</th>
+                            <th>Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -225,7 +260,7 @@
                                         <td>
                                             <button type="button" class="btn btn-update btn-sm" 
                                                     data-user-id="${user.id}">
-                                                Update
+                                                <i class="fas fa-edit me-1"></i> Cập nhật
                                             </button>
                                         </td>
                                     </tr>
@@ -233,8 +268,9 @@
                             </c:when>
                             <c:otherwise>
                                 <tr>
-                                    <td colspan="6" class="no-users-message">
-                                        No users found
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                                        Không tìm thấy user nào
                                     </td>
                                 </tr>
                             </c:otherwise>
@@ -250,12 +286,12 @@
                     <c:choose>
                         <c:when test="${currentPage > 1}">
                             <a href="#" class="pagination-btn" data-page="${currentPage - 1}">
-                                <i class="fas fa-chevron-left"></i> Previous
+                                <i class="fas fa-chevron-left"></i> Trước
                             </a>
                         </c:when>
                         <c:otherwise>
                             <span class="pagination-btn disabled">
-                                <i class="fas fa-chevron-left"></i> Previous
+                                <i class="fas fa-chevron-left"></i> Trước
                             </span>
                         </c:otherwise>
                     </c:choose>
@@ -279,22 +315,28 @@
                     <c:choose>
                         <c:when test="${currentPage < totalPages}">
                             <a href="#" class="pagination-btn" data-page="${currentPage + 1}">
-                                Next <i class="fas fa-chevron-right"></i>
+                                Sau <i class="fas fa-chevron-right"></i>
                             </a>
                         </c:when>
                         <c:otherwise>
                             <span class="pagination-btn disabled">
-                                Next <i class="fas fa-chevron-right"></i>
+                                Sau <i class="fas fa-chevron-right"></i>
                             </span>
                         </c:otherwise>
                     </c:choose>
                 </div>
             </c:if>
+            </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Sidebar toggle for mobile
+        document.getElementById('sidebarToggle')?.addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('active');
+        });
+        
         // Filter and search functionality
         document.addEventListener('DOMContentLoaded', function() {
             const roleFilter = document.getElementById('roleFilter');
