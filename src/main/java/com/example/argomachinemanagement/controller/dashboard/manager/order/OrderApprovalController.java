@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Controller quản lý duyệt Orders cho Manager
@@ -202,7 +203,7 @@ public class OrderApprovalController extends HttpServlet {
                     MachineAsset asset = machineAssetDAO.findById(item.getAssetId());
                     if (asset != null) {
                         boolean isAvailable = "ACTIVE".equals(asset.getStatus()) &&
-                                              "AVAILABLE".equals(asset.getRentalStatus());
+                                "AVAILABLE".equals(asset.getRentalStatus());
                         itemMap.put("isAvailable", isAvailable);
                         itemMap.put("currentStatus", asset.getStatus());
                         itemMap.put("currentRentalStatus", asset.getRentalStatus());
@@ -268,8 +269,8 @@ public class OrderApprovalController extends HttpServlet {
             for (OrderItem item : items) {
                 MachineAsset asset = machineAssetDAO.findById(item.getAssetId());
                 if (asset == null ||
-                    !"ACTIVE".equals(asset.getStatus()) ||
-                    !"AVAILABLE".equals(asset.getRentalStatus())) {
+                        !"ACTIVE".equals(asset.getStatus()) ||
+                        !"AVAILABLE".equals(asset.getRentalStatus())) {
                     unavailableMachines.add(item.getSerialNumber() != null ?
                             item.getSerialNumber() : "ID: " + item.getAssetId());
                 }
@@ -293,7 +294,7 @@ public class OrderApprovalController extends HttpServlet {
 
                 // 2. Create contract
                 String insertContractSql = "INSERT INTO contracts (contract_code, customer_id, manager_id, start_date, end_date, status, note) " +
-                                           "VALUES (?, ?, ?, ?, ?, 'ACTIVE', ?)";
+                        "VALUES (?, ?, ?, ?, ?, 'ACTIVE', ?)";
                 PreparedStatement psContract = conn.prepareStatement(insertContractSql, Statement.RETURN_GENERATED_KEYS);
                 psContract.setString(1, contractCode);
                 psContract.setInt(2, order.getCustomerId());
@@ -344,8 +345,25 @@ public class OrderApprovalController extends HttpServlet {
 
                 conn.commit();
 
-                request.getSession().setAttribute("successMsg",
-                        "Đã duyệt đơn hàng và tạo hợp đồng " + contractCode + " thành công");
+                // Auto-cancel conflicting orders (orders khác có chứa cùng máy)
+                String successMsg = "Đã duyệt đơn hàng và tạo hợp đồng " + contractCode + " thành công";
+
+                List<Integer> assetIds = items.stream()
+                        .map(OrderItem::getAssetId)
+                        .collect(Collectors.toList());
+
+                List<Integer> conflictingOrderIds = orderDAO.findPendingOrdersContainingAssets(assetIds, orderId);
+
+                if (!conflictingOrderIds.isEmpty()) {
+                    String rejectReason = "Máy trong đơn hàng này đã được thuê trong đơn hàng " + order.getOrderCode();
+                    int cancelledCount = orderDAO.rejectMultiple(conflictingOrderIds, currentUser.getId(), rejectReason);
+
+                    if (cancelledCount > 0) {
+                        successMsg += " (" + cancelledCount + " đơn hàng khác đã bị hủy do trùng máy)";
+                    }
+                }
+
+                request.getSession().setAttribute("successMsg", successMsg);
 
             } catch (SQLException e) {
                 if (conn != null) {
@@ -379,7 +397,7 @@ public class OrderApprovalController extends HttpServlet {
      */
     private String generateContractCode(Connection conn) throws SQLException {
         String sql = "SELECT MAX(CAST(SUBSTRING(contract_code, 9) AS UNSIGNED)) as max_num " +
-                     "FROM contracts WHERE contract_code LIKE CONCAT('CT-', YEAR(CURRENT_DATE), '-%')";
+                "FROM contracts WHERE contract_code LIKE CONCAT('CT-', YEAR(CURRENT_DATE), '-%')";
         int nextNum = 1;
 
         PreparedStatement ps = conn.prepareStatement(sql);

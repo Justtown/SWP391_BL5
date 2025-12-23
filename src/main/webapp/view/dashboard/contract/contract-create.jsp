@@ -412,12 +412,32 @@
         }
     }
 
+    // Set min date cho startDate là ngày hiện tại
+    const today = new Date().toISOString().split('T')[0];
+    const startDateInput = document.querySelector('input[name="startDate"]');
+    if (startDateInput) {
+        startDateInput.setAttribute('min', today);
+    }
+
     // Form validation
     document.getElementById('contractForm').addEventListener('submit', function(e) {
-        // Validate ngày bắt đầu < ngày kết thúc
         const startDate = document.querySelector('input[name="startDate"]').value;
         const endDate = document.querySelector('input[name="endDate"]').value;
 
+        // Validate ngày bắt đầu >= ngày hiện tại
+        if (startDate) {
+            const startDateObj = new Date(startDate);
+            const todayObj = new Date();
+            todayObj.setHours(0, 0, 0, 0);
+
+            if (startDateObj < todayObj) {
+                e.preventDefault();
+                alert('Ngày bắt đầu phải từ ngày hôm nay trở đi!');
+                return false;
+            }
+        }
+
+        // Validate ngày bắt đầu < ngày kết thúc
         if (startDate && endDate) {
             if (new Date(startDate) >= new Date(endDate)) {
                 e.preventDefault();

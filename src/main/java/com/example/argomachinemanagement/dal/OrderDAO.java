@@ -486,6 +486,86 @@ public class OrderDAO extends DBContext implements I_DAO<Order> {
         return count;
     }
 
+    /**
+     * Tìm tất cả order PENDING có chứa bất kỳ asset_id nào trong danh sách
+     * @param assetIds Danh sách asset_id cần kiểm tra
+     * @param excludeOrderId Order ID cần loại trừ (order vừa approve)
+     * @return Danh sách order IDs bị conflict
+     */
+    public List<Integer> findPendingOrdersContainingAssets(List<Integer> assetIds, Integer excludeOrderId) {
+        List<Integer> orderIds = new ArrayList<>();
+
+        if (assetIds == null || assetIds.isEmpty()) {
+            return orderIds;
+        }
+
+        // Build IN clause với số lượng placeholder tương ứng
+        String placeholders = String.join(",", assetIds.stream().map(id -> "?").toArray(String[]::new));
+        String sql = "SELECT DISTINCT o.id FROM orders o " +
+                "INNER JOIN order_items oi ON o.id = oi.order_id " +
+                "WHERE o.status = 'PENDING' AND o.id != ? AND oi.asset_id IN (" + placeholders + ")";
+
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, excludeOrderId);
+
+            int paramIndex = 2;
+            for (Integer assetId : assetIds) {
+                statement.setInt(paramIndex++, assetId);
+            }
+
+            resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                orderIds.add(resultSet.getInt("id"));
+            }
+        } catch (SQLException ex) {
+            System.out.println("Error in OrderDAO.findPendingOrdersContainingAssets: " + ex.getMessage());
+        } finally {
+            closeResources();
+        }
+
+        return orderIds;
+    }
+
+    /**
+     * Reject nhiều orders cùng lúc với lý do
+     * @param orderIds Danh sách order IDs cần reject
+     * @param managerId Manager thực hiện
+     * @param reason Lý do reject
+     * @return Số orders đã được reject
+     */
+    public int rejectMultiple(List<Integer> orderIds, Integer managerId, String reason) {
+        if (orderIds == null || orderIds.isEmpty()) {
+            return 0;
+        }
+
+        String placeholders = String.join(",", orderIds.stream().map(id -> "?").toArray(String[]::new));
+        String sql = "UPDATE orders SET status = 'REJECTED', manager_id = ?, reject_reason = ?, " +
+                "approved_at = CURRENT_TIMESTAMP WHERE id IN (" + placeholders + ")";
+
+        int updated = 0;
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, managerId);
+            statement.setString(2, reason);
+
+            int paramIndex = 3;
+            for (Integer orderId : orderIds) {
+                statement.setInt(paramIndex++, orderId);
+            }
+
+            updated = statement.executeUpdate();
+        } catch (SQLException ex) {
+            System.out.println("Error in OrderDAO.rejectMultiple: " + ex.getMessage());
+        } finally {
+            closeResources();
+        }
+
+        return updated;
+    }
+
     @Override
     public Map<Integer, Order> findAllMap() {
         return Map.of();
