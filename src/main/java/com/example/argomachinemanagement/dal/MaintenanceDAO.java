@@ -13,10 +13,14 @@ public class MaintenanceDAO extends DBContext {
 
     public List<Maintenance> findAll() {
         List<Maintenance> list = new ArrayList<>();
-        String sql = "SELECT m.*, mc.machine_code, mc.machine_name, mt.type_name AS machine_type_name " +
+        String sql = "SELECT m.*, " +
+                     "a.serial_number, " +
+                     "mm.model_code, mm.model_name, mm.brand, " +
+                     "mt.type_name " +
                      "FROM maintenances m " +
-                     "LEFT JOIN machines mc ON m.machine_id = mc.id " +
-                     "LEFT JOIN machine_types mt ON mc.machine_type_id = mt.id " +
+                     "LEFT JOIN machine_assets a ON m.asset_id = a.id " +
+                     "LEFT JOIN machine_models mm ON a.model_id = mm.id " +
+                     "LEFT JOIN machine_types mt ON mm.type_id = mt.id " +
                      "ORDER BY m.maintenance_date DESC, m.created_at DESC";
         
         try {
@@ -39,10 +43,14 @@ public class MaintenanceDAO extends DBContext {
     // Find by ID
     public Maintenance findById(Integer id) {
         Maintenance m = null;
-        String sql = "SELECT m.*, mc.machine_code, mc.machine_name, mt.type_name AS machine_type_name " +
+        String sql = "SELECT m.*, " +
+                     "a.serial_number, " +
+                     "mm.model_code, mm.model_name, mm.brand, " +
+                     "mt.type_name " +
                      "FROM maintenances m " +
-                     "LEFT JOIN machines mc ON m.machine_id = mc.id " +
-                     "LEFT JOIN machine_types mt ON mc.machine_type_id = mt.id " +
+                     "LEFT JOIN machine_assets a ON m.asset_id = a.id " +
+                     "LEFT JOIN machine_models mm ON a.model_id = mm.id " +
+                     "LEFT JOIN machine_types mt ON mm.type_id = mt.id " +
                      "WHERE m.id = ?";
         
         try {
@@ -64,21 +72,25 @@ public class MaintenanceDAO extends DBContext {
     }
     
     // Find with filters
-    public List<Maintenance> findByFilters(Integer machineId, String maintenanceType, String status) {
+    public List<Maintenance> findByFilters(Integer assetId, String maintenanceType, String status) {
         List<Maintenance> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT m.*, mc.machine_code, mc.machine_name, mt.type_name AS machine_type_name " +
+            "SELECT m.*, " +
+            "a.serial_number, " +
+            "mm.model_code, mm.model_name, mm.brand, " +
+            "mt.type_name " +
             "FROM maintenances m " +
-            "LEFT JOIN machines mc ON m.machine_id = mc.id " +
-            "LEFT JOIN machine_types mt ON mc.machine_type_id = mt.id " +
+            "LEFT JOIN machine_assets a ON m.asset_id = a.id " +
+            "LEFT JOIN machine_models mm ON a.model_id = mm.id " +
+            "LEFT JOIN machine_types mt ON mm.type_id = mt.id " +
             "WHERE 1=1"
         );
         
         List<Object> params = new ArrayList<>();
         
-        if (machineId != null) {
-            sql.append(" AND m.machine_id = ?");
-            params.add(machineId);
+        if (assetId != null) {
+            sql.append(" AND m.asset_id = ?");
+            params.add(assetId);
         }
         
         if (maintenanceType != null && !maintenanceType.isEmpty()) {
@@ -118,13 +130,13 @@ public class MaintenanceDAO extends DBContext {
     // Insert new maintenance
     public int insert(Maintenance m) {
         int id = 0;
-        String sql = "INSERT INTO maintenances (machine_id, maintenance_type, maintenance_date, " +
+        String sql = "INSERT INTO maintenances (asset_id, maintenance_type, maintenance_date, " +
                      "performed_by, description, status) VALUES (?, ?, ?, ?, ?, ?)";
         
         try {
             connection = getConnection();
             statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            statement.setInt(1, m.getMachineId());
+            statement.setInt(1, m.getAssetId());
             statement.setString(2, m.getMaintenanceType());
             statement.setDate(3, m.getMaintenanceDate());
             statement.setString(4, m.getPerformedBy());
@@ -151,13 +163,13 @@ public class MaintenanceDAO extends DBContext {
     // Update maintenance
     public boolean update(Maintenance m) {
         boolean success = false;
-        String sql = "UPDATE maintenances SET machine_id = ?, maintenance_type = ?, " +
+        String sql = "UPDATE maintenances SET asset_id = ?, maintenance_type = ?, " +
                      "maintenance_date = ?, performed_by = ?, description = ?, status = ? WHERE id = ?";
         
         try {
             connection = getConnection();
             statement = connection.prepareStatement(sql);
-            statement.setInt(1, m.getMachineId());
+            statement.setInt(1, m.getAssetId());
             statement.setString(2, m.getMaintenanceType());
             statement.setDate(3, m.getMaintenanceDate());
             statement.setString(4, m.getPerformedBy());
@@ -241,7 +253,7 @@ public class MaintenanceDAO extends DBContext {
     private Maintenance mapResultSet(ResultSet rs) throws SQLException {
         Maintenance m = Maintenance.builder()
                 .id(rs.getInt("id"))
-                .machineId(rs.getInt("machine_id"))
+                .assetId(rs.getInt("asset_id"))
                 .maintenanceType(rs.getString("maintenance_type"))
                 .maintenanceDate(rs.getDate("maintenance_date"))
                 .performedBy(rs.getString("performed_by"))
@@ -251,9 +263,11 @@ public class MaintenanceDAO extends DBContext {
                 .build();
         
         try {
-            m.setMachineCode(rs.getString("machine_code"));
-            m.setMachineName(rs.getString("machine_name"));
-            m.setMachineTypeName(rs.getString("machine_type_name"));
+            m.setSerialNumber(rs.getString("serial_number"));
+            m.setModelCode(rs.getString("model_code"));
+            m.setModelName(rs.getString("model_name"));
+            m.setBrand(rs.getString("brand"));
+            m.setTypeName(rs.getString("type_name"));
         } catch (SQLException e) {
             // Columns might not exist
         }

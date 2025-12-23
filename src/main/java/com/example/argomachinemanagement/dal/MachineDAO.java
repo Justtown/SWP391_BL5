@@ -12,10 +12,17 @@ public class MachineDAO extends DBContext implements I_DAO<Machine> {
     @Override
     public List<Machine> findAll() {
         List<Machine> machines = new ArrayList<>();
-        String sql = "SELECT m.*, mt.type_name AS machine_type_name " +
-                     "FROM machines m " +
-                     "LEFT JOIN machine_types mt ON m.machine_type_id = mt.id " +
-                     "ORDER BY m.created_at DESC";
+        String sql = "SELECT a.id, a.serial_number AS machine_code, " +
+                     "mm.model_name AS machine_name, mm.type_id AS machine_type_id, " +
+                     "a.status, " +
+                     "CASE WHEN a.status = 'ACTIVE' AND a.rental_status = 'AVAILABLE' THEN 1 ELSE 0 END AS is_rentable, " +
+                     "a.location, a.purchase_date, a.note AS description, " +
+                     "a.created_at, NULL AS updated_at, " +
+                     "mt.type_name AS machine_type_name " +
+                     "FROM machine_assets a " +
+                     "LEFT JOIN machine_models mm ON a.model_id = mm.id " +
+                     "LEFT JOIN machine_types mt ON mm.type_id = mt.id " +
+                     "ORDER BY a.created_at DESC";
         
         try {
             connection = getConnection();
@@ -38,10 +45,17 @@ public class MachineDAO extends DBContext implements I_DAO<Machine> {
     @Override
     public Machine findById(Integer id) {
         Machine machine = null;
-        String sql = "SELECT m.*, mt.type_name AS machine_type_name " +
-                     "FROM machines m " +
-                     "LEFT JOIN machine_types mt ON m.machine_type_id = mt.id " +
-                     "WHERE m.id = ?";
+        String sql = "SELECT a.id, a.serial_number AS machine_code, " +
+                     "mm.model_name AS machine_name, mm.type_id AS machine_type_id, " +
+                     "a.status, " +
+                     "CASE WHEN a.status = 'ACTIVE' AND a.rental_status = 'AVAILABLE' THEN 1 ELSE 0 END AS is_rentable, " +
+                     "a.location, a.purchase_date, a.note AS description, " +
+                     "a.created_at, NULL AS updated_at, " +
+                     "mt.type_name AS machine_type_name " +
+                     "FROM machine_assets a " +
+                     "LEFT JOIN machine_models mm ON a.model_id = mm.id " +
+                     "LEFT JOIN machine_types mt ON mm.type_id = mt.id " +
+                     "WHERE a.id = ?";
         
         try {
             connection = getConnection();
@@ -67,21 +81,28 @@ public class MachineDAO extends DBContext implements I_DAO<Machine> {
     public List<Machine> findByFilters(String status, String keyword, Integer typeId) {
         List<Machine> machines = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT m.*, mt.type_name AS machine_type_name " +
-            "FROM machines m " +
-            "LEFT JOIN machine_types mt ON m.machine_type_id = mt.id " +
+            "SELECT a.id, a.serial_number AS machine_code, " +
+            "mm.model_name AS machine_name, mm.type_id AS machine_type_id, " +
+            "a.status, " +
+            "CASE WHEN a.status = 'ACTIVE' AND a.rental_status = 'AVAILABLE' THEN 1 ELSE 0 END AS is_rentable, " +
+            "a.location, a.purchase_date, a.note AS description, " +
+            "a.created_at, NULL AS updated_at, " +
+            "mt.type_name AS machine_type_name " +
+            "FROM machine_assets a " +
+            "LEFT JOIN machine_models mm ON a.model_id = mm.id " +
+            "LEFT JOIN machine_types mt ON mm.type_id = mt.id " +
             "WHERE 1=1"
         );
         
         List<Object> params = new ArrayList<>();
         
         if (status != null && !status.isEmpty() && !status.equals("All Status")) {
-            sql.append(" AND m.status = ?");
+            sql.append(" AND a.status = ?");
             params.add(status);
         }
         
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append(" AND (m.machine_code LIKE ? OR m.machine_name LIKE ? OR m.location LIKE ?)");
+            sql.append(" AND (a.serial_number LIKE ? OR mm.model_name LIKE ? OR a.location LIKE ?)");
             String searchPattern = "%" + keyword.trim() + "%";
             params.add(searchPattern);
             params.add(searchPattern);
@@ -89,11 +110,11 @@ public class MachineDAO extends DBContext implements I_DAO<Machine> {
         }
         
         if (typeId != null) {
-            sql.append(" AND m.machine_type_id = ?");
+            sql.append(" AND mm.type_id = ?");
             params.add(typeId);
         }
         
-        sql.append(" ORDER BY m.created_at DESC");
+        sql.append(" ORDER BY a.created_at DESC");
         
         try {
             connection = getConnection();
@@ -120,22 +141,26 @@ public class MachineDAO extends DBContext implements I_DAO<Machine> {
     
     @Override
     public int insert(Machine machine) {
+        // Note: Machine entity không đủ thông tin để tạo machine_asset (thiếu model_id)
+        // Method này sẽ không hoạt động đúng với schema mới
+        // Nên dùng MachineAssetDAO.insert() thay vì method này
         int machineId = 0;
-        String sql = "INSERT INTO machines (machine_code, machine_name, machine_type_id, status, " +
-                     "is_rentable, location, purchase_date, description) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO machine_assets (serial_number, model_id, status, rental_status, location, purchase_date, note) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
         
         try {
             connection = getConnection();
             statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            statement.setString(1, machine.getMachineCode());
-            statement.setString(2, machine.getMachineName());
-            statement.setInt(3, machine.getMachineTypeId());
-            statement.setString(4, machine.getStatus() != null ? machine.getStatus() : "ACTIVE");
-            statement.setBoolean(5, machine.getIsRentable() != null ? machine.getIsRentable() : true);
-            statement.setString(6, machine.getLocation());
-            statement.setDate(7, machine.getPurchaseDate());
-            statement.setString(8, machine.getDescription());
+            statement.setString(1, machine.getMachineCode()); // serial_number
+            // Note: machine.getMachineTypeId() không phải model_id, cần tìm model_id từ type_id
+            // Tạm thời set NULL, cần sửa logic sau
+            statement.setNull(2, java.sql.Types.INTEGER); // model_id - cần sửa
+            statement.setString(3, machine.getStatus() != null ? machine.getStatus() : "ACTIVE");
+            String rentalStatus = (machine.getIsRentable() != null && machine.getIsRentable()) ? "AVAILABLE" : "RENTED";
+            statement.setString(4, rentalStatus);
+            statement.setString(5, machine.getLocation());
+            statement.setDate(6, machine.getPurchaseDate());
+            statement.setString(7, machine.getDescription());
             
             int rowsAffected = statement.executeUpdate();
             if (rowsAffected > 0) {
@@ -156,23 +181,24 @@ public class MachineDAO extends DBContext implements I_DAO<Machine> {
     
     @Override
     public boolean update(Machine machine) {
+        // Note: Method này không đầy đủ với schema mới (thiếu model_id)
+        // Nên dùng MachineAssetDAO.update() thay vì method này
         boolean success = false;
-        String sql = "UPDATE machines SET machine_code = ?, machine_name = ?, machine_type_id = ?, " +
-                     "status = ?, is_rentable = ?, location = ?, purchase_date = ?, description = ? " +
+        String sql = "UPDATE machine_assets SET serial_number = ?, status = ?, " +
+                     "rental_status = ?, location = ?, purchase_date = ?, note = ? " +
                      "WHERE id = ?";
         
         try {
             connection = getConnection();
             statement = connection.prepareStatement(sql);
-            statement.setString(1, machine.getMachineCode());
-            statement.setString(2, machine.getMachineName());
-            statement.setInt(3, machine.getMachineTypeId());
-            statement.setString(4, machine.getStatus());
-            statement.setBoolean(5, machine.getIsRentable() != null ? machine.getIsRentable() : true);
-            statement.setString(6, machine.getLocation());
-            statement.setDate(7, machine.getPurchaseDate());
-            statement.setString(8, machine.getDescription());
-            statement.setInt(9, machine.getId());
+            statement.setString(1, machine.getMachineCode()); // serial_number
+            statement.setString(2, machine.getStatus());
+            String rentalStatus = (machine.getIsRentable() != null && machine.getIsRentable()) ? "AVAILABLE" : "RENTED";
+            statement.setString(3, rentalStatus);
+            statement.setString(4, machine.getLocation());
+            statement.setDate(5, machine.getPurchaseDate());
+            statement.setString(6, machine.getDescription());
+            statement.setInt(7, machine.getId());
             
             int rowsAffected = statement.executeUpdate();
             success = rowsAffected > 0;
@@ -190,7 +216,7 @@ public class MachineDAO extends DBContext implements I_DAO<Machine> {
      */
     public boolean deactivate(Integer id) {
         boolean success = false;
-        String sql = "UPDATE machines SET status = 'INACTIVE', is_rentable = 0 WHERE id = ?";
+        String sql = "UPDATE machine_assets SET status = 'INACTIVE' WHERE id = ?";
         
         try {
             connection = getConnection();
@@ -213,15 +239,13 @@ public class MachineDAO extends DBContext implements I_DAO<Machine> {
      */
     public boolean updateStatus(Integer id, String status) {
         boolean success = false;
-        String sql = "UPDATE machines SET status = ?, is_rentable = ? WHERE id = ?";
+        String sql = "UPDATE machine_assets SET status = ? WHERE id = ?";
         
         try {
             connection = getConnection();
             statement = connection.prepareStatement(sql);
             statement.setString(1, status);
-            // If status is ACTIVE, set is_rentable to true, otherwise false
-            statement.setBoolean(2, "ACTIVE".equals(status));
-            statement.setInt(3, id);
+            statement.setInt(2, id);
             
             int rowsAffected = statement.executeUpdate();
             success = rowsAffected > 0;
@@ -239,7 +263,7 @@ public class MachineDAO extends DBContext implements I_DAO<Machine> {
      */
     public boolean isMachineCodeExists(String machineCode, Integer excludeId) {
         boolean exists = false;
-        String sql = "SELECT COUNT(*) FROM machines WHERE machine_code = ?";
+        String sql = "SELECT COUNT(*) FROM machine_assets WHERE serial_number = ?";
         if (excludeId != null) {
             sql += " AND id != ?";
         }
@@ -307,16 +331,17 @@ public class MachineDAO extends DBContext implements I_DAO<Machine> {
         List<Machine> machines = new ArrayList<>();
 
         String sql = """
-        SELECT m.id,
-               m.machine_code,
-               m.machine_name,
-               m.status,
+        SELECT a.id,
+               a.serial_number AS machine_code,
+               mm.model_name AS machine_name,
+               a.status,
                mt.type_name AS machine_type_name
-        FROM machines m
-        JOIN machine_types mt ON m.machine_type_id = mt.id
-        WHERE m.status = 'ACTIVE'
-          AND m.is_rentable = 1
-        ORDER BY m.created_at DESC
+        FROM machine_assets a
+        JOIN machine_models mm ON a.model_id = mm.id
+        JOIN machine_types mt ON mm.type_id = mt.id
+        WHERE a.status = 'ACTIVE'
+          AND a.rental_status = 'AVAILABLE'
+        ORDER BY a.created_at DESC
     """;
 
         try {
@@ -348,13 +373,19 @@ public class MachineDAO extends DBContext implements I_DAO<Machine> {
         Machine machine = null;
 
         String sql = """
-        SELECT m.*,
+        SELECT a.id, a.serial_number AS machine_code,
+               mm.model_name AS machine_name, mm.type_id AS machine_type_id,
+               a.status,
+               CASE WHEN a.status = 'ACTIVE' AND a.rental_status = 'AVAILABLE' THEN 1 ELSE 0 END AS is_rentable,
+               a.location, a.purchase_date, a.note AS description,
+               a.created_at, NULL AS updated_at,
                mt.type_name AS machine_type_name
-        FROM machines m
-        JOIN machine_types mt ON m.machine_type_id = mt.id
-        WHERE m.id = ?
-          AND m.status = 'ACTIVE'
-          AND m.is_rentable = 1
+        FROM machine_assets a
+        JOIN machine_models mm ON a.model_id = mm.id
+        JOIN machine_types mt ON mm.type_id = mt.id
+        WHERE a.id = ?
+          AND a.status = 'ACTIVE'
+          AND a.rental_status = 'AVAILABLE'
     """;
 
         try {

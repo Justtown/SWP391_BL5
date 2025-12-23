@@ -202,26 +202,13 @@
                         <fmt:formatDate value="${contract.createdAt}" pattern="dd/MM/yyyy HH:mm"/>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="detail-label">Cập nhật lần cuối</div>
-                    <div class="detail-value">
-                        <c:choose>
-                            <c:when test="${not empty contract.updatedAt}">
-                                <fmt:formatDate value="${contract.updatedAt}" pattern="dd/MM/yyyy HH:mm"/>
-                            </c:when>
-                            <c:otherwise>
-                                <span class="text-muted">-</span>
-                            </c:otherwise>
-                        </c:choose>
-                    </div>
-                </div>
-            </div>
 
-            <c:if test="${not empty contract.note}">
-                <div class="row">
-                    <div class="col-12">
-                        <div class="detail-label">Ghi chú</div>
-                        <div class="detail-value">${contract.note}</div>
+                <c:if test="${not empty contract.note}">
+                    <div class="mt-4">
+                        <div class="info-label">Ghi chú</div>
+                        <div class="info-value p-3 bg-light rounded">
+                            ${contract.note}
+                        </div>
                     </div>
                 </div>
             </c:if>

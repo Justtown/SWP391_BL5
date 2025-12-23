@@ -67,6 +67,12 @@
             font-size: 0.875rem;
             margin-top: 5px;
         }
+        .is-invalid {
+            border-color: #dc3545;
+        }
+        .is-valid {
+            border-color: #28a745;
+        }
         .btn-add {
             width: 100%;
             padding: 10px;
@@ -126,7 +132,7 @@
                 <div class="mb-3">
                     <label for="fullName" class="form-label">Full name</label>
                     <input type="text" class="form-control" id="fullName" name="fullName" 
-                           value="${fullName != null ? fullName : ''}" required>
+                           value="${errorMessage != null && fullName != null ? fullName : ''}" required>
                 </div>
                 
                 <!-- Email -->
@@ -140,7 +146,7 @@
                 <div class="mb-3">
                     <label for="username" class="form-label">Username </label>
                     <input type="text" class="form-control" id="username" name="username" 
-                           value="${username != null ? username : ''}" 
+                           value="${errorMessage != null && username != null ? username : ''}" 
                            maxlength="100">
                 </div>
                 
@@ -174,6 +180,16 @@
                     <label for="password" class="form-label">Password</label>
                     <input type="password" class="form-control" id="password" name="password" 
                            required minlength="6">
+                    <small class="text-muted">Mật khẩu phải có ít nhất 6 ký tự</small>
+                </div>
+                
+                <!-- Confirm Password -->
+                <div class="mb-3">
+                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                    <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" 
+                           required minlength="6">
+                    <small class="text-muted" id="confirmPasswordHelp">Nhập lại mật khẩu để xác nhận</small>
+                    <div class="error-message" id="confirmPasswordError" style="display: none;"></div>
                 </div>
                 
                 <!-- Role -->
@@ -234,11 +250,52 @@
             });
         }
         
+        // Real-time password confirmation validation
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const confirmPasswordError = document.getElementById('confirmPasswordError');
+        const confirmPasswordHelp = document.getElementById('confirmPasswordHelp');
+        
+        function validatePasswordMatch() {
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            
+            if (confirmPassword.length > 0) {
+                if (password !== confirmPassword) {
+                    confirmPasswordInput.classList.add('is-invalid');
+                    confirmPasswordError.textContent = 'Mật khẩu xác nhận không khớp với mật khẩu!';
+                    confirmPasswordError.style.display = 'block';
+                    confirmPasswordHelp.style.display = 'none';
+                    return false;
+                } else {
+                    confirmPasswordInput.classList.remove('is-invalid');
+                    confirmPasswordInput.classList.add('is-valid');
+                    confirmPasswordError.style.display = 'none';
+                    confirmPasswordHelp.style.display = 'block';
+                    return true;
+                }
+            } else {
+                confirmPasswordInput.classList.remove('is-invalid', 'is-valid');
+                confirmPasswordError.style.display = 'none';
+                confirmPasswordHelp.style.display = 'block';
+                return false;
+            }
+        }
+        
+        passwordInput.addEventListener('input', function() {
+            if (confirmPasswordInput.value.length > 0) {
+                validatePasswordMatch();
+            }
+        });
+        
+        confirmPasswordInput.addEventListener('input', validatePasswordMatch);
+        
         // Form validation
         document.getElementById('addUserForm').addEventListener('submit', function(e) {
             const fullName = document.getElementById('fullName').value.trim();
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
             const role = document.getElementById('role').value;
             
             if (!fullName) {
@@ -256,6 +313,24 @@
             if (!password || password.length < 6) {
                 e.preventDefault();
                 alert('Password must be at least 6 characters!');
+                return false;
+            }
+            
+            if (!confirmPassword) {
+                e.preventDefault();
+                alert('Please confirm your password!');
+                confirmPasswordInput.focus();
+                return false;
+            }
+            
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                confirmPasswordInput.classList.add('is-invalid');
+                confirmPasswordError.textContent = 'Mật khẩu xác nhận không khớp với mật khẩu!';
+                confirmPasswordError.style.display = 'block';
+                confirmPasswordHelp.style.display = 'none';
+                confirmPasswordInput.focus();
+                alert('Mật khẩu xác nhận không khớp với mật khẩu!');
                 return false;
             }
             

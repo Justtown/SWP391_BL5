@@ -277,6 +277,16 @@ public class ContractItemDAO extends DBContext implements I_DAO<ContractItem> {
             item.setTypeName(rs.getString("type_name"));
             item.setAssetStatus(rs.getString("asset_status"));
             item.setRentalStatus(rs.getString("rental_status"));
+            
+            // Set contract fields if available
+            try {
+                item.setContractCode(rs.getString("contract_code"));
+                item.setContractStatus(rs.getString("contract_status"));
+                item.setContractStartDate(rs.getDate("start_date"));
+                item.setContractEndDate(rs.getDate("end_date"));
+            } catch (SQLException e) {
+                // Ignore if contract columns don't exist
+            }
         } catch (SQLException e) {
             // Ignore if columns don't exist
         }
@@ -332,5 +342,54 @@ public class ContractItemDAO extends DBContext implements I_DAO<ContractItem> {
         }
 
         return total;
+    }
+
+    /**
+     * Lấy tất cả máy mà customer đang thuê và đã thuê
+     * Bao gồm thông tin contract để phân biệt đang thuê (ACTIVE) và đã thuê (FINISHED)
+     */
+    public List<ContractItem> findByCustomerId(Integer customerId) {
+        List<ContractItem> items = new ArrayList<>();
+        String sql = "SELECT ci.*, " +
+                     "ma.serial_number, ma.status AS asset_status, ma.rental_status, " +
+                     "mm.model_code, mm.model_name, mm.brand, " +
+                     "mt.type_name, " +
+                     "c.contract_code, c.status AS contract_status, c.start_date, c.end_date " +
+                     "FROM contract_items ci " +
+                     "INNER JOIN contracts c ON ci.contract_id = c.id " +
+                     "INNER JOIN machine_assets ma ON ci.asset_id = ma.id " +
+                     "INNER JOIN machine_models mm ON ma.model_id = mm.id " +
+                     "INNER JOIN machine_types mt ON mm.type_id = mt.id " +
+                     "WHERE c.customer_id = ? " +
+                     "AND c.status IN ('ACTIVE', 'FINISHED') " +
+                     "ORDER BY c.status DESC, c.start_date DESC, ci.id DESC";
+
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, customerId);
+            resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                ContractItem item = getFromResultSet(resultSet);
+                // Set thêm thông tin contract
+                try {
+                    item.setContractCode(resultSet.getString("contract_code"));
+                    item.setContractStatus(resultSet.getString("contract_status"));
+                    item.setContractStartDate(resultSet.getDate("start_date"));
+                    item.setContractEndDate(resultSet.getDate("end_date"));
+                } catch (SQLException e) {
+                    // Ignore if columns don't exist
+                }
+                items.add(item);
+            }
+        } catch (SQLException ex) {
+            System.out.println("Error in findByCustomerId: " + ex.getMessage());
+            ex.printStackTrace();
+        } finally {
+            closeResources();
+        }
+
+        return items;
     }
 }

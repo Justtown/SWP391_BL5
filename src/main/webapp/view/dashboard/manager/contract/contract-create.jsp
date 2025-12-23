@@ -322,38 +322,43 @@
 
             let optionsHtml = '<option value="">-- Chọn máy --</option>';
             availableAssets.forEach(asset => {
+                // Escape HTML để tránh XSS và đảm bảo hiển thị đúng
+                const serialNumber = String(asset.serialNumber || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+                const modelName = String(asset.modelName || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+                const brand = String(asset.brand || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
                 optionsHtml += '<option value="' + asset.id + '">' +
-                              asset.serialNumber + ' - ' + asset.modelName + ' (' + asset.brand + ')' +
+                              serialNumber + ' - ' + modelName + ' (' + brand + ')' +
                               '</option>';
             });
 
-            newItem.innerHTML = `
-                <div class="row align-items-center">
-                    <div class="col-md-5">
-                        <label class="form-label">Máy</label>
-                        <select class="form-select asset-select" name="assetId[]" required onchange="updateTotal()">
-                            ${optionsHtml}
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Giá thuê (VND)</label>
-                        <input type="number" class="form-control price-input" name="price[]"
-                               min="0" step="1000" onchange="updateTotal()" placeholder="0">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Ghi chú</label>
-                        <input type="text" class="form-control" name="itemNote[]" placeholder="Ghi chú...">
-                    </div>
-                    <div class="col-md-1 text-center">
-                        <label class="form-label">&nbsp;</label>
-                        <div>
-                            <span class="remove-item-btn" onclick="removeItem('item-${itemCounter}')">
-                                <i class="fas fa-trash-alt fa-lg"></i>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            `;
+            // Dùng string concatenation thay vì template literal để tránh conflict với JSP EL
+            const itemId = 'item-' + itemCounter;
+            newItem.innerHTML =
+                '<div class="row align-items-center">' +
+                '    <div class="col-md-5">' +
+                '        <label class="form-label">Máy</label>' +
+                '        <select class="form-select asset-select" name="assetId[]" required onchange="updateTotal()">' +
+                optionsHtml +
+                '        </select>' +
+                '    </div>' +
+                '    <div class="col-md-3">' +
+                '        <label class="form-label">Giá thuê (VND)</label>' +
+                '        <input type="number" class="form-control price-input" name="price[]"' +
+                '               min="0" step="1000" onchange="updateTotal()" placeholder="0">' +
+                '    </div>' +
+                '    <div class="col-md-3">' +
+                '        <label class="form-label">Ghi chú</label>' +
+                '        <input type="text" class="form-control" name="itemNote[]" placeholder="Ghi chú...">' +
+                '    </div>' +
+                '    <div class="col-md-1 text-center">' +
+                '        <label class="form-label">&nbsp;</label>' +
+                '        <div>' +
+                '            <span class="remove-item-btn" onclick="removeItem(\'' + itemId + '\')">' +
+                '                <i class="fas fa-trash-alt fa-lg"></i>' +
+                '            </span>' +
+                '        </div>' +
+                '    </div>' +
+                '</div>';
 
             container.appendChild(newItem);
             itemCounter++;

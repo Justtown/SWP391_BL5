@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
+import java.sql.Date;
 
 /**
  * Entity ContractItem theo bảng contract_items trong database
@@ -28,4 +29,10 @@ public class ContractItem {
     private String typeName;
     private String assetStatus;
     private String rentalStatus;
+    
+    // Contract information (từ JOIN với contracts)
+    private String contractCode;
+    private String contractStatus;
+    private Date contractStartDate;
+    private Date contractEndDate;
 }

@@ -338,8 +338,12 @@
 
         let optionsHtml = '<option value="">-- Chọn máy --</option>';
         availableAssets.forEach(asset => {
+            // Escape HTML để tránh XSS và đảm bảo hiển thị đúng
+            const serialNumber = String(asset.serialNumber || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+            const modelName = String(asset.modelName || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+            const brand = String(asset.brand || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
             optionsHtml += '<option value="' + asset.id + '">' +
-                asset.serialNumber + ' - ' + asset.modelName + ' (' + asset.brand + ')' +
+                serialNumber + ' - ' + modelName + ' (' + brand + ')' +
                 '</option>';
         });
 

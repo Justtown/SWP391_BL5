@@ -1,11 +1,12 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><c:choose><c:when test="${sessionScope.roleName == 'customer'}">Hợp đồng của tôi</c:when><c:otherwise>Contract Management</c:otherwise></c:choose> - Argo Machine Management</title>
+    <title>Sản phẩm của tôi - Argo Machine Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -53,16 +54,6 @@
         .clear-search:hover {
             color: #dc3545;
         }
-        .add-contract-link {
-            color: #0d6efd;
-            text-decoration: none;
-            font-weight: 500;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-        .add-contract-link:hover {
-            text-decoration: underline;
-        }
         .table-container {
             overflow-x: auto;
         }
@@ -80,20 +71,12 @@
             font-size: 0.875rem;
             font-weight: 500;
         }
-        .status-DRAFT {
-            background-color: #ffc107;
-            color: #000;
-        }
         .status-ACTIVE {
             background-color: #28a745;
             color: #fff;
         }
         .status-FINISHED {
             background-color: #6c757d;
-            color: #fff;
-        }
-        .status-CANCELLED {
-            background-color: #dc3545;
             color: #fff;
         }
         .pagination-info {
@@ -162,6 +145,26 @@
             padding: 1.5rem;
             margin-bottom: 1.5rem;
         }
+        
+        .stats-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stats-card h6 {
+            color: #6c757d;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stats-card .number {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #212529;
+        }
     </style>
 </head>
 <body>
@@ -172,32 +175,19 @@
         <div class="page-header d-flex justify-content-between align-items-center">
             <div>
                 <h4 class="mb-1">
-                    <i class="fas fa-file-contract me-2"></i>
-                    <c:choose>
-                        <c:when test="${sessionScope.roleName == 'customer'}">Hợp đồng của tôi</c:when>
-                        <c:otherwise>Quản lý Hợp đồng</c:otherwise>
-                    </c:choose>
+                    <i class="fas fa-box me-2"></i>
+                    Sản phẩm của tôi
                 </h4>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-0">
                         <li class="breadcrumb-item">
-                            <a href="${pageContext.request.contextPath}/<c:choose><c:when test="${sessionScope.roleName == 'customer'}">customer/dashboard</c:when><c:when test="${sessionScope.roleName == 'manager'}">manager/dashboard</c:when><c:when test="${sessionScope.roleName == 'sale'}">sale/dashboard</c:when><c:otherwise>admin/dashboard</c:otherwise></c:choose>">Dashboard</a>
+                            <a href="${pageContext.request.contextPath}/customer/dashboard">Dashboard</a>
                         </li>
-                        <li class="breadcrumb-item active">
-                            <c:choose>
-                                <c:when test="${sessionScope.roleName == 'customer'}">Hợp đồng</c:when>
-                                <c:otherwise>Hợp đồng</c:otherwise>
-                            </c:choose>
-                        </li>
+                        <li class="breadcrumb-item active">Sản phẩm</li>
                     </ol>
                 </nav>
             </div>
-            <div class="d-flex align-items-center gap-3">
-                <c:if test="${sessionScope.roleName != 'customer'}">
-                    <a href="${pageContext.request.contextPath}/contracts?action=create" class="btn btn-primary">
-                        <i class="fas fa-plus me-1"></i> Tạo hợp đồng mới
-                    </a>
-                </c:if>
+            <div class="d-flex align-items-center">
                 <span>
                     <i class="fas fa-user-circle me-1"></i> ${sessionScope.fullName}
                 </span>
@@ -206,22 +196,42 @@
         
         <!-- Content -->
         <div class="container-fluid">
+            <!-- Statistics Cards -->
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <div class="stats-card">
+                        <h6><i class="fas fa-cogs me-2"></i>Đang thuê</h6>
+                        <div class="number text-success">${activeCount != null ? activeCount : 0}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stats-card">
+                        <h6><i class="fas fa-check-circle me-2"></i>Đã thuê</h6>
+                        <div class="number text-secondary">${finishedCount != null ? finishedCount : 0}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stats-card">
+                        <h6><i class="fas fa-boxes me-2"></i>Tổng số</h6>
+                        <div class="number text-primary">${totalItems != null ? totalItems : 0}</div>
+                    </div>
+                </div>
+            </div>
+            
             <div class="content-card">
             
             <!-- Filter & Search Section -->
             <div class="filter-section">
                 <select class="form-select filter-dropdown" id="statusFilter">
-                    <option value="All Status" ${statusFilter == 'All Status' ? 'selected' : ''}>All Status</option>
-                    <option value="DRAFT" ${statusFilter == 'DRAFT' ? 'selected' : ''}>DRAFT</option>
-                    <option value="ACTIVE" ${statusFilter == 'ACTIVE' ? 'selected' : ''}>ACTIVE</option>
-                    <option value="FINISHED" ${statusFilter == 'FINISHED' ? 'selected' : ''}>FINISHED</option>
-                    <option value="CANCELLED" ${statusFilter == 'CANCELLED' ? 'selected' : ''}>CANCELLED</option>
+                    <option value="All" ${statusFilter == 'All' ? 'selected' : ''}>Tất cả</option>
+                    <option value="ACTIVE" ${statusFilter == 'ACTIVE' ? 'selected' : ''}>Đang thuê</option>
+                    <option value="FINISHED" ${statusFilter == 'FINISHED' ? 'selected' : ''}>Đã thuê</option>
                 </select>
                 
                 <div class="search-container">
                     <i class="fas fa-search search-icon"></i>
                     <input type="text" class="form-control search-input" id="keyword" 
-                           placeholder="<c:choose><c:when test="${sessionScope.roleName == 'customer'}">Tìm kiếm theo mã hợp đồng...</c:when><c:otherwise>Search by contract code, customer, manager...</c:otherwise></c:choose>" 
+                           placeholder="Tìm kiếm theo serial number, model, brand, mã hợp đồng..." 
                            value="${keyword != null ? keyword : ''}">
                     <i class="fas fa-times clear-search" id="clearSearch"></i>
                 </div>
@@ -229,82 +239,70 @@
             </div>
             
             <!-- Pagination Info -->
-            <c:if test="${not empty totalContracts}">
+            <c:if test="${not empty totalItems}">
                 <div class="pagination-info">
-                    <c:choose>
-                        <c:when test="${sessionScope.roleName == 'customer'}">
-                            Hiển thị ${startIndex + 1} đến ${startIndex + contracts.size()} trong tổng số ${totalContracts} hợp đồng
-                        </c:when>
-                        <c:otherwise>
-                            Showing ${startIndex + 1} to ${startIndex + contracts.size()} of ${totalContracts} contracts
-                        </c:otherwise>
-                    </c:choose>
+                    Hiển thị ${startIndex + 1} đến ${startIndex + products.size()} trong tổng số ${totalItems} sản phẩm
                 </div>
             </c:if>
             
-            <!-- Contract Table -->
+            <!-- Product Table -->
             <div class="table-container">
                 <table class="table table-striped table-hover">
                     <thead>
                         <tr>
                             <th>STT</th>
-                            <th>Contract Code</th>
-                            <c:if test="${sessionScope.roleName != 'customer'}">
-                                <th>Customer</th>
-                            </c:if>
-                            <c:if test="${sessionScope.roleName == 'customer' || sessionScope.roleName == 'sale'}">
-                                <th>Manager</th>
-                            </c:if>
-                            <th>Start Date</th>
-                            <th>End Date</th>
-                            <th>Status</th>
+                            <th>Serial Number</th>
+                            <th>Model</th>
+                            <th>Brand</th>
+                            <th>Loại máy</th>
+                            <th>Mã hợp đồng</th>
+                            <th>Trạng thái</th>
+                            <th>Giá thuê</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <c:choose>
-                            <c:when test="${not empty contracts && contracts.size() > 0}">
-                                <c:forEach var="contract" items="${contracts}" varStatus="loop">
+                            <c:when test="${not empty products && products.size() > 0}">
+                                <c:forEach var="product" items="${products}" varStatus="loop">
                                     <tr>
                                         <td>${startIndex + loop.index + 1}</td>
-                                        <td><strong>${contract.contractCode}</strong></td>
-                                        <c:if test="${sessionScope.roleName != 'customer'}">
-                                            <td>${contract.customerName != null ? contract.customerName : 'N/A'}</td>
-                                        </c:if>
-                                        <c:if test="${sessionScope.roleName == 'customer' || sessionScope.roleName == 'sale'}">
-                                            <td>${contract.managerName != null ? contract.managerName : 'N/A'}</td>
-                                        </c:if>
-                                        <td>${contract.startDate}</td>
-                                        <td>${contract.endDate != null ? contract.endDate : 'N/A'}</td>
+                                        <td><strong>${product.serialNumber != null ? product.serialNumber : 'N/A'}</strong></td>
+                                        <td>${product.modelName != null ? product.modelName : 'N/A'}</td>
+                                        <td>${product.brand != null ? product.brand : 'N/A'}</td>
+                                        <td>${product.typeName != null ? product.typeName : 'N/A'}</td>
+                                        <td>${product.contractCode != null ? product.contractCode : 'N/A'}</td>
                                         <td>
-                                            <span class="status-badge status-${contract.status}">
-                                                ${contract.status}
+                                            <span class="status-badge status-${product.contractStatus}">
+                                                <c:choose>
+                                                    <c:when test="${product.contractStatus == 'ACTIVE'}">Đang thuê</c:when>
+                                                    <c:when test="${product.contractStatus == 'FINISHED'}">Đã thuê</c:when>
+                                                    <c:otherwise>${product.contractStatus}</c:otherwise>
+                                                </c:choose>
                                             </span>
                                         </td>
-                                        <td>
+                                        <td class="text-success fw-semibold">
                                             <c:choose>
-                                                <c:when test="${sessionScope.roleName == 'customer'}">
-                                                    <a href="${pageContext.request.contextPath}/customer/my-contracts?action=detail&id=${contract.id}" 
-                                                       class="btn btn-sm btn-info">
-                                                        <i class="fas fa-eye"></i> Xem
-                                                    </a>
+                                                <c:when test="${not empty product.price}">
+                                                    <fmt:formatNumber value="${product.price}" type="currency" currencySymbol="đ" groupingUsed="true"/>
                                                 </c:when>
-                                                <c:otherwise>
-                                                    <a href="${pageContext.request.contextPath}/contracts?action=detail&id=${contract.id}" 
-                                                       class="btn btn-sm btn-info">
-                                                        <i class="fas fa-eye"></i> View
-                                                    </a>
-                                                </c:otherwise>
+                                                <c:otherwise>N/A</c:otherwise>
                                             </c:choose>
+                                        </td>
+                                        <td>
+                                            <a href="${pageContext.request.contextPath}/customer/products?action=detail&id=${product.id}" 
+                                               class="btn btn-sm btn-info">
+                                                <i class="fas fa-eye"></i> Xem
+                                            </a>
                                         </td>
                                     </tr>
                                 </c:forEach>
                             </c:when>
                             <c:otherwise>
                                 <tr>
-                                    <td colspan="${sessionScope.roleName == 'customer' ? '7' : '8'}" class="text-center text-muted py-4">
+                                    <td colspan="9" class="text-center text-muted py-4">
                                         <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
-                                        Không có hợp đồng nào
+                                        Không có sản phẩm nào
                                     </td>
                                 </tr>
                             </c:otherwise>
@@ -366,14 +364,6 @@
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Sidebar toggle for mobile
-        document.getElementById('sidebarToggle')?.addEventListener('click', function() {
-            document.getElementById('sidebar').classList.toggle('active');
-        });
-    </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
         document.addEventListener('DOMContentLoaded', function() {
             const statusFilter = document.getElementById('statusFilter');
             const keywordInput = document.getElementById('keyword');
@@ -412,7 +402,7 @@
                 const keyword = keywordInput.value.trim();
                 
                 const params = new URLSearchParams();
-                if (status && status !== 'All Status') {
+                if (status && status !== 'All') {
                     params.append('status', status);
                 }
                 if (keyword) {
@@ -421,10 +411,7 @@
                 params.append('page', '1');
                 
                 const queryString = params.toString();
-                const baseUrl = window.location.pathname.includes('/customer/my-contracts') 
-                    ? '${pageContext.request.contextPath}/customer/my-contracts'
-                    : '${pageContext.request.contextPath}/contracts';
-                const url = baseUrl + (queryString ? '?' + queryString : '');
+                const url = '${pageContext.request.contextPath}/customer/products' + (queryString ? '?' + queryString : '');
                 window.location.href = url;
             }
             
@@ -433,7 +420,7 @@
                 const keyword = keywordInput.value.trim();
                 
                 const params = new URLSearchParams();
-                if (status && status !== 'All Status') {
+                if (status && status !== 'All') {
                     params.append('status', status);
                 }
                 if (keyword) {
@@ -442,14 +429,10 @@
                 params.append('page', page);
                 
                 const queryString = params.toString();
-                const baseUrl = window.location.pathname.includes('/customer/my-contracts') 
-                    ? '${pageContext.request.contextPath}/customer/my-contracts'
-                    : '${pageContext.request.contextPath}/contracts';
-                const url = baseUrl + (queryString ? '?' + queryString : '');
+                const url = '${pageContext.request.contextPath}/customer/products' + (queryString ? '?' + queryString : '');
                 window.location.href = url;
             }
         });
     </script>
 </body>
 </html>
-
