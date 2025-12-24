@@ -144,7 +144,7 @@
                 <!-- Edit Profile Button ở góc trên (chỉ hiển thị khi ở chế độ view) -->
                 <c:if test="${isEditMode != true}">
                     <div class="edit-button-top">
-                        <a href="${pageContext.request.contextPath}/my-profile?mode=edit" class="btn btn-primary btn-sm">
+                        <a href="${pageContext.request.contextPath}/profile?mode=edit" class="btn btn-primary btn-sm">
                             <i class="fas fa-edit"></i> Edit Profile
                         </a>
                     </div>
@@ -154,7 +154,7 @@
                 <div class="avatar-container">
                     <label class="form-label">Avatar</label>
                     <c:choose>
-                        <c:when test="${not empty profile.avatar and profile.avatar != ''}">
+                        <c:when test="${not empty profile and not empty profile.avatar and profile.avatar != ''}">
                             <img src="${profile.avatar}" alt="Avatar" class="avatar-image" id="avatarPreview">
                         </c:when>
                         <c:otherwise>
@@ -182,9 +182,9 @@
             </c:if>
             
             <c:choose>
-                <c:when test="${isEditMode == true}">
+                <c:when test="${isEditMode == true && not empty profile}">
                     <!-- Profile Form - Edit Mode -->
-                    <form action="${pageContext.request.contextPath}/my-profile" method="POST" id="profileForm">
+                    <form action="${pageContext.request.contextPath}/profile" method="POST" id="profileForm">
                         <input type="hidden" name="action" value="update">
                         
                         <div class="row">
@@ -192,7 +192,7 @@
                             <div class="col-md-12 mb-3">
                                 <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="name" name="name" 
-                                       value="${profile.name}" required minlength="2" maxlength="100"
+                                       value="${profile.name != null ? profile.name : ''}" required minlength="2" maxlength="100"
                                        title="Tên phải có từ 2-100 ký tự">
                                 <div class="invalid-feedback">Tên phải có từ 2-100 ký tự!</div>
                             </div>
@@ -201,7 +201,7 @@
                             <div class="col-md-12 mb-3">
                                 <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
                                 <input type="email" class="form-control" id="email" name="email" 
-                                       value="${profile.email}" required maxlength="255"
+                                       value="${profile.email != null ? profile.email : ''}" required maxlength="255"
                                        pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
                                        title="Email không đúng định dạng! Ví dụ: example@gmail.com">
                                 <div class="invalid-feedback">Email không đúng định dạng!</div>
@@ -211,7 +211,7 @@
                             <div class="col-md-12 mb-3">
                                 <label for="phone" class="form-label">Phone</label>
                                 <input type="tel" class="form-control" id="phone" name="phone" 
-                                       value="${profile.phone}" maxlength="15"
+                                       value="${profile.phone != null ? profile.phone : ''}" maxlength="15"
                                        placeholder="0123456789 hoặc +84123456789"
                                        title="Số điện thoại 10 số (bắt đầu bằng 0) hoặc 11 số">
                                 <small class="form-text text-muted">Ví dụ: 0123456789 (10 số) hoặc 84123456789 (11 số)</small>
@@ -222,7 +222,7 @@
                             <div class="col-md-12 mb-3">
                                 <label for="address" class="form-label">Address</label>
                                 <textarea class="form-control" id="address" name="address" rows="3" 
-                                          maxlength="500">${profile.address}</textarea>
+                                          maxlength="500">${profile.address != null ? profile.address : ''}</textarea>
                                 <small class="form-text text-muted"><span id="addressCount">0</span>/500 ký tự</small>
                                 <div class="invalid-feedback">Địa chỉ không được vượt quá 500 ký tự!</div>
                             </div>
@@ -239,8 +239,8 @@
                             <div class="col-md-12 mb-3">
                                 <label for="birthdate" class="form-label">Birthdate</label>
                                 <input type="date" class="form-control" id="birthdate" name="birthdate" 
-                                       value="${profile.birthdate}" max="">
-                                <small class="form-text text-muted">Bạn phải ít nhất 13 tuổi</small>
+                                       value="${profile.birthdate != null ? profile.birthdate : ''}">
+                                <small class="form-text text-muted">Ngày sinh không được là tương lai</small>
                                 <div class="invalid-feedback">Ngày sinh không hợp lệ!</div>
                             </div>
 
@@ -248,13 +248,13 @@
                             <div class="col-md-12 mb-3" style="display: none;">
                                 <label for="avatar" class="form-label">Avatar URL</label>
                                 <input type="text" class="form-control" id="avatar" name="avatar" 
-                                       value="${profile.avatar}" placeholder="Enter image URL">
+                                       value="${profile.avatar != null ? profile.avatar : ''}" placeholder="Enter image URL">
                             </div>
                         </div>
 
                         <!-- Buttons -->
                         <div class="btn-group-custom">
-                            <button type="button" class="btn btn-secondary" onclick="window.location.href='${pageContext.request.contextPath}/my-profile'">
+                            <button type="button" class="btn btn-secondary" onclick="window.location.href='${pageContext.request.contextPath}/profile'">
                                 <i class="fas fa-times"></i> Cancel
                             </button>
                             <button type="submit" class="btn btn-primary">
@@ -263,17 +263,17 @@
                         </div>
                     </form>
                 </c:when>
-                <c:otherwise>
+                <c:when test="${not empty profile}">
                     <!-- Profile View Mode -->
                     <div class="view-mode">
                         <div class="info-row">
                             <div class="info-label">Name</div>
-                            <div class="info-value">${profile.name}</div>
+                            <div class="info-value">${profile.name != null ? profile.name : 'N/A'}</div>
                         </div>
                         
                         <div class="info-row">
                             <div class="info-label">Email</div>
-                            <div class="info-value">${profile.email}</div>
+                            <div class="info-value">${profile.email != null ? profile.email : 'N/A'}</div>
                         </div>
                         
                         <div class="info-row">
@@ -303,6 +303,17 @@
                             <i class="fas fa-arrow-left"></i> Back
                         </button>
                     </div>
+                </c:when>
+                <c:otherwise>
+                    <!-- No profile data -->
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> Không tìm thấy thông tin profile. Vui lòng liên hệ quản trị viên.
+                    </div>
+                    <div class="btn-group-custom">
+                        <button type="button" class="btn btn-secondary" onclick="window.location.href='${pageContext.request.contextPath}/home'">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                    </div>
                 </c:otherwise>
             </c:choose>
         </div>
@@ -313,12 +324,11 @@
         // Chỉ chạy JavaScript khi ở chế độ edit
         <c:if test="${isEditMode == true}">
         document.addEventListener('DOMContentLoaded', function() {
-            // Set max date for birthdate (today - 13 years)
+            // Set max date for birthdate (today - không cho phép ngày tương lai)
             const birthdateInput = document.getElementById('birthdate');
             if (birthdateInput) {
                 const today = new Date();
-                const maxDate = new Date(today.getFullYear() - 13, today.getMonth(), today.getDate());
-                birthdateInput.max = maxDate.toISOString().split('T')[0];
+                birthdateInput.max = today.toISOString().split('T')[0];
             }
             
             // Address character counter
@@ -420,7 +430,6 @@
                         const birthDate = new Date(birthdate);
                         const today = new Date();
                         const minDate = new Date(today.getFullYear() - 120, today.getMonth(), today.getDate());
-                        const maxDate = new Date(today.getFullYear() - 13, today.getMonth(), today.getDate());
                         
                         if (birthDate > today) {
                             isValid = false;
@@ -428,9 +437,6 @@
                         } else if (birthDate < minDate) {
                             isValid = false;
                             errorMessage = 'Ngày sinh không hợp lệ!';
-                        } else if (birthDate > maxDate) {
-                            isValid = false;
-                            errorMessage = 'Bạn phải ít nhất 13 tuổi!';
                         }
                     }
                     

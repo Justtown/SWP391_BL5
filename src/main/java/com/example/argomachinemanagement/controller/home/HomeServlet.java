@@ -1,5 +1,6 @@
 package com.example.argomachinemanagement.controller.home;
 
+import com.example.argomachinemanagement.dal.UserDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -10,6 +11,13 @@ import java.io.IOException;
 
 @WebServlet(name = "HomeServlet", urlPatterns = {"/home"})
 public class HomeServlet extends HttpServlet {
+    
+    private UserDAO userDAO;
+    
+    @Override
+    public void init() throws ServletException {
+        userDAO = new UserDAO();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -17,12 +25,16 @@ public class HomeServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         
         // Check if user is logged in
-        boolean isLoggedIn = (session != null && session.getAttribute("userId") != null);
+        if (session != null && session.getAttribute("userId") != null) {
+            // User đã đăng nhập - redirect về dashboard theo role
+            Integer userId = (Integer) session.getAttribute("userId");
+            String redirectUrl = userDAO.getDefaultUrlByUserId(userId);
+            response.sendRedirect(request.getContextPath() + redirectUrl);
+            return;
+        }
         
-        // Pass login status to JSP
-        request.setAttribute("isLoggedIn", isLoggedIn);
-        
-        request.getRequestDispatcher("/view/home/home.jsp").forward(request, response);
+        // User chưa đăng nhập - redirect về login
+        response.sendRedirect(request.getContextPath() + "/login");
     }
 
     @Override

@@ -11,7 +11,7 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.Date;
 
-@WebServlet(name = "ProfileController", urlPatterns = {"/my-profile"})
+@WebServlet(name = "ProfileController", urlPatterns = {"/profile", "/my-profile"})
 public class ProfileController extends HttpServlet {
     
     private ProfileDAO profileDAO;
@@ -34,24 +34,31 @@ public class ProfileController extends HttpServlet {
         }
         
         try {
+            // Debug: Log userId
+            System.out.println("ProfileController doGet - userId from session: " + userId);
+            
             // Lấy thông tin profile từ bảng users
             Profile profile = profileDAO.getProfileByUserId(userId);
             
-            // Nếu không tìm thấy user, redirect về login
-            if (profile == null) {
-                request.setAttribute("error", "Không tìm thấy thông tin người dùng!");
-                response.sendRedirect(request.getContextPath() + "/login");
-                return;
+            // Debug: Log profile result
+            if (profile != null) {
+                System.out.println("Profile found - Name: " + profile.getName() + ", Email: " + profile.getEmail());
+            } else {
+                System.out.println("Profile is NULL for userId: " + userId);
             }
             
-            // Set default values nếu null
-            if (profile != null) {
+            // Luôn set profile vào request attribute (có thể null)
+            request.setAttribute("profile", profile);
+            
+            // Nếu không tìm thấy user, hiển thị lỗi nhưng vẫn forward để hiển thị trang
+            if (profile == null) {
+                request.setAttribute("error", "Không tìm thấy thông tin người dùng! Vui lòng liên hệ quản trị viên.");
+            } else {
+                // Set default values nếu null
                 if (profile.getPhone() == null) profile.setPhone("");
                 if (profile.getAddress() == null) profile.setAddress("");
                 if (profile.getAvatar() == null) profile.setAvatar("");
                 if (profile.getRoleName() == null) profile.setRoleName("Customer");
-                
-                request.setAttribute("profile", profile);
             }
             
             // Kiểm tra chế độ edit (mặc định là view - chỉ edit khi có ?mode=edit)
@@ -206,14 +213,9 @@ public class ProfileController extends HttpServlet {
                         return;
                     }
                     
+                    // Kiểm tra ngày sinh không quá 120 năm trước
                     long diffInMillies = today.getTime() - birthdate.getTime();
                     long diffInYears = diffInMillies / (1000L * 60 * 60 * 24 * 365);
-                    
-                    if (diffInYears < 13) {
-                        request.setAttribute("error", "Bạn phải ít nhất 13 tuổi!");
-                        doGet(request, response);
-                        return;
-                    }
                     
                     if (diffInYears > 120) {
                         request.setAttribute("error", "Ngày sinh không hợp lệ!");
@@ -252,7 +254,7 @@ public class ProfileController extends HttpServlet {
                         session.setAttribute("successMessage", "Cập nhật thông tin thành công!");
                     }
                     // Sau khi cập nhật thành công, chuyển về chế độ view (mặc định)
-                    response.sendRedirect(request.getContextPath() + "/my-profile");
+                    response.sendRedirect(request.getContextPath() + "/profile");
                     return;
                 } else {
                     // Log lỗi chi tiết
@@ -260,7 +262,7 @@ public class ProfileController extends HttpServlet {
                     if (session != null) {
                         session.setAttribute("errorMessage", "Cập nhật thông tin thất bại! Vui lòng kiểm tra lại thông tin và thử lại.");
                     }
-                    response.sendRedirect(request.getContextPath() + "/my-profile?mode=edit");
+                    response.sendRedirect(request.getContextPath() + "/profile?mode=edit");
                     return;
                 }
             } catch (Exception e) {
@@ -270,14 +272,14 @@ public class ProfileController extends HttpServlet {
                 if (session != null) {
                     session.setAttribute("errorMessage", "Đã xảy ra lỗi khi cập nhật profile: " + e.getMessage());
                 }
-                response.sendRedirect(request.getContextPath() + "/my-profile?mode=edit");
+                response.sendRedirect(request.getContextPath() + "/profile?mode=edit");
                 return;
             }
         } else {
             if (session != null) {
                 session.setAttribute("errorMessage", "Hành động không hợp lệ!");
             }
-            response.sendRedirect(request.getContextPath() + "/my-profile");
+            response.sendRedirect(request.getContextPath() + "/profile");
             return;
         }
     }
