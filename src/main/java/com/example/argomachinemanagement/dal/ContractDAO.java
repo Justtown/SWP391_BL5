@@ -79,9 +79,9 @@ public class ContractDAO extends DBContext implements I_DAO<Contract> {
     @Override
     public int insert(Contract contract) {
         int contractId = 0;
-        String sql = "INSERT INTO contracts (contract_code, customer_id, manager_id, " +
+        String sql = "INSERT INTO contracts (contract_code, customer_id, manager_id, sale_id, " +
                      "start_date, end_date, status, note) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         
         try {
             connection = getConnection();
@@ -89,10 +89,16 @@ public class ContractDAO extends DBContext implements I_DAO<Contract> {
             statement.setString(1, contract.getContractCode());
             statement.setInt(2, contract.getCustomerId());
             statement.setInt(3, contract.getManagerId());
-            statement.setDate(4, contract.getStartDate());
-            statement.setDate(5, contract.getEndDate());
-            statement.setString(6, contract.getStatus() != null ? contract.getStatus() : "DRAFT");
-            statement.setString(7, contract.getNote());
+            // Sale ID - có thể null
+            if (contract.getSaleId() != null) {
+                statement.setInt(4, contract.getSaleId());
+            } else {
+                statement.setNull(4, Types.INTEGER);
+            }
+            statement.setDate(5, contract.getStartDate());
+            statement.setDate(6, contract.getEndDate());
+            statement.setString(7, contract.getStatus() != null ? contract.getStatus() : "DRAFT");
+            statement.setString(8, contract.getNote());
             
             int rowsAffected = statement.executeUpdate();
             if (rowsAffected > 0) {
@@ -165,6 +171,17 @@ public class ContractDAO extends DBContext implements I_DAO<Contract> {
                 .createdAt(rs.getTimestamp("created_at"))
                 .build();
         
+        // Try to get sale_id if it exists
+        try {
+            int saleId = rs.getInt("sale_id");
+            if (!rs.wasNull()) {
+                contract.setSaleId(saleId);
+            }
+        } catch (SQLException e) {
+            // Column doesn't exist, set to null
+            contract.setSaleId(null);
+        }
+        
         // Try to get updated_at if it exists
         try {
             contract.setUpdatedAt(rs.getTimestamp("updated_at"));
@@ -190,7 +207,7 @@ public class ContractDAO extends DBContext implements I_DAO<Contract> {
     /**
      * Find contracts with filters (for C1 - Contract List)
      */
-    public List<Contract> findByFilters(String status, String keyword, Integer customerId, Integer managerId) {
+    public List<Contract> findByFilters(String status, String keyword, Integer customerId, Integer managerId, Integer saleId) {
         List<Contract> contracts = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
             "SELECT c.*, " +
@@ -225,6 +242,11 @@ public class ContractDAO extends DBContext implements I_DAO<Contract> {
         if (managerId != null) {
             sql.append(" AND c.manager_id = ?");
             params.add(managerId);
+        }
+
+        if (saleId != null) {
+            sql.append(" AND c.sale_id = ?");
+            params.add(saleId);
         }
 
         sql.append(" ORDER BY c.created_at DESC");

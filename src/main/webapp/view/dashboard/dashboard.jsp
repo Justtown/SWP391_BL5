@@ -160,11 +160,6 @@
                                         <i class="fas fa-file-contract"></i> Quản lý Contract
                                     </a>
                                 </div>
-                                <div class="col-md-6">
-                                    <a href="${pageContext.request.contextPath}/manager/products" class="quick-action">
-                                        <i class="fas fa-box"></i> Quản lý Product
-                                    </a>
-                                </div>
                             </c:if>
                             
                             <!-- Sale Quick Actions -->

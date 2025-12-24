@@ -104,11 +104,6 @@
                         <i class="fas fa-file-contract me-2"></i>Quản lý Contract
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/manager/products">
-                        <i class="fas fa-box me-2"></i>Quản lý Product
-                    </a>
-                </li>
             </c:if>
             
             <!-- ==================== SALE MENU ==================== -->

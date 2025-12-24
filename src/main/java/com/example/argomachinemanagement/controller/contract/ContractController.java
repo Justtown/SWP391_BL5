@@ -2,9 +2,7 @@ package com.example.argomachinemanagement.controller.contract;
 
 import com.example.argomachinemanagement.dal.ContractDAO;
 import com.example.argomachinemanagement.dal.ContractItemDAO;
-import com.example.argomachinemanagement.dal.UserDAO;
 import com.example.argomachinemanagement.entity.Contract;
-import com.example.argomachinemanagement.entity.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -14,20 +12,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-@WebServlet(name = "ContractController", urlPatterns = {"/contracts", "/customer/my-contracts"})
+@WebServlet(name = "ContractController", urlPatterns = {"/contracts", "/customer/my-contracts", "/sale/contracts"})
 public class ContractController extends HttpServlet {
     
     private static final int PAGE_SIZE = 5;
     
     private ContractDAO contractDAO;
     private ContractItemDAO contractItemDAO;
-    private UserDAO userDAO;
     
     @Override
     public void init() throws ServletException {
         contractDAO = new ContractDAO();
         contractItemDAO = new ContractItemDAO();
-        userDAO = new UserDAO();
     }
     
     @Override
@@ -72,19 +68,22 @@ public class ContractController extends HttpServlet {
         // Determine filter by role
         Integer customerId = null;
         Integer managerId = null;
+        Integer saleId = null;
         if (userId != null && roleName != null) {
             String role = roleName.toLowerCase();
             if ("customer".equals(role)) {
                 customerId = userId; // Customer chỉ xem contracts của mình
-            } else if ("manager".equals(role) || "sale".equals(role)) {
-                managerId = userId; // Manager/Sale chỉ xem contracts mình quản lý
+            } else if ("manager".equals(role)) {
+                managerId = userId; // Manager chỉ xem contracts mình quản lý
+            } else if ("sale".equals(role)) {
+                saleId = userId; // Sale chỉ xem contracts mình đã tạo
             }
             // Admin xem tất cả (không set filter)
         }
         
         // Get filtered contracts
         List<Contract> allContracts = contractDAO.findByFilters(
-            statusFilter, keyword, customerId, managerId
+            statusFilter, keyword, customerId, managerId, saleId
         );
         
         // Pagination logic

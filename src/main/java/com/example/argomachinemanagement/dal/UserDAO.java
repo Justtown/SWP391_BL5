@@ -50,6 +50,7 @@ public class UserDAO extends DBContext implements I_DAO<User> {
                      "FROM users u " +
                      "LEFT JOIN user_role ur ON u.id = ur.user_id " +
                      "LEFT JOIN roles r ON ur.role_id = r.id " +
+                     "WHERE r.role_name != 'admin' OR r.role_name IS NULL " +
                      "ORDER BY u.id";
         
         try {

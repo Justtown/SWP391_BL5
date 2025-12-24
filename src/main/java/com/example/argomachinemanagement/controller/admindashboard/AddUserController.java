@@ -126,11 +126,21 @@ public class AddUserController extends HttpServlet {
             status = 0;
         }
         
-        // Parse DOB
+        // Parse DOB và validate không được là ngày tương lai
         Date birthdate = null;
         if (dob != null && !dob.trim().isEmpty()) {
             try {
                 birthdate = Date.valueOf(dob);
+                
+                // Validate: DOB không được là ngày tương lai
+                java.util.Date today = new java.util.Date();
+                java.util.Date dobDate = new java.util.Date(birthdate.getTime());
+                
+                if (dobDate.after(today)) {
+                    request.setAttribute("errorMessage", "Ngày sinh không được là ngày tương lai!");
+                    showAddFormWithData(request, response, fullName, email, username, phone, address, dob, roleName, statusStr);
+                    return;
+                }
             } catch (IllegalArgumentException e) {
                 request.setAttribute("errorMessage", "Invalid date format!");
                 showAddFormWithData(request, response, fullName, email, username, phone, address, dob, roleName, statusStr);

@@ -170,8 +170,10 @@
                     <label for="dob" class="form-label">DOB</label>
                     <div class="date-input-wrapper">
                         <input type="date" class="form-control" id="dob" name="dob" 
-                               value="${dob != null ? dob : ''}">
+                               value="${dob != null ? dob : ''}" max="">
                         <i class="fas fa-calendar-alt date-icon"></i>
+                        <small class="text-muted">Ngày sinh phải là ngày trong quá khứ</small>
+                        <div class="error-message" id="dobError" style="display: none;"></div>
                     </div>
                 </div>
                 
@@ -239,6 +241,31 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Set max date to today for DOB (không được chọn ngày tương lai)
+        const dobInput = document.getElementById('dob');
+        const today = new Date().toISOString().split('T')[0];
+        dobInput.setAttribute('max', today);
+        
+        // Validate DOB on input
+        dobInput.addEventListener('change', function() {
+            const selectedDate = new Date(this.value);
+            const todayDate = new Date();
+            todayDate.setHours(0, 0, 0, 0);
+            
+            if (this.value && selectedDate > todayDate) {
+                this.classList.add('is-invalid');
+                document.getElementById('dobError').textContent = 'Ngày sinh không được là ngày tương lai!';
+                document.getElementById('dobError').style.display = 'block';
+            } else if (this.value) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+                document.getElementById('dobError').style.display = 'none';
+            } else {
+                this.classList.remove('is-invalid', 'is-valid');
+                document.getElementById('dobError').style.display = 'none';
+            }
+        });
+        
         function setStatus(value, clickedBtn) {
             document.getElementById('status').value = value;
             const buttons = document.querySelectorAll('.status-btn');
@@ -297,6 +324,7 @@
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             const role = document.getElementById('role').value;
+            const dob = document.getElementById('dob').value;
             
             if (!fullName) {
                 e.preventDefault();
@@ -308,6 +336,23 @@
                 e.preventDefault();
                 alert('Email is required!');
                 return false;
+            }
+            
+            // Validate DOB - không được là ngày tương lai
+            if (dob) {
+                const selectedDate = new Date(dob);
+                const todayDate = new Date();
+                todayDate.setHours(0, 0, 0, 0);
+                
+                if (selectedDate > todayDate) {
+                    e.preventDefault();
+                    dobInput.classList.add('is-invalid');
+                    document.getElementById('dobError').textContent = 'Ngày sinh không được là ngày tương lai!';
+                    document.getElementById('dobError').style.display = 'block';
+                    dobInput.focus();
+                    alert('Ngày sinh không được là ngày tương lai!');
+                    return false;
+                }
             }
             
             if (!password || password.length < 6) {

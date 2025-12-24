@@ -129,7 +129,7 @@ public class ManagerContractController extends HttpServlet {
         }
 
         // Get all contracts with filters
-        List<Contract> allContracts = contractDAO.findByFilters(status, keyword, null, null);
+        List<Contract> allContracts = contractDAO.findByFilters(status, keyword, null, null, null);
 
         // Load items for each contract and calculate total
         for (Contract contract : allContracts) {
@@ -416,17 +416,18 @@ public class ManagerContractController extends HttpServlet {
                 conn = new DBContext().getConnection();
                 conn.setAutoCommit(false);
 
-                // 1. Insert contract
-                String insertContractSql = "INSERT INTO contracts (contract_code, customer_id, manager_id, start_date, end_date, status, note) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                // 1. Insert contract (manager tạo nên sale_id = null)
+                String insertContractSql = "INSERT INTO contracts (contract_code, customer_id, manager_id, sale_id, start_date, end_date, status, note) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
                 PreparedStatement psContract = conn.prepareStatement(insertContractSql, Statement.RETURN_GENERATED_KEYS);
                 psContract.setString(1, contractCode);
                 psContract.setInt(2, Integer.parseInt(customerIdStr));
                 psContract.setInt(3, currentUser.getId());
-                psContract.setDate(4, startDate);
-                psContract.setDate(5, endDate);
-                psContract.setString(6, status);
-                psContract.setString(7, note);
+                psContract.setNull(4, Types.INTEGER); // Manager tạo nên sale_id = null
+                psContract.setDate(5, startDate);
+                psContract.setDate(6, endDate);
+                psContract.setString(7, status);
+                psContract.setString(8, note);
                 psContract.executeUpdate();
 
                 ResultSet rsContract = psContract.getGeneratedKeys();

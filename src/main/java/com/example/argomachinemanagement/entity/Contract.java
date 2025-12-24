@@ -20,6 +20,7 @@ public class Contract {
     private String contractCode;
     private Integer customerId;
     private Integer managerId;
+    private Integer saleId; // ID của sale tạo contract
     private Date startDate;
     private Date endDate;
     private String status; // DRAFT, ACTIVE, FINISHED, CANCELLED

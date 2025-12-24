@@ -292,16 +292,22 @@ public class OrderApprovalController extends HttpServlet {
                 // 1. Generate contract code
                 String contractCode = generateContractCode(conn);
 
-                // 2. Create contract
-                String insertContractSql = "INSERT INTO contracts (contract_code, customer_id, manager_id, start_date, end_date, status, note) " +
-                        "VALUES (?, ?, ?, ?, ?, 'ACTIVE', ?)";
+                // 2. Create contract (lưu sale_id từ order)
+                String insertContractSql = "INSERT INTO contracts (contract_code, customer_id, manager_id, sale_id, start_date, end_date, status, note) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, 'ACTIVE', ?)";
                 PreparedStatement psContract = conn.prepareStatement(insertContractSql, Statement.RETURN_GENERATED_KEYS);
                 psContract.setString(1, contractCode);
                 psContract.setInt(2, order.getCustomerId());
                 psContract.setInt(3, currentUser.getId());
-                psContract.setDate(4, order.getStartDate());
-                psContract.setDate(5, order.getEndDate());
-                psContract.setString(6, "Tạo từ đơn hàng " + order.getOrderCode() + ". " +
+                // Lưu sale_id từ order (nếu có)
+                if (order.getSaleId() != null) {
+                    psContract.setInt(4, order.getSaleId());
+                } else {
+                    psContract.setNull(4, Types.INTEGER);
+                }
+                psContract.setDate(5, order.getStartDate());
+                psContract.setDate(6, order.getEndDate());
+                psContract.setString(7, "Tạo từ đơn hàng " + order.getOrderCode() + ". " +
                         (order.getNote() != null ? order.getNote() : ""));
                 psContract.executeUpdate();
 
