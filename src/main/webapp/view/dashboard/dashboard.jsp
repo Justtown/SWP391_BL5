@@ -170,11 +170,6 @@
                                     </a>
                                 </div>
                                 <div class="col-md-6">
-                                    <a href="${pageContext.request.contextPath}/sale/products" class="quick-action">
-                                        <i class="fas fa-box"></i> Xem Product
-                                    </a>
-                                </div>
-                                <div class="col-md-6">
                                     <a href="${pageContext.request.contextPath}/sale/orders" class="quick-action">
                                         <i class="fas fa-shopping-cart"></i> Tạo đơn hàng mới
                                     </a>

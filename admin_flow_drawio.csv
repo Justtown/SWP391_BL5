@@ -1,0 +1,16 @@
+    id,label,parent,style,url
+    1,Admin Dashboard,,"fillColor=#E8F4F8;strokeColor=#2E86AB;rounded=1",/admin/dashboard
+    2,User Management,1,"fillColor=#D4E6F1;strokeColor=#2E86AB;rounded=1",/manage-account
+    3,Add New User,2,"fillColor=#A9CCE3;strokeColor=#2E86AB;rounded=1",/add-user
+    4,User Info,2,"fillColor=#A9CCE3;strokeColor=#2E86AB;rounded=1",/user-info?id=X
+    5,Pending Users,1,"fillColor=#D4E6F1;strokeColor=#2E86AB;rounded=1",/admin/pending-users
+    6,Role Management,1,"fillColor=#D4E6F1;strokeColor=#2E86AB;rounded=1",/admin/role
+    7,Role Detail,6,"fillColor=#A9CCE3;strokeColor=#2E86AB;rounded=1",/admin/role?id=X
+    8,Statistics,1,"fillColor=#D4E6F1;strokeColor=#2E86AB;rounded=1",/admin/statistics
+    9,Password Reset Requests,1,"fillColor=#D4E6F1;strokeColor=#2E86AB;rounded=1",/admin/password-reset-requests
+    10,Profile,1,"fillColor=#D4E6F1;strokeColor=#2E86AB;rounded=1",/profile
+    11,Edit Profile,10,"fillColor=#A9CCE3;strokeColor=#2E86AB;rounded=1",
+    12,Change Password,1,"fillColor=#D4E6F1;strokeColor=#2E86AB;rounded=1",/change-password
+    13,Logout,1,"fillColor=#D4E6F1;strokeColor=#2E86AB;rounded=1",/logout
+    14,User Login,,"fillColor=#F8C471;strokeColor=#D68910;rounded=1",/login
+

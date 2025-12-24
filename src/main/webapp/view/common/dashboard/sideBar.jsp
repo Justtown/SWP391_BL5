@@ -119,11 +119,6 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="${ctx}/sale/products">
-                        <i class="fas fa-box me-2"></i>Xem Product
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link text-white" href="${ctx}/sale/orders">
                         <i class="fas fa-shopping-cart me-2"></i>Tạo đơn hàng
                     </a>

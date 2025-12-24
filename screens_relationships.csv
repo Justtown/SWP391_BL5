@@ -1,0 +1,81 @@
+    `From Screen,Arrow,To Screen,Relationship Type,Direction
+    Home Page,→,User Login,Navigation,Forward
+    Home Page,→,User Register,Navigation,Forward
+    User Login,→,Forgot Password,Navigation,Forward
+    User Login,→,User Register,Navigation,Forward
+    User Login,→,Password Reset,Navigation,Forward
+    User Login,→,Admin Dashboard,Navigation,Forward
+    User Login,→,Manager Dashboard,Navigation,Forward
+    User Login,→,Sale Dashboard,Navigation,Forward
+    User Login,→,Customer Dashboard,Navigation,Forward
+    Password Reset,→,User Login,Navigation,Back
+    User Register,→,User Login,Navigation,Back
+    Admin Dashboard,→,User Management,Navigation,Forward
+    Admin Dashboard,→,Pending Users,Navigation,Forward
+    Admin Dashboard,→,Role Management,Navigation,Forward
+    Admin Dashboard,→,Statistics,Navigation,Forward
+    Admin Dashboard,→,Password Reset Requests,Navigation,Forward
+    Admin Dashboard,→,Profile,Navigation,Forward
+    Admin Dashboard,→,Change Password,Navigation,Forward
+    Admin Dashboard,→,Logout,Navigation,Forward
+    User Management,→,Add New User,Navigation,Forward
+    User Management,→,User Info,Navigation,Forward
+    Add New User,→,User Management,Navigation,Back
+    User Info,→,User Management,Navigation,Back
+    Role Management,→,Role Detail,Navigation,Forward
+    Role Detail,→,Role Management,Navigation,Back
+    Profile,→,Edit Profile,Navigation,Forward
+    Edit Profile,→,Profile,Navigation,Back
+    Change Password,→,Admin Dashboard,Navigation,Back
+    Logout,→,User Login,Navigation,Back
+    Manager Dashboard,→,Machine Models,Navigation,Forward
+    Manager Dashboard,→,Machine Assets,Navigation,Forward
+    Manager Dashboard,→,Order Approval,Navigation,Forward
+    Manager Dashboard,→,Contract Management,Navigation,Forward
+    Manager Dashboard,→,Statistics,Navigation,Forward
+    Manager Dashboard,→,Maintenances,Navigation,Forward
+    Manager Dashboard,→,Profile,Navigation,Forward
+    Manager Dashboard,→,Change Password,Navigation,Forward
+    Manager Dashboard,→,Logout,Navigation,Forward
+    Machine Models,→,Create Model,Navigation,Forward
+    Machine Models,→,Edit Model,Navigation,Forward
+    Create Model,→,Machine Models,Navigation,Back
+    Edit Model,→,Machine Models,Navigation,Back
+    Machine Assets,→,Create Asset,Navigation,Forward
+    Machine Assets,→,Edit Asset,Navigation,Forward
+    Machine Assets,→,Asset Detail,Navigation,Forward
+    Create Asset,→,Machine Assets,Navigation,Back
+    Edit Asset,→,Machine Assets,Navigation,Back
+    Asset Detail,→,Machine Assets,Navigation,Back
+    Order Approval,→,Order Detail,Navigation,Forward
+    Order Detail,→,Order Approval,Navigation,Back
+    Contract Management,→,Create Contract,Navigation,Forward
+    Contract Management,→,Contract Detail,Navigation,Forward
+    Create Contract,→,Contract Management,Navigation,Back
+    Contract Detail,→,Contract Management,Navigation,Back
+    Change Password,→,Manager Dashboard,Navigation,Back
+    Sale Dashboard,→,Create Order,Navigation,Forward
+    Sale Dashboard,→,View Contracts,Navigation,Forward
+    Sale Dashboard,→,View Products,Navigation,Forward
+    Sale Dashboard,→,Profile,Navigation,Forward
+    Sale Dashboard,→,Change Password,Navigation,Forward
+    Sale Dashboard,→,Logout,Navigation,Forward
+    Create Order,→,Order List,Navigation,Forward
+    Order List,→,Order Detail,Navigation,Forward
+    Order Detail,→,Order List,Navigation,Back
+    View Contracts,→,Contract Detail,Navigation,Forward
+    Contract Detail,→,View Contracts,Navigation,Back
+    View Products,→,Product Detail,Navigation,Forward
+    Product Detail,→,View Products,Navigation,Back
+    Change Password,→,Sale Dashboard,Navigation,Back
+    Customer Dashboard,→,View Products,Navigation,Forward
+    Customer Dashboard,→,My Contracts,Navigation,Forward
+    Customer Dashboard,→,Profile,Navigation,Forward
+    Customer Dashboard,→,Change Password,Navigation,Forward
+    Customer Dashboard,→,Logout,Navigation,Forward
+    View Products,→,Product Detail,Navigation,Forward
+    Product Detail,→,View Products,Navigation,Back
+    My Contracts,→,Contract Detail,Navigation,Forward
+    Contract Detail,→,My Contracts,Navigation,Back
+    Change Password,→,Customer Dashboard,Navigation,Back
+`

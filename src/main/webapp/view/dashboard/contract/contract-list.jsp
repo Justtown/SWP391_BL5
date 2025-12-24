@@ -193,7 +193,7 @@
                 </nav>
             </div>
             <div class="d-flex align-items-center gap-3">
-                <c:if test="${sessionScope.roleName != 'customer'}">
+                <c:if test="${sessionScope.roleName != 'customer' && sessionScope.roleName != 'sale'}">
                     <a href="${pageContext.request.contextPath}/contracts?action=create" class="btn btn-primary">
                         <i class="fas fa-plus me-1"></i> Tạo hợp đồng mới
                     </a>
