@@ -1,11 +1,11 @@
 package com.example.argomachinemanagement.controller.dashboard;
 
-import com.example.argomachinemanagement.dal.PasswordResetRequestDAO;
 import com.example.argomachinemanagement.dal.UserDAO;
-import com.example.argomachinemanagement.dal.MachineDAO;
+import com.example.argomachinemanagement.dal.MachineAssetDAO;
 import com.example.argomachinemanagement.dal.ContractDAO;
-import com.example.argomachinemanagement.dal.MaintenanceDAO;
+import com.example.argomachinemanagement.dal.OrderDAO;
 import com.example.argomachinemanagement.entity.User;
+import com.example.argomachinemanagement.entity.MachineAsset;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -14,10 +14,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Controller cho Admin Statistics với dữ liệu cho charts
@@ -26,18 +22,16 @@ import java.util.Map;
 public class AdminStatisticsController extends HttpServlet {
     
     private UserDAO userDAO;
-    private PasswordResetRequestDAO passwordResetRequestDAO;
-    private MachineDAO machineDAO;
+    private MachineAssetDAO machineAssetDAO;
     private ContractDAO contractDAO;
-    private MaintenanceDAO maintenanceDAO;
+    private OrderDAO orderDAO;
     
     @Override
     public void init() throws ServletException {
         userDAO = new UserDAO();
-        passwordResetRequestDAO = new PasswordResetRequestDAO();
-        machineDAO = new MachineDAO();
+        machineAssetDAO = new MachineAssetDAO();
         contractDAO = new ContractDAO();
-        maintenanceDAO = new MaintenanceDAO();
+        orderDAO = new OrderDAO();
     }
     
     @Override
@@ -70,74 +64,62 @@ public class AdminStatisticsController extends HttpServlet {
             int activeUsers = 0;
             int inactiveUsers = 0;
             
-            // Users by role
-            Map<String, Integer> usersByRole = new HashMap<>();
-            
             for (User u : allUsers) {
                 if (u.getStatus() != null && u.getStatus() == 1) {
                     activeUsers++;
                 } else {
                     inactiveUsers++;
                 }
-                
-                // Count by role
-                String role = u.getRoleName() != null ? u.getRoleName() : "Khác";
-                usersByRole.put(role, usersByRole.getOrDefault(role, 0) + 1);
             }
             
-            // ========== PASSWORD RESET STATISTICS ==========
-            int totalPendingRequests = passwordResetRequestDAO.countRequests("", "pending");
-            int totalApprovedRequests = passwordResetRequestDAO.countRequests("", "approved");
-            int totalRejectedRequests = passwordResetRequestDAO.countRequests("", "rejected");
-            int totalResetRequests = passwordResetRequestDAO.countRequests("", "");
+            // ========== MACHINE ASSETS STATISTICS ==========
+            List<MachineAsset> allAssets = machineAssetDAO.findAll();
+            int totalAssets = allAssets.size();
+            int availableAssets = 0;
+            int rentedAssets = 0;
+            int maintenanceAssets = 0;
             
-            // ========== SYSTEM STATISTICS ==========
-            int totalMachines = machineDAO.findAll().size();
-            int totalContracts = contractDAO.findAll().size();
-            int totalMaintenances = maintenanceDAO.countAll();
-            
-            // Contracts by month (last 6 months)
-            Calendar cal = Calendar.getInstance();
-            Map<String, Integer> contractsByMonth = new HashMap<>();
-            for (int i = 5; i >= 0; i--) {
-                cal.setTime(new Date());
-                cal.add(Calendar.MONTH, -i);
-                int month = cal.get(Calendar.MONTH) + 1;
-                int year = cal.get(Calendar.YEAR);
-                String monthKey = String.format("%02d/%d", month, year);
-                contractsByMonth.put(monthKey, 0);
-            }
-            
-            List<com.example.argomachinemanagement.entity.Contract> contracts = contractDAO.findAll();
-            for (com.example.argomachinemanagement.entity.Contract c : contracts) {
-                if (c.getCreatedAt() != null) {
-                    cal.setTime(c.getCreatedAt());
-                    int month = cal.get(Calendar.MONTH) + 1;
-                    int year = cal.get(Calendar.YEAR);
-                    String monthKey = String.format("%02d/%d", month, year);
-                    if (contractsByMonth.containsKey(monthKey)) {
-                        contractsByMonth.put(monthKey, contractsByMonth.get(monthKey) + 1);
-                    }
+            for (MachineAsset asset : allAssets) {
+                if ("AVAILABLE".equals(asset.getRentalStatus())) {
+                    availableAssets++;
+                } else if ("RENTED".equals(asset.getRentalStatus())) {
+                    rentedAssets++;
+                } else if ("MAINTENANCE".equals(asset.getRentalStatus())) {
+                    maintenanceAssets++;
                 }
             }
             
-            // Set attributes
+            // ========== CONTRACT STATISTICS ==========
+            int totalContracts = contractDAO.findAll().size();
+            int activeContracts = contractDAO.countByStatus("ACTIVE");
+            int finishedContracts = contractDAO.countByStatus("FINISHED");
+            
+            // ========== ORDER STATISTICS ==========
+            int totalOrders = orderDAO.findAll().size();
+            int pendingOrders = orderDAO.countByStatus("PENDING");
+            // Đơn đã duyệt = CONVERTED (vì khi duyệt sẽ tạo contract và set status = CONVERTED)
+            int approvedOrders = orderDAO.countByStatus("CONVERTED");
+            
+            // Set attributes - User Statistics
             request.setAttribute("totalUsers", totalUsers);
             request.setAttribute("activeUsers", activeUsers);
             request.setAttribute("inactiveUsers", inactiveUsers);
             
-            request.setAttribute("totalPendingRequests", totalPendingRequests);
-            request.setAttribute("totalApprovedRequests", totalApprovedRequests);
-            request.setAttribute("totalRejectedRequests", totalRejectedRequests);
-            request.setAttribute("totalResetRequests", totalResetRequests);
+            // Machine Assets Statistics
+            request.setAttribute("totalAssets", totalAssets);
+            request.setAttribute("availableAssets", availableAssets);
+            request.setAttribute("rentedAssets", rentedAssets);
+            request.setAttribute("maintenanceAssets", maintenanceAssets);
             
-            request.setAttribute("totalMachines", totalMachines);
+            // Contract Statistics
             request.setAttribute("totalContracts", totalContracts);
-            request.setAttribute("totalMaintenances", totalMaintenances);
+            request.setAttribute("activeContracts", activeContracts);
+            request.setAttribute("finishedContracts", finishedContracts);
             
-            // Chart data
-            request.setAttribute("usersByRole", usersByRole);
-            request.setAttribute("contractsByMonth", contractsByMonth);
+            // Order Statistics
+            request.setAttribute("totalOrders", totalOrders);
+            request.setAttribute("pendingOrders", pendingOrders);
+            request.setAttribute("approvedOrders", approvedOrders);
             
             // Forward to JSP
             request.getRequestDispatcher("/view/dashboard/admin/statistics.jsp").forward(request, response);

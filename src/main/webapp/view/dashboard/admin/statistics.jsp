@@ -106,7 +106,7 @@
         </div>
         
         <div class="container-fluid">
-            <%-- Statistics Cards --%>
+            <%-- Statistics Cards - Basic Only --%>
             <div class="stats-grid">
                 <div class="stat-card primary">
                     <div class="stat-card-title">Tổng người dùng</div>
@@ -123,57 +123,82 @@
                     <div class="stat-card-value">${inactiveUsers}</div>
                     <i class="fas fa-user-times stat-card-icon"></i>
                 </div>
-                <div class="stat-card warning">
-                    <div class="stat-card-title">Yêu cầu đang chờ</div>
-                    <div class="stat-card-value">${totalPendingRequests}</div>
-                    <i class="fas fa-clock stat-card-icon"></i>
-                </div>
             </div>
             
+            <%-- Machine Assets Statistics --%>
             <div class="stats-grid">
                 <div class="stat-card info">
                     <div class="stat-card-title">Tổng số máy</div>
-                    <div class="stat-card-value">${totalMachines}</div>
+                    <div class="stat-card-value">${totalAssets}</div>
                     <i class="fas fa-cogs stat-card-icon"></i>
                 </div>
+                <div class="stat-card success">
+                    <div class="stat-card-title">Máy sẵn sàng</div>
+                    <div class="stat-card-value">${availableAssets}</div>
+                    <i class="fas fa-check-circle stat-card-icon"></i>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-card-title">Máy đang thuê</div>
+                    <div class="stat-card-value">${rentedAssets}</div>
+                    <i class="fas fa-hand-holding-usd stat-card-icon"></i>
+                </div>
+                <div class="stat-card danger">
+                    <div class="stat-card-title">Máy bảo trì</div>
+                    <div class="stat-card-value">${maintenanceAssets}</div>
+                    <i class="fas fa-wrench stat-card-icon"></i>
+                </div>
+            </div>
+            
+            <%-- Contracts Statistics --%>
+            <div class="stats-grid">
                 <div class="stat-card primary">
                     <div class="stat-card-title">Tổng hợp đồng</div>
                     <div class="stat-card-value">${totalContracts}</div>
                     <i class="fas fa-file-contract stat-card-icon"></i>
                 </div>
                 <div class="stat-card success">
-                    <div class="stat-card-title">Tổng bảo trì</div>
-                    <div class="stat-card-value">${totalMaintenances}</div>
-                    <i class="fas fa-wrench stat-card-icon"></i>
+                    <div class="stat-card-title">Hợp đồng Active</div>
+                    <div class="stat-card-value">${activeContracts}</div>
+                    <i class="fas fa-play-circle stat-card-icon"></i>
+                </div>
+                <div class="stat-card info">
+                    <div class="stat-card-title">Hợp đồng Finished</div>
+                    <div class="stat-card-value">${finishedContracts}</div>
+                    <i class="fas fa-check-double stat-card-icon"></i>
+                </div>
+            </div>
+            
+            <%-- Orders Statistics --%>
+            <div class="stats-grid">
+                <div class="stat-card primary">
+                    <div class="stat-card-title">Tổng đơn hàng</div>
+                    <div class="stat-card-value">${totalOrders}</div>
+                    <i class="fas fa-shopping-cart stat-card-icon"></i>
                 </div>
                 <div class="stat-card warning">
-                    <div class="stat-card-title">Yêu cầu đã duyệt</div>
-                    <div class="stat-card-value">${totalApprovedRequests}</div>
+                    <div class="stat-card-title">Đơn chờ duyệt</div>
+                    <div class="stat-card-value">${pendingOrders}</div>
+                    <i class="fas fa-clock stat-card-icon"></i>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-card-title">Đơn đã duyệt</div>
+                    <div class="stat-card-value">${approvedOrders}</div>
                     <i class="fas fa-check-circle stat-card-icon"></i>
                 </div>
             </div>
             
-            <%-- Charts --%>
+            <%-- Charts - Basic Only --%>
             <div class="row">
                 <div class="col-lg-6 mb-4">
                     <div class="chart-container">
-                        <h5 class="chart-title"><i class="fas fa-chart-pie me-2"></i>Phân bố Người dùng theo Role</h5>
-                        <canvas id="usersByRoleChart"></canvas>
+                        <h5 class="chart-title"><i class="fas fa-chart-pie me-2"></i>Trạng thái Máy</h5>
+                        <canvas id="assetRentalStatusChart"></canvas>
                     </div>
                 </div>
                 <div class="col-lg-6 mb-4">
                     <div class="chart-container">
-                        <h5 class="chart-title"><i class="fas fa-chart-pie me-2"></i>Yêu cầu Đặt lại Mật khẩu</h5>
-                        <canvas id="passwordResetChart"></canvas>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="row">
-                <div class="col-lg-12 mb-4">
-                    <div class="chart-container">
-                        <h5 class="chart-title"><i class="fas fa-chart-line me-2"></i>Hợp đồng theo Tháng (6 tháng gần nhất)</h5>
-                        <canvas id="contractsByMonthChart"></canvas>
+                        <h5 class="chart-title"><i class="fas fa-chart-pie me-2"></i>Trạng thái Hợp đồng</h5>
+                        <canvas id="contractStatusChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -187,8 +212,8 @@
                 </div>
                 <div class="col-lg-6 mb-4">
                     <div class="chart-container">
-                        <h5 class="chart-title"><i class="fas fa-chart-bar me-2"></i>Tổng quan Hệ thống</h5>
-                        <canvas id="systemOverviewChart"></canvas>
+                        <h5 class="chart-title"><i class="fas fa-chart-bar me-2"></i>Trạng thái Đơn hàng</h5>
+                        <canvas id="orderStatusChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -197,34 +222,15 @@
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Prepare data
-        const usersByRole = {
-            <c:forEach var="entry" items="${usersByRole}">
-            "${entry.key}": ${entry.value},
-            </c:forEach>
-        };
-        
-        const contractsByMonth = {
-            <c:forEach var="entry" items="${contractsByMonth}">
-            "${entry.key}": ${entry.value},
-            </c:forEach>
-        };
-        
-        // Chart 1: Users by Role Pie Chart
-        const usersByRoleCtx = document.getElementById('usersByRoleChart').getContext('2d');
-        new Chart(usersByRoleCtx, {
+        // Chart 1: Asset Rental Status Doughnut Chart
+        const assetRentalStatusCtx = document.getElementById('assetRentalStatusChart').getContext('2d');
+        new Chart(assetRentalStatusCtx, {
             type: 'doughnut',
             data: {
-                labels: Object.keys(usersByRole),
+                labels: ['Sẵn sàng', 'Đang thuê', 'Bảo trì'],
                 datasets: [{
-                    data: Object.values(usersByRole),
-                    backgroundColor: [
-                        '#667eea',
-                        '#f093fb',
-                        '#4facfe',
-                        '#43e97b',
-                        '#fa709a'
-                    ]
+                    data: [${availableAssets}, ${rentedAssets}, ${maintenanceAssets}],
+                    backgroundColor: ['#28a745', '#ffc107', '#dc3545']
                 }]
             },
             options: {
@@ -237,15 +243,15 @@
             }
         });
         
-        // Chart 2: Password Reset Requests Pie Chart
-        const passwordResetCtx = document.getElementById('passwordResetChart').getContext('2d');
-        new Chart(passwordResetCtx, {
+        // Chart 2: Contract Status Pie Chart
+        const contractStatusCtx = document.getElementById('contractStatusChart').getContext('2d');
+        new Chart(contractStatusCtx, {
             type: 'pie',
             data: {
-                labels: ['Đang chờ', 'Đã duyệt', 'Đã từ chối'],
+                labels: ['Active', 'Finished'],
                 datasets: [{
-                    data: [${totalPendingRequests}, ${totalApprovedRequests}, ${totalRejectedRequests}],
-                    backgroundColor: ['#fee140', '#43e97b', '#f5576c']
+                    data: [${activeContracts}, ${finishedContracts}],
+                    backgroundColor: ['#28a745', '#6c757d']
                 }]
             },
             options: {
@@ -258,40 +264,7 @@
             }
         });
         
-        // Chart 3: Contracts by Month Line Chart
-        const contractsByMonthCtx = document.getElementById('contractsByMonthChart').getContext('2d');
-        new Chart(contractsByMonthCtx, {
-            type: 'line',
-            data: {
-                labels: Object.keys(contractsByMonth),
-                datasets: [{
-                    label: 'Số hợp đồng',
-                    data: Object.values(contractsByMonth),
-                    borderColor: '#667eea',
-                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1
-                        }
-                    }
-                }
-            }
-        });
-        
-        // Chart 4: User Status Bar Chart
+        // Chart 3: User Status Bar Chart
         const userStatusCtx = document.getElementById('userStatusChart').getContext('2d');
         new Chart(userStatusCtx, {
             type: 'bar',
@@ -321,16 +294,16 @@
             }
         });
         
-        // Chart 5: System Overview Bar Chart
-        const systemOverviewCtx = document.getElementById('systemOverviewChart').getContext('2d');
-        new Chart(systemOverviewCtx, {
+        // Chart 4: Order Status Bar Chart
+        const orderStatusCtx = document.getElementById('orderStatusChart').getContext('2d');
+        new Chart(orderStatusCtx, {
             type: 'bar',
             data: {
-                labels: ['Máy', 'Hợp đồng', 'Bảo trì'],
+                labels: ['Chờ duyệt', 'Đã duyệt'],
                 datasets: [{
                     label: 'Số lượng',
-                    data: [${totalMachines}, ${totalContracts}, ${totalMaintenances}],
-                    backgroundColor: ['#667eea', '#4facfe', '#43e97b']
+                    data: [${pendingOrders}, ${approvedOrders}],
+                    backgroundColor: ['#ffc107', '#28a745']
                 }]
             },
             options: {
@@ -342,7 +315,10 @@
                 },
                 scales: {
                     y: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
                     }
                 }
             }

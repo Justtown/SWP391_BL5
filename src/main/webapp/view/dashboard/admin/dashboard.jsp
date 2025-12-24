@@ -120,6 +120,10 @@
                     <div class="menu-item-title">Yêu cầu đặt lại mật khẩu</div>
                     <div class="menu-item-desc">Duyệt và từ chối yêu cầu đặt lại mật khẩu</div>
                 </a>
+                <a href="${pageContext.request.contextPath}/admin/statistics" class="menu-item">
+                    <div class="menu-item-title"><i class="fas fa-chart-bar me-2"></i>Thống kê hệ thống</div>
+                    <div class="menu-item-desc">Xem thống kê chi tiết về người dùng, máy, hợp đồng và đơn hàng</div>
+                </a>
             </div>
         </div>
     </div>

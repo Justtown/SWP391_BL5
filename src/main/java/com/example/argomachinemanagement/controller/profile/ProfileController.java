@@ -54,7 +54,7 @@ public class ProfileController extends HttpServlet {
             if (profile == null) {
                 request.setAttribute("error", "Không tìm thấy thông tin người dùng! Vui lòng liên hệ quản trị viên.");
             } else {
-                // Set default values nếu null
+            // Set default values nếu null
                 if (profile.getPhone() == null) profile.setPhone("");
                 if (profile.getAddress() == null) profile.setAddress("");
                 if (profile.getAvatar() == null) profile.setAvatar("");

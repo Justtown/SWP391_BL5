@@ -146,13 +146,18 @@
                                         <i class="fas fa-user-shield"></i> Quản lý phân quyền
                                     </a>
                                 </div>
+                                <div class="col-md-6">
+                                    <a href="${pageContext.request.contextPath}/admin/statistics" class="quick-action">
+                                        <i class="fas fa-chart-bar"></i> Thống kê hệ thống
+                                    </a>
+                                </div>
                             </c:if>
                             
                             <!-- Manager Quick Actions -->
                             <c:if test="${sessionScope.roleName == 'manager'}">
                                 <div class="col-md-6">
-                                    <a href="${pageContext.request.contextPath}/manager/machines" class="quick-action">
-                                        <i class="fas fa-cogs"></i> Quản lý Machine
+                                    <a href="${pageContext.request.contextPath}/manager/orders" class="quick-action">
+                                        <i class="fas fa-clipboard-check"></i> Duyệt đơn hàng
                                     </a>
                                 </div>
                                 <div class="col-md-6">
