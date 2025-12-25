@@ -28,7 +28,7 @@ public class ContractAutoFinishScheduler implements ServletContextListener {
         
         // Tạo ScheduledExecutorService với 1 thread
         scheduler = Executors.newScheduledThreadPool(1);
-        
+            
         // Schedule job chạy mỗi 1 phút (60 giây)
         // Chạy lần đầu sau 1 phút, sau đó chạy lại mỗi 1 phút
         scheduler.scheduleAtFixedRate(() -> {
