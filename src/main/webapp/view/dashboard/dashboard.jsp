@@ -117,6 +117,14 @@
         
         <!-- Welcome Message -->
         <div class="container-fluid">
+            <!-- Success Message -->
+            <c:if test="${not empty successMessage}">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>${successMessage}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </c:if>
+            
             <div class="dashboard-card">
                 <h5 class="mb-3">
                     <i class="fas fa-hand-wave me-2"></i>${welcomeMessage}
@@ -139,11 +147,6 @@
                                 <div class="col-md-6">
                                     <a href="${pageContext.request.contextPath}/manage-account" class="quick-action">
                                         <i class="fas fa-users"></i> Quản lý người dùng
-                                    </a>
-                                </div>
-                                <div class="col-md-6">
-                                    <a href="${pageContext.request.contextPath}/admin/roles" class="quick-action">
-                                        <i class="fas fa-user-shield"></i> Quản lý phân quyền
                                     </a>
                                 </div>
                                 <div class="col-md-6">

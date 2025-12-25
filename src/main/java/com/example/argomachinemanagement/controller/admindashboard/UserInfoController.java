@@ -7,6 +7,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
@@ -27,6 +28,11 @@ public class UserInfoController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Kiểm tra authentication và authorization
+        if (!isAdmin(request, response)) {
+            return; // Đã redirect trong isAdmin()
+        }
+        
         String userIdStr = request.getParameter("id");
         
         if (userIdStr == null || userIdStr.trim().isEmpty()) {
@@ -60,6 +66,11 @@ public class UserInfoController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Kiểm tra authentication và authorization
+        if (!isAdmin(request, response)) {
+            return; // Đã redirect trong isAdmin()
+        }
+        
         String userIdStr = request.getParameter("userId");
         String action = request.getParameter("action");
         
@@ -114,6 +125,41 @@ public class UserInfoController extends HttpServlet {
         } catch (NumberFormatException e) {
             response.sendRedirect(request.getContextPath() + "/manage-account?error=Invalid user ID");
         }
+    }
+    
+    /**
+     * Kiểm tra user có phải admin không
+     * @return true nếu là admin, false nếu không (đã redirect về login)
+     */
+    private boolean isAdmin(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        HttpSession session = request.getSession(false);
+        
+        // Kiểm tra đã đăng nhập chưa
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return false;
+        }
+        
+        // Kiểm tra userId
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return false;
+        }
+        
+        // Kiểm tra role từ session (nhanh hơn)
+        String roleName = (String) session.getAttribute("roleName");
+        if (roleName == null || !"admin".equalsIgnoreCase(roleName)) {
+            // Nếu không có trong session, kiểm tra từ database
+            User user = userDAO.findById(userId);
+            if (user == null || !"admin".equalsIgnoreCase(user.getRoleName())) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied. Admin only.");
+                return false;
+            }
+        }
+        
+        return true;
     }
 }
 

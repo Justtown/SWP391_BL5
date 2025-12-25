@@ -311,7 +311,7 @@
                 </div>
             </div>
 
-            <!-- Print Button -->
+
             <div class="text-center mb-4">
                 <button type="button" class="btn btn-outline-secondary" onclick="window.print();">
                     <i class="fas fa-print me-1"></i> In hợp đồng

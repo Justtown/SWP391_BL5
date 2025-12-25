@@ -329,14 +329,46 @@ public class OrderController extends HttpServlet {
             return;
         }
 
+        // Validate startDate >= ngày hôm nay
+        Date startDate = null;
+        Date endDate = null;
+        try {
+            startDate = Date.valueOf(startDateStr);
+            // Sử dụng LocalDate để so sánh chỉ phần date, tránh vấn đề timezone
+            java.time.LocalDate todayLocal = java.time.LocalDate.now();
+            java.time.LocalDate startDateLocal = startDate.toLocalDate();
+            
+            if (startDateLocal.isBefore(todayLocal)) {
+                request.getSession().setAttribute("errorMsg", "Ngày bắt đầu phải là ngày hôm nay hoặc tương lai!");
+                response.sendRedirect(request.getContextPath() + "/sale/orders?action=create");
+                return;
+            }
+            
+            // Parse endDate if provided
+            if (endDateStr != null && !endDateStr.isEmpty()) {
+                endDate = Date.valueOf(endDateStr);
+            }
+            
+            // Validate endDate > startDate (nếu có endDate)
+            if (endDate != null && !endDate.after(startDate)) {
+                request.getSession().setAttribute("errorMsg", "Ngày kết thúc phải lớn hơn ngày bắt đầu!");
+                response.sendRedirect(request.getContextPath() + "/sale/orders?action=create");
+                return;
+            }
+        } catch (IllegalArgumentException e) {
+            request.getSession().setAttribute("errorMsg", "Ngày không hợp lệ: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/sale/orders?action=create");
+            return;
+        }
+
         try {
             // Create order
             Order order = Order.builder()
                     .orderCode(orderCode.trim())
                     .customerId(Integer.parseInt(customerIdStr))
                     .saleId(currentUser.getId())
-                    .startDate(Date.valueOf(startDateStr))
-                    .endDate(endDateStr != null && !endDateStr.isEmpty() ? Date.valueOf(endDateStr) : null)
+                    .startDate(startDate)
+                    .endDate(endDate)
                     .status("PENDING")
                     .note(note != null ? note.trim() : null)
                     .build();
@@ -423,12 +455,44 @@ public class OrderController extends HttpServlet {
                 return;
             }
 
+            // Validate startDate >= ngày hôm nay
+            Date startDate = null;
+            Date endDate = null;
+            try {
+                startDate = Date.valueOf(startDateStr);
+                // Sử dụng LocalDate để so sánh chỉ phần date, tránh vấn đề timezone
+                java.time.LocalDate todayLocal = java.time.LocalDate.now();
+                java.time.LocalDate startDateLocal = startDate.toLocalDate();
+                
+                if (startDateLocal.isBefore(todayLocal)) {
+                    request.getSession().setAttribute("errorMsg", "Ngày bắt đầu phải là ngày hôm nay hoặc tương lai!");
+                    response.sendRedirect(request.getContextPath() + "/sale/orders?action=edit&id=" + orderId);
+                    return;
+                }
+                
+                // Parse endDate if provided
+                if (endDateStr != null && !endDateStr.isEmpty()) {
+                    endDate = Date.valueOf(endDateStr);
+                }
+                
+                // Validate endDate > startDate (nếu có endDate)
+                if (endDate != null && !endDate.after(startDate)) {
+                    request.getSession().setAttribute("errorMsg", "Ngày kết thúc phải lớn hơn ngày bắt đầu!");
+                    response.sendRedirect(request.getContextPath() + "/sale/orders?action=edit&id=" + orderId);
+                    return;
+                }
+            } catch (IllegalArgumentException e) {
+                request.getSession().setAttribute("errorMsg", "Ngày không hợp lệ: " + e.getMessage());
+                response.sendRedirect(request.getContextPath() + "/sale/orders?action=edit&id=" + orderId);
+                return;
+            }
+
             // Update order
             Order order = Order.builder()
                     .id(orderId)
                     .customerId(Integer.parseInt(customerIdStr))
-                    .startDate(Date.valueOf(startDateStr))
-                    .endDate(endDateStr != null && !endDateStr.isEmpty() ? Date.valueOf(endDateStr) : null)
+                    .startDate(startDate)
+                    .endDate(endDate)
                     .note(note != null ? note.trim() : null)
                     .build();
 

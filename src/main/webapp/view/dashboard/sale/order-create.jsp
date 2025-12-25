@@ -144,13 +144,15 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Ngày bắt đầu <span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control" name="startDate"
+                                    <input type="date" class="form-control" name="startDate" id="startDate"
                                            value="${order.startDate}" required>
+                                    <small class="text-muted" id="startDateError" style="color: red; display: none;"></small>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Ngày kết thúc</label>
-                                    <input type="date" class="form-control" name="endDate"
+                                    <input type="date" class="form-control" name="endDate" id="endDate"
                                            value="${order.endDate}">
+                                    <small class="text-muted" id="endDateError" style="color: red; display: none;"></small>
                                 </div>
                             </div>
 
@@ -361,8 +363,111 @@
             });
         }
 
+        // Set min date for startDate input (ngày hôm nay)
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+        
+        if (startDateInput) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const todayStr = today.toISOString().split('T')[0];
+            startDateInput.setAttribute('min', todayStr);
+            
+            // Validate on change
+            startDateInput.addEventListener('change', function() {
+                const selectedDate = new Date(this.value);
+                const todayDate = new Date();
+                todayDate.setHours(0, 0, 0, 0);
+                
+                if (selectedDate < todayDate) {
+                    const errorMsg = document.getElementById('startDateError');
+                    errorMsg.textContent = 'Ngày bắt đầu phải là ngày hôm nay hoặc tương lai!';
+                    errorMsg.style.display = 'block';
+                    this.classList.add('is-invalid');
+                    this.focus();
+                } else {
+                    const errorMsg = document.getElementById('startDateError');
+                    errorMsg.style.display = 'none';
+                    this.classList.remove('is-invalid');
+                }
+                
+                // Update min date for endDate
+                if (endDateInput && this.value) {
+                    const startDate = new Date(this.value);
+                    startDate.setDate(startDate.getDate() + 1); // Ngày kết thúc phải >= ngày bắt đầu + 1
+                    const minEndDateStr = startDate.toISOString().split('T')[0];
+                    endDateInput.setAttribute('min', minEndDateStr);
+                    
+                    // Validate endDate if already has value
+                    if (endDateInput.value && new Date(endDateInput.value) <= new Date(this.value)) {
+                        const endErrorMsg = document.getElementById('endDateError');
+                        endErrorMsg.textContent = 'Ngày kết thúc phải lớn hơn ngày bắt đầu!';
+                        endErrorMsg.style.display = 'block';
+                        endDateInput.classList.add('is-invalid');
+                    }
+                }
+            });
+        }
+        
+        // Validate endDate on change
+        if (endDateInput) {
+            endDateInput.addEventListener('change', function() {
+                const startDate = startDateInput ? new Date(startDateInput.value) : null;
+                const endDate = new Date(this.value);
+                
+                if (startDate && endDate <= startDate) {
+                    const errorMsg = document.getElementById('endDateError');
+                    errorMsg.textContent = 'Ngày kết thúc phải lớn hơn ngày bắt đầu!';
+                    errorMsg.style.display = 'block';
+                    this.classList.add('is-invalid');
+                    this.focus();
+                } else {
+                    const errorMsg = document.getElementById('endDateError');
+                    errorMsg.style.display = 'none';
+                    this.classList.remove('is-invalid');
+                }
+            });
+        }
+
         // Validate form before submit
         document.getElementById('orderForm').addEventListener('submit', function(e) {
+            // Validate startDate
+            const startDateInput = document.getElementById('startDate');
+            if (startDateInput && startDateInput.value) {
+                const selectedDate = new Date(startDateInput.value);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                if (selectedDate < today) {
+                    e.preventDefault();
+                    const errorMsg = document.getElementById('startDateError');
+                    errorMsg.textContent = 'Ngày bắt đầu phải là ngày hôm nay hoặc tương lai!';
+                    errorMsg.style.display = 'block';
+                    startDateInput.classList.add('is-invalid');
+                    startDateInput.focus();
+                    alert('Ngày bắt đầu phải là ngày hôm nay hoặc tương lai!');
+                    return false;
+                }
+            }
+            
+            // Validate endDate > startDate
+            const endDateInput = document.getElementById('endDate');
+            if (endDateInput && endDateInput.value && startDateInput && startDateInput.value) {
+                const startDate = new Date(startDateInput.value);
+                const endDate = new Date(endDateInput.value);
+                
+                if (endDate <= startDate) {
+                    e.preventDefault();
+                    const errorMsg = document.getElementById('endDateError');
+                    errorMsg.textContent = 'Ngày kết thúc phải lớn hơn ngày bắt đầu!';
+                    errorMsg.style.display = 'block';
+                    endDateInput.classList.add('is-invalid');
+                    endDateInput.focus();
+                    alert('Ngày kết thúc phải lớn hơn ngày bắt đầu!');
+                    return false;
+                }
+            }
+            
             const assetSelects = document.querySelectorAll('select[name="assetIds"]');
             const selectedAssets = [];
             let hasDuplicate = false;

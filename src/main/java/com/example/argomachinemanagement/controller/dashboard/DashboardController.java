@@ -47,6 +47,20 @@ public class DashboardController extends HttpServlet {
         // Set welcome message
         request.setAttribute("welcomeMessage", "Chào mừng " + fullName + " đến với hệ thống quản lý!");
         
+        // Lấy thông báo thành công từ session (nếu có) và xóa sau khi lấy
+        if (session != null) {
+            String successMessage = (String) session.getAttribute("successMessage");
+            if (successMessage != null) {
+                request.setAttribute("successMessage", successMessage);
+                session.removeAttribute("successMessage");
+            }
+            
+            // Kiểm tra parameter passwordChanged
+            if (request.getParameter("passwordChanged") != null) {
+                request.setAttribute("successMessage", "Đổi mật khẩu thành công!");
+            }
+        }
+        
         // Forward đến dashboard.jsp chung
         request.getRequestDispatcher("/view/dashboard/dashboard.jsp").forward(request, response);
     }

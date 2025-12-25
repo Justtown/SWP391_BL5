@@ -8,6 +8,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,13 @@ public class ContractController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Kiểm tra authentication
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        
         String action = request.getParameter("action");
         
         if (action == null || action.equals("list")) {
@@ -62,8 +70,15 @@ public class ContractController extends HttpServlet {
         }
         
         // Get user ID and role from session (for filtering by customer/manager)
-        Integer userId = (Integer) request.getSession().getAttribute("userId");
-        String roleName = (String) request.getSession().getAttribute("roleName");
+        HttpSession session = request.getSession(false);
+        Integer userId = (Integer) session.getAttribute("userId");
+        String roleName = (String) session.getAttribute("roleName");
+        
+        // Double check authentication (defense in depth)
+        if (userId == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
         
         // Determine filter by role
         Integer customerId = null;

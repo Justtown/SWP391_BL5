@@ -14,9 +14,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Listener để tự động finish các contract đã hết hạn mỗi 1 phút khi server khởi động
- */
+
 @WebListener
 public class ContractAutoFinishScheduler implements ServletContextListener {
     
@@ -26,11 +24,10 @@ public class ContractAutoFinishScheduler implements ServletContextListener {
     public void contextInitialized(ServletContextEvent sce) {
         System.out.println("[ContractAutoFinishScheduler] Initializing scheduler...");
         
-        // Tạo ScheduledExecutorService với 1 thread
+
         scheduler = Executors.newScheduledThreadPool(1);
-            
-        // Schedule job chạy mỗi 1 phút (60 giây)
-        // Chạy lần đầu sau 1 phút, sau đó chạy lại mỗi 1 phút
+
+
         scheduler.scheduleAtFixedRate(() -> {
             try {
                 System.out.println("[ContractAutoFinishScheduler] Running scheduled job at " + new java.util.Date());
@@ -39,15 +36,12 @@ public class ContractAutoFinishScheduler implements ServletContextListener {
                 System.err.println("[ContractAutoFinishScheduler] Error executing job: " + e.getMessage());
                 e.printStackTrace();
             }
-        }, 60, 60, TimeUnit.SECONDS); // Initial delay: 60s, Period: 60s
+        }, 300, 300, TimeUnit.SECONDS);
         
         System.out.println("[ContractAutoFinishScheduler] Scheduler started. Job will run every 1 minute.");
     }
     
-    /**
-     * Tự động finish các contract đã hết hạn
-     * @return Số lượng contract đã được finish
-     */
+
     private int autoFinishExpiredContracts() throws SQLException {
         Connection conn = null;
         PreparedStatement psSelect = null;
@@ -62,8 +56,8 @@ public class ContractAutoFinishScheduler implements ServletContextListener {
         try {
             conn = new DBContext().getConnection();
             conn.setAutoCommit(false);
-            
-            // 1. Tìm tất cả contracts có status = 'ACTIVE' và end_date < CURRENT_DATE và end_date IS NOT NULL
+
+
             String selectSql = "SELECT id FROM contracts " +
                               "WHERE status = 'ACTIVE' " +
                               "AND end_date IS NOT NULL " +
@@ -82,8 +76,10 @@ public class ContractAutoFinishScheduler implements ServletContextListener {
             }
             
             System.out.println("[ContractAutoFinishScheduler] Found " + contractIds.size() + " expired contracts to finish");
-            
-            // 2. Lấy danh sách asset_ids từ contract_items của các contract này
+
+
+
+
             String selectItemsSql = "SELECT DISTINCT asset_id FROM contract_items WHERE contract_id = ?";
             psSelect = conn.prepareStatement(selectItemsSql);
             
@@ -98,8 +94,10 @@ public class ContractAutoFinishScheduler implements ServletContextListener {
                 }
                 rsItems.close();
             }
-            
-            // 3. Update status của contracts thành 'FINISHED'
+
+
+
+
             String updateContractSql = "UPDATE contracts SET status = 'FINISHED', updated_at = CURRENT_TIMESTAMP " +
                                       "WHERE id = ? AND status = 'ACTIVE'";
             psUpdateContract = conn.prepareStatement(updateContractSql);
@@ -113,7 +111,9 @@ public class ContractAutoFinishScheduler implements ServletContextListener {
                 }
             }
             
-            // 4. Update rental_status của machine_assets về 'AVAILABLE'
+
+
+
             if (!assetIds.isEmpty()) {
                 String updateAssetSql = "UPDATE machine_assets SET rental_status = 'AVAILABLE' WHERE id = ?";
                 psUpdateAsset = conn.prepareStatement(updateAssetSql);

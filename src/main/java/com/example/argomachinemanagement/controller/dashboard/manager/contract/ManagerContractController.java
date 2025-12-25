@@ -404,6 +404,24 @@ public class ManagerContractController extends HttpServlet {
             if (endDateStr != null && !endDateStr.isEmpty()) {
                 endDate = Date.valueOf(endDateStr);
             }
+            
+            // Validate startDate >= ngày hôm nay
+            // Sử dụng LocalDate để so sánh chỉ phần date, tránh vấn đề timezone
+            java.time.LocalDate todayLocal = java.time.LocalDate.now();
+            java.time.LocalDate startDateLocal = startDate.toLocalDate();
+            
+            if (startDateLocal.isBefore(todayLocal)) {
+                request.getSession().setAttribute("errorMsg", "Ngày bắt đầu phải là ngày hôm nay hoặc tương lai!");
+                response.sendRedirect(request.getContextPath() + "/manager/contracts?action=create");
+                return;
+            }
+            
+            // Validate endDate > startDate (nếu có endDate)
+            if (endDate != null && !endDate.after(startDate)) {
+                request.getSession().setAttribute("errorMsg", "Ngày kết thúc phải lớn hơn ngày bắt đầu!");
+                response.sendRedirect(request.getContextPath() + "/manager/contracts?action=create");
+                return;
+            }
 
             // Default status
             if (status == null || status.isEmpty()) {
@@ -509,6 +527,7 @@ public class ManagerContractController extends HttpServlet {
             String customerIdStr = request.getParameter("customerId");
             String startDateStr = request.getParameter("startDate");
             String endDateStr = request.getParameter("endDate");
+            String status = request.getParameter("status");
             String note = request.getParameter("note");
             String[] assetIds = request.getParameterValues("assetId[]");
             String[] prices = request.getParameterValues("price[]");
@@ -534,6 +553,68 @@ public class ManagerContractController extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/manager/contracts");
                 return;
             }
+            
+            // Validate startDate >= ngày hôm nay
+            Date startDate = null;
+            if (startDateStr != null && !startDateStr.isEmpty()) {
+                startDate = Date.valueOf(startDateStr);
+                // Sử dụng LocalDate để so sánh chỉ phần date, tránh vấn đề timezone
+                java.time.LocalDate todayLocal = java.time.LocalDate.now();
+                java.time.LocalDate startDateLocal = startDate.toLocalDate();
+                
+                if (startDateLocal.isBefore(todayLocal)) {
+                    request.getSession().setAttribute("errorMsg", "Ngày bắt đầu phải là ngày hôm nay hoặc tương lai!");
+                    response.sendRedirect(request.getContextPath() + "/manager/contracts?action=edit&id=" + contractId);
+                    return;
+                }
+            }
+            
+            // Validate endDate > startDate (nếu có cả hai)
+            Date endDate = null;
+            if (endDateStr != null && !endDateStr.isEmpty()) {
+                endDate = Date.valueOf(endDateStr);
+            }
+            
+            if (startDate != null && endDate != null && !endDate.after(startDate)) {
+                request.getSession().setAttribute("errorMsg", "Ngày kết thúc phải lớn hơn ngày bắt đầu!");
+                response.sendRedirect(request.getContextPath() + "/manager/contracts?action=edit&id=" + contractId);
+                return;
+            }
+            
+            // Default status = DRAFT nếu không có
+            if (status == null || status.isEmpty()) {
+                status = "DRAFT";
+            }
+            
+            // Nếu chuyển từ DRAFT sang ACTIVE, kiểm tra tất cả máy còn sẵn sàng
+            if ("ACTIVE".equals(status) && "DRAFT".equals(existingContract.getStatus())) {
+                if (assetIds == null || assetIds.length == 0) {
+                    request.getSession().setAttribute("errorMsg", "Vui lòng chọn ít nhất một máy để kích hoạt hợp đồng");
+                    response.sendRedirect(request.getContextPath() + "/manager/contracts?action=edit&id=" + contractId);
+                    return;
+                }
+                
+                // Kiểm tra tất cả máy còn sẵn sàng
+                List<String> unavailableMachines = new ArrayList<>();
+                for (String assetIdStr : assetIds) {
+                    if (assetIdStr != null && !assetIdStr.isEmpty()) {
+                        MachineAsset asset = machineAssetDAO.findById(Integer.parseInt(assetIdStr));
+                        if (asset == null ||
+                                !"ACTIVE".equals(asset.getStatus()) ||
+                                !"AVAILABLE".equals(asset.getRentalStatus())) {
+                            unavailableMachines.add(asset != null && asset.getSerialNumber() != null ?
+                                    asset.getSerialNumber() : "ID: " + assetIdStr);
+                        }
+                    }
+                }
+                
+                if (!unavailableMachines.isEmpty()) {
+                    request.getSession().setAttribute("errorMsg",
+                            "Không thể kích hoạt. Các máy sau không còn sẵn sàng: " + String.join(", ", unavailableMachines));
+                    response.sendRedirect(request.getContextPath() + "/manager/contracts?action=edit&id=" + contractId);
+                    return;
+                }
+            }
 
             // Update using transaction
             Connection conn = null;
@@ -541,14 +622,15 @@ public class ManagerContractController extends HttpServlet {
                 conn = new DBContext().getConnection();
                 conn.setAutoCommit(false);
 
-                // 1. Update contract
-                String updateContractSql = "UPDATE contracts SET customer_id = ?, start_date = ?, end_date = ?, note = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+                // 1. Update contract (bao gồm status)
+                String updateContractSql = "UPDATE contracts SET customer_id = ?, start_date = ?, end_date = ?, status = ?, note = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
                 PreparedStatement psContract = conn.prepareStatement(updateContractSql);
                 psContract.setInt(1, Integer.parseInt(customerIdStr));
                 psContract.setDate(2, Date.valueOf(startDateStr));
                 psContract.setDate(3, endDateStr != null && !endDateStr.isEmpty() ? Date.valueOf(endDateStr) : null);
-                psContract.setString(4, note);
-                psContract.setInt(5, contractId);
+                psContract.setString(4, status);
+                psContract.setString(5, note);
+                psContract.setInt(6, contractId);
                 psContract.executeUpdate();
                 psContract.close();
 
@@ -572,6 +654,15 @@ public class ManagerContractController extends HttpServlet {
                             psItem.setString(4, notes != null && i < notes.length ? notes[i] : null);
                             psItem.executeUpdate();
                             psItem.close();
+                            
+                            // 4. Nếu status = ACTIVE, update rental_status = RENTED
+                            if ("ACTIVE".equals(status)) {
+                                String updateAssetSql = "UPDATE machine_assets SET rental_status = 'RENTED' WHERE id = ?";
+                                PreparedStatement psAsset = conn.prepareStatement(updateAssetSql);
+                                psAsset.setInt(1, Integer.parseInt(assetIds[i]));
+                                psAsset.executeUpdate();
+                                psAsset.close();
+                            }
                         }
                     }
                 }

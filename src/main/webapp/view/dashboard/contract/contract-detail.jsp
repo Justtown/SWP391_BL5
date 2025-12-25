@@ -81,16 +81,45 @@
             <h4 class="mb-1"><i class="fas fa-file-contract me-2"></i>Chi tiết Hợp đồng</h4>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/manager/dashboard">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/manager/contracts">Hợp đồng</a></li>
+                    <c:choose>
+                        <c:when test="${sessionScope.roleName == 'manager'}">
+                            <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/manager/dashboard">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/manager/contracts">Hợp đồng</a></li>
+                        </c:when>
+                        <c:when test="${sessionScope.roleName == 'sale'}">
+                            <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/sale/dashboard">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/sale/contracts">Hợp đồng</a></li>
+                        </c:when>
+                        <c:when test="${sessionScope.roleName == 'admin'}">
+                            <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/admin/dashboard">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/contracts">Hợp đồng</a></li>
+                        </c:when>
+                        <c:otherwise>
+                            <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/contracts">Hợp đồng</a></li>
+                        </c:otherwise>
+                    </c:choose>
                     <li class="breadcrumb-item active">${contract.contractCode}</li>
                 </ol>
             </nav>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <a href="${pageContext.request.contextPath}/manager/contracts" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-1"></i> Quay lại
-            </a>
+            <c:choose>
+                <c:when test="${sessionScope.roleName == 'manager'}">
+                    <a href="${pageContext.request.contextPath}/manager/contracts" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Quay lại
+                    </a>
+                </c:when>
+                <c:when test="${sessionScope.roleName == 'sale'}">
+                    <a href="${pageContext.request.contextPath}/sale/contracts" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Quay lại
+                    </a>
+                </c:when>
+                <c:otherwise>
+                    <a href="${pageContext.request.contextPath}/contracts" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Quay lại
+                    </a>
+                </c:otherwise>
+            </c:choose>
         </div>
     </div>
 
@@ -149,7 +178,7 @@
                             </button>
                         </form>
                     </c:if>
-                    <c:if test="${contract.status == 'ACTIVE'}">
+                    <c:if test="${contract.status == 'ACTIVE' && sessionScope.roleName == 'manager'}">
                         <form method="post" action="${pageContext.request.contextPath}/manager/contracts" class="d-inline">
                             <input type="hidden" name="action" value="finish">
                             <input type="hidden" name="id" value="${contract.id}">
@@ -299,7 +328,7 @@
             </div>
         </div>
 
-        <!-- Export PDF Button -->
+
         <div class="text-center mb-4">
             <button type="button" class="btn btn-danger" onclick="exportToPDF()">
                 <i class="fas fa-file-pdf me-1"></i> Xuất PDF
@@ -311,11 +340,11 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     function exportToPDF() {
-        // Tạo nội dung PDF
+
         const contractCode = '${contract.contractCode}';
         const element = document.querySelector('.container-fluid');
 
-        // Ẩn các nút action khi xuất PDF
+
         const actionButtons = document.querySelectorAll('.action-buttons, .text-center.mb-4');
         actionButtons.forEach(btn => btn.style.display = 'none');
 
@@ -328,7 +357,7 @@
         };
 
         html2pdf().set(opt).from(element).save().then(function() {
-            // Hiện lại các nút sau khi xuất
+
             actionButtons.forEach(btn => btn.style.display = '');
         });
     }

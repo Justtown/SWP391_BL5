@@ -168,13 +168,16 @@ public class ChangePasswordController extends HttpServlet {
                     session.removeAttribute("mustChangePassword");
                 }
                 
-                request.setAttribute("message", "Đổi mật khẩu thành công!");
+                // Lấy role từ session để xác định dashboard URL
+                String roleName = (String) session.getAttribute("roleName");
+                String dashboardUrl = getDashboardUrlByRole(roleName);
                 
-                // Nếu bắt buộc đổi mật khẩu, redirect về home sau 2 giây
-                if (mustChangePassword) {
-                    response.sendRedirect(request.getContextPath() + "/home?passwordChanged=true");
+                // Lưu thông báo thành công vào session để hiển thị trên dashboard
+                session.setAttribute("successMessage", "Đổi mật khẩu thành công!");
+                
+                // Redirect về dashboard theo role
+                response.sendRedirect(request.getContextPath() + dashboardUrl + "?passwordChanged=true");
                     return;
-                }
             } else {
                 request.setAttribute("error", "Không thể cập nhật mật khẩu. Vui lòng thử lại.");
             }
@@ -196,6 +199,28 @@ public class ChangePasswordController extends HttpServlet {
 
         request.setAttribute("mustChangePassword", mustChangePassword);
         request.getRequestDispatcher("/view/password/change_password.jsp").forward(request, response);
+    }
+    
+    /**
+     * Lấy dashboard URL theo role
+     */
+    private String getDashboardUrlByRole(String roleName) {
+        if (roleName == null) {
+            return "/admin/dashboard"; // Default
+        }
+        
+        switch (roleName.toLowerCase()) {
+            case "admin":
+                return "/admin/dashboard";
+            case "manager":
+                return "/manager/dashboard";
+            case "sale":
+                return "/sale/dashboard";
+            case "customer":
+                return "/customer/dashboard";
+            default:
+                return "/admin/dashboard"; // Default
+        }
     }
 }
 
